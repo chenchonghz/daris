@@ -9,8 +9,8 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 # eclipse
-.classpath
-.project
-.settings/
+#.classpath
+#.project
+#.settings/
 # mac os
 .DS_Store
