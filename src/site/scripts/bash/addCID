@@ -1,0 +1,60 @@
+#!/bin/sh
+#
+if [ -z $1 ]; then
+   echo "Usage is addCID <path> <delim>" 
+   echo "E.g. addCID ./1.5.86"
+   echo "    <path> is the path of the files to rename"
+   echo "   <delim> is the CID file delimiter and is optional (defaults to '_')"
+   exit
+fi
+rootDir="${1}"
+if [ ! -d "${rootDir}" ]; then
+   echo "$1 is not a directory"
+   exit
+fi
+#
+delim="${2}"
+if [ -z $2 ]; then
+   delim="_"
+fi
+
+# Find all files under the parent root directory with the assumption 
+# that they are all under the directory at the bottom of this structure
+# <p>.<s>.<exm>.<st>/<type>/<child>_<name>
+#
+find ${rootDir} -type f   | while read file ; do
+
+   # Get name of parent directory up 2 levels
+
+   d0=`dirname "${file}"`   # DataSet
+   d1=`dirname "${d0}"`     # <type>
+   d2=`dirname "${d1}"`     # Study
+
+   # Get the CID of the Study
+   study_cid=`basename "${d2}"`
+
+   # Get the leading <cid> part of the DataSet directory name
+   bn=`basename "${d0}"`
+   child_cid=${bn%%_*}
+
+# Create full CID of data set
+   cid="${study_cid}"".""${child_cid}"
+
+
+# Get filename directory and file components
+  fn=`basename "${file}"`
+  dn=`dirname "${file}"`
+
+#  echo "file=" ${file}
+#  echo "   fn=" ${fn} 
+#  echo "   dn=" ${dn}
+#  echo "  cid=" $cid
+
+
+# Create new name
+   nn="${dn}""/""${cid}""${delim}""${fn}"
+#   echo "   nn=" $nn
+
+# Rename
+   mv  "${file}" "${nn}"
+done

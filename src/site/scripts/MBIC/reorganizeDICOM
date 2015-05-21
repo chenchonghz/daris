@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+# Relies on jar files that are sourced from the AIBL project
+# Environment variable APP_LIB must be set
+xx=$APP_LIB
+java -cp $xx/commons-io-1.4.jar:$xx/ReorganiseDICOM.jar:$xx/java-getopt-1.0.11.jar:$xx/dcmtools.jar:. aibl.reorganiseDICOM.ReorganiseDICOM "${@}"

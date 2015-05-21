@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Install and enable Arcitecta Desktop Integration</title>
+    <script src="http://java.com/js/deployJava.js"></script>
+</head>
+<body>
+<ul>
+<p>The application uses Arcitecta Desktop Integration, which is a Java applet, to access the local file system as well as communicate with the remote Mediaflux server. It is requires by various functions, e.g. data importing, local file browsing.</p>
+ <li>To make DTI applet work:
+  <ol>
+   <li>Make sure you have Java installed.
+    <ul>
+     <li id="test_java"></li>
+     <li><button onClick="deployJava.installLatestJRE();">Install latest JRE</button></li>
+    </ul>
+   </li>
+   <li>If you have already installed Java VM (JRE), but the Desktop Integration applet is still not loaded in your browser, you can:
+     <ul>
+       <li>Go to <a href="http://www.java.com/en/download/testjava.jsp">http://www.java.com/en/download/testjava.jsp</a></li>
+       <li>If the LIVE area at the top of the page is showing <font color="red">Inactive Plug-in</font>, click that area, it will prompt a popup window ask for trust confirmation, read and trust it. You can then load Java applets in Safari.</li>
+     </ul>
+   </li>
+   <li>The DTI writes to log files in <b>~.Arcitecta/DTI/logs/</b> directory. You can look at the logs to see if there is anything preventing the DTI from being started.</li>
+  </ol>
+ </li>
+</ul>
+<script type="text/javascript">
+var li = document.getElementById('test_java');
+if(!deployJava.versionCheck('1.6.0+')){
+   li.innerHTML='<font color="red">You do not have Java VM 1.6.0+ installed.</font>';
+} else {
+   li.innerHTML='<font color="green">You have Java VM ' + deployJava.getJREs() + ' installed.</font>';
+}
+</script>
+</body>
+</html>

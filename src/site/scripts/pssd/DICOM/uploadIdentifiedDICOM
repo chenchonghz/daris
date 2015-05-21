@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# This script uploads identified DICOM data to the repository. It extratcs the patient
+# details from the DICOM data, creates the Subject and then uploads to that Subject
+#
+# It uses
+#  dcmtools  (DICOM tools)
+#  dicom-scu.sh  (DICOM upload client)
+#  mfcommand (Mediaflux command-line wrapper)\
+# It assumes the nig-pssd package is installed, regarding where
+# subject identity is stored
+#
+# No checks are made that these are installed and in your path
+
+# Log in to Mediaflux 
+# See the mfcommand script for variables that must be set (host, port, transport etc)
+# You must set the password to the desired account in MF_PASSWORD
+# or include it here (not preferred)
+mfcommand logon system manager $MF_PASSWORD
+
+# Set Project and Method ID
+pid=1.5.97
+mid=1.4.17
+
+# Mediaflux DICOM service
+port=6667
+calledAET=UM-DaRIS-1
+callingAET=HFI-DICOM-TEST
+
+
+# It is assumed that the working directory holds many directories, one per Subject
+# Those directories hold the DICOM data (in any structure)
+#
+# FInd subjects
+subjects=`ls`
+for subject in $subjects; do
+   echo "**********************************************"
+   echo $subject
+
+#Fetch one DICOM file
+
+   procfile=`find ${subject} -type f | head -n1`
+
+# Get patient name: LastName^firstName
+   t=`dcmdump $procfile | grep -i patientname`
+
+# Find start of first name and extract last name
+   t2=`echo ${t:16}`
+   idx=`expr index "${t2}" ^`
+   restName=`echo ${t2:$idx}`
+   idx=`expr $idx - 1`
+   lastName=`echo ${t2:0:$idx}`
+
+
+# Now find first name from what's left
+   idx=`expr index "${restName}" ^`
+   idx=`expr $idx - 1`
+   firstName=`echo ${restName:0:$idx}`
+   echo "   FirstName="$firstName
+   echo "   Last Name="$lastName
+
+# Create subject in Mediaflux with name details
+   r=`mfcommand om.pssd.subject.create :pid "${pid}" :method "${mid}" :private \< :nig-daris:pssd-human-identity \< :first $firstName :last $lastName \> \>`
+ 
+# Extract CID of new subject.  The ID  will be of the form "<cid>"
+# We need to remove the leading and trailing "
+   echo $r
+   words=($r)                # Splits into array
+   id=`echo ${words[3]}`
+   len=`echo ${#id}`
+   len=`expr $len - 2`
+   id=${id:1:$len}
+
+# Upload data
+   dicom-scu.sh -port ${port} -calledAET ${calledAET} -callingAET ${callingAET} -id $id -dir $subject
+done
+
+# Log off
+mfcommand logoff

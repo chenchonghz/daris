@@ -1,0 +1,6 @@
+<application>
+  <name>DaRIS</name>
+  <description>DaRIS</description>
+  <module>daris</module>
+  <icon>desktop-icon.png</icon>
+</application>

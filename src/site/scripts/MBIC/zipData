@@ -1,0 +1,103 @@
+#!/bin/sh
+# MBC IU Script to 
+# 1. Reorganize DICOM data into Patient/Study/Series
+# 2. Copy DICOM data to a temporary directory
+# 3. Copy RAW data to the same temporary directory
+# 4. Zip into a container for upload to cloudstor
+#
+# Set paths
+#dicomIn=$HOME/data/MBC/Test/DICOM
+dicomIn=/Volumes/SiteData/OffLine
+#
+#rawIn=$HOME/data/MBC/Test/RAW
+rawIn=/Volumes/SiteData/PETRawData
+#
+XX=`pwd`
+
+
+# Parse
+args="${@}"  
+copy="copy"
+pack="yes"
+path="/tmp"
+for a in "${@}"; do
+   if [ "${a}" == "-h" ]; then
+      echo "Usage: zipData -h -m -n <path>"
+      echo "        -h : show this help"
+      echo "        -m : move rather than copy files"
+      echo "        -n : don't zip up the temporary directory"
+      echo "    <path> : Output parent directory. Defaults to /tmp"
+      exit
+   elif [ "${a}" == "-m" ]; then
+      copy="move"
+   elif [ "${a}" == "-n" ]; then
+     pack="no"
+   else 
+     path="${a}"
+   fi
+done
+
+# Make path absolute (readlink not cross platform)
+path=$(cd "${path}"; pwd)
+cd "${XX}"
+
+# Create directory for re-organized data
+s=`date "+%s"`
+td="${path}"/$s
+mkdir "${td}"
+if [ ! -d "${td}" ]; then
+   echo "*** Failed to create temporary output directory " + $td
+   exit
+fi
+
+# DICOM
+some="no"
+if [ "$(ls -A ${dicomIn})" ]; then
+   if [ "${copy}" == "copy" ]; then
+      echo "*** Reorganizing DICOM [copy] data by Patient"
+      reorganizeDicom -c -d "${td}" $dicomIn
+   else
+      echo "*** Reorganizing DICOM [move] data by Patient"
+      reorganizeDicom -d "${td}" $dicomIn
+   fi
+   some="yes"
+else 
+   echo "*** There are no DICOM data to transfer"
+fi
+
+# Copy raw data inplace
+
+if [ "$(ls -A ${rawIn})" ]; then
+   if [ "${copy}" == "copy" ]; then
+      echo "*** Copying Raw Data"
+      cp "${rawIn}"/* "${td}"
+   else 
+      echo "*** Moving Raw Data"
+      mv "${rawIn}"/* "${td}"
+   fi
+   some="yes"
+else
+  echo "*** There are no raw data to transfer"
+fi
+#
+if [ $some == "no" ]; then
+   echo "*** There is no input DICOM nor raw data to transfer"
+   exit
+fi
+
+# Create container
+if [ "${pack}" == "yes" ]; then
+   f="${path}"/"bundle-""${s}"".zip"
+   echo "Creating Zip file" $f
+   cd "${td}"
+   zip -0 -q -r "${f}" .
+
+# Clean up temporary directory
+   echo ""
+   echo "Cleaning up " $td
+   rm -fr "${td}"
+   echo "Data in " $f
+else 
+   echo "Data in " $td
+fi
+cd $XX

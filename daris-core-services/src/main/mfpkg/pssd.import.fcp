@@ -1,0 +1,38 @@
+profile IMPORT {
+
+    construct DS_STORE {
+    
+        match {
+            file name ".DS_Store"
+        }		
+        consume no
+    }
+
+    construct FILE {
+       
+        match {
+            file is file
+        }
+        logical type encapsulation type
+        consume yes
+        consumer {
+            service "variable:service"
+            add "variable:args" xml at "."
+        }
+    }
+    
+    construct DIRECTORY {
+
+        match {
+            file is directory
+        }
+        encapsulate as archive level 6
+        logical type encapsulation type
+        consume yes
+        consumer {
+            service "variable:service"
+            add "variable:args" xml at "."
+        }
+    }
+
+}

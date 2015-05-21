@@ -1,0 +1,16 @@
+#!/bin/sh
+if [ -e $1 ]; then
+   echo "You must supply the MBC@RMH Project code string"
+   exit
+fi
+
+# Public key authentication used.
+# Make destination directory
+
+t=RAW/"${1}"
+echo "Creating destination directory " $t " on host 128.250.130.213" 
+ssh -p 2561 mbic@128.250.130.213 mkdir -p "${t}"
+
+# Send it over and remove source when successfully transferred
+cd /Volumes/meduser/PET_RAW/MBC_AT_RMH
+rsync  --remove-source-files -avr -e "ssh -p 2561" * mbic@128.250.130.213:./"${t}"

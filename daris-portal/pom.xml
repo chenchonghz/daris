@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>daris</artifactId>
+		<groupId>au.edu.unimelb.daris</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>daris-portal</artifactId>
+	<!-- packaging cannot be pom. Can be war or jar. -->
+	<packaging>jar</packaging>
+	<name>daris-portal</name>
+	<description>DaRIS web portal.</description>
+	<!-- DaRIS maven repository on github.com -->
+	<repositories>
+		<repository>
+			<id>daris-maven-repo</id>
+			<name>DaRIS maven repository on github.com</name>
+			<url>https://github.com/uom-daris/mvn-repo/raw/master</url>
+		</repository>
+	</repositories>
+
+	<properties>
+		<!-- Convenience property to set the GWT version -->
+		<gwtVersion>2.7.0</gwtVersion>
+
+		<!-- GWT needs at least java 1.6 -->
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.google.gwt</groupId>
+				<artifactId>gwt</artifactId>
+				<version>${gwtVersion}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-user</artifactId>
+			<!-- provided so that we do not deploy -->
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-dev</artifactId>
+			<!-- provided so that we do not deploy -->
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.arcitecta</groupId>
+			<artifactId>mfclientgwt</artifactId>
+			<version>3.9.008</version>
+			<!-- provided so that we do not deploy -->
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.arcitecta</groupId>
+			<artifactId>mfclientguigwt</artifactId>
+			<version>3.9.008</version>
+			<!-- provided so that we do not deploy -->
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.arcitecta</groupId>
+			<artifactId>adesktopplugingwt</artifactId>
+			<version>3.9.008</version>
+			<!-- provided so that we do not deploy -->
+			<scope>provided</scope>
+		</dependency>
+		<!-- We do not do unit tests at the moment -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<!-- Output classes directly into the webapp, so that IDEs and "mvn process-classes" 
+			update them in DevMode -->
+		<outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory>
+
+		<plugins>
+
+			<!-- GWT Maven Plugin -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>gwt-maven-plugin</artifactId>
+				<version>2.7.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<!-- <goal>test</goal> <goal>generateAsync</goal> -->
+						</goals>
+					</execution>
+				</executions>
+				<!-- Plugin configuration. There are many available options, see gwt-maven-plugin 
+					documentation at codehaus.org -->
+				<configuration>
+					<runTarget>DaRIS.html</runTarget>
+					<modules>
+						<module>daris.DaRIS</module>
+					</modules>
+				</configuration>
+			</plugin>
+
+			<!-- maven-replacer-plugin -->
+			<plugin>
+				<groupId>com.google.code.maven-replacer-plugin</groupId>
+				<artifactId>replacer</artifactId>
+				<version>1.5.3</version>
+				<executions>
+					<execution>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>replace</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<file>${project.parent.basedir}/src/site/mfpkg/__manifest.xml</file>
+					<outputFile>${project.build.directory}/__manifest.xml</outputFile>
+					<regex>false</regex>
+					<replacements>
+						<replacement>
+							<token>@MFPKG@</token>
+							<value>${project.artifactId}</value>
+						</replacement>
+						<replacement>
+							<token>@VERSION@</token>
+							<value>${project.version}</value>
+						</replacement>
+						<replacement>
+							<token>@BUILD-TIME@</token>
+							<value>${maven.build.timestamp}</value>
+						</replacement>
+						<replacement>
+							<token>@VENDOR@</token>
+							<value>${project.parent.organization.name}</value>
+						</replacement>
+						<replacement>
+							<token>@URL@</token>
+							<value>${project.parent.url}</value>
+						</replacement>
+						<replacement>
+							<token>@DESCRIPTION@</token>
+							<value>${project.description}</value>
+						</replacement>
+					</replacements>
+				</configuration>
+			</plugin>
+
+			<!-- maven-assembly-plugin -->
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.5.4</version>
+				<executions>
+					<execution>
+						<!-- make the www.zip which contains the web contents -->
+						<id>make-www-zip</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<finalName>www</finalName>
+							<descriptors>
+								<descriptor>src/main/assembly/www-zip.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+					<execution>
+						<!-- make the final mediaflux plugin package (.zip) file -->
+						<id>make-mfpkg-zip</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<finalName>mfpkg-${project.artifactId}-${project.version}</finalName>
+							<descriptors>
+								<descriptor>src/main/assembly/mfpkg-zip.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

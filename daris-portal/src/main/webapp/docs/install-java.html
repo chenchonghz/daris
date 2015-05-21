@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Install Java</title>
+    <script src="http://java.com/js/deployJava.js"></script>
+  </head>
+<body>
+  <div id="testjava" style="width:800px; height: 600px; margin: 0 auto; padding-top: 200px; text-align:center; vertical-align:middle;">
+  </div>
+<script type="text/javascript">
+var div = document.getElementById('testjava');
+if(deployJava.versionCheck('1.6.0+')){
+   div.innerHTML = '<span style="color:#205010;font-size:16pt;font-weight:bold;">You have Java VM ' + deployJava.getJREs() + ' installed.</span>';
+
+} else {
+   div.innerHTML = '<span style="color:#f00000;font-size:16pt;font-weight:bold;">This application requires Java VM 1.6.0 or later. However, it is not available in your browser. Please <button onClick="deployJava.installLatestJRE();">Install the latest Java</button>. <br/><br/> And see <a href="http://java.com/en/download/help/enable_browser.xml">How to enable Java in your browser.</a></span>';
+}
+</script>
+<h3>Trouble shooting</h3>
+<ol>
+  <li>Java applet is not loading in Safari browser on Mac OS X although Java VM has been installed. How?
+    <ul>
+      <li>Go to <a href="http://www.java.com/en/download/testjava.jsp">http://www.java.com/en/download/testjava.jsp</a></li>
+      <li>If the LIVE area at the top of the page is showing <font color="red">Inactive Plug-in</font>, click that area, it will prompt a popup window ask for trust confirmation, read and trust it. You can then load Java applets in Safari.</li>
+    </ul>
+  </li>
+</ol>
+</body>
+</html>

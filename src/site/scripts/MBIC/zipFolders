@@ -1,0 +1,35 @@
+#!/bin/sh
+# MBC IU Script to  zip up folders (no compression)
+#
+# Set path to input
+path=.
+#
+XX=`pwd`
+
+# Parse
+args="${@}"  
+for a in "${@}"; do
+   if [ "${a}" == "-h" -o "${a}" == "-help" ]; then
+      echo "Usage: zipData -h <path>"
+      echo "        -h : show this help"
+      echo "    <path> : Input parent directory. Defaults to '.' (thw current working directory)"
+      exit
+   else 
+     path="${a}"
+   fi
+done
+
+# Make path absolute (readlink not cross platform)
+path=$(cd "${path}"; pwd)
+cd "${path}"
+
+# Iterate over child directories.  This form using 'read' handles spaces in file/director names
+find . -type dir -maxdepth  1 | while read child; 
+do  
+   echo "Zipping " "${child}"
+   bn=`basename "${child}"`
+   fn="${bn}"".zip"
+   zip -0 -r -q "${fn}" "${child}"
+done
+cd $XX
+exit
