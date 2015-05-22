@@ -11,6 +11,7 @@ import org.apache.http.entity.InputStreamEntity;
 
 import com.github.sardine.Sardine;
 import com.github.sardine.SardineFactory;
+import com.github.sardine.impl.SardineException;
 import com.github.sardine.impl.SardineImpl;
 
 public class WebdavClientImpl implements WebdavClient {
@@ -67,9 +68,11 @@ public class WebdavClientImpl implements WebdavClient {
 		Sardine sardine = getSardineInstance();
 		try {
 			if (length >= 0) {
-				((SardineImpl)sardine).put(uri, new InputStreamEntity(in, length), null, false);
+				((SardineImpl) sardine).put(uri, new InputStreamEntity(in,
+						length), null, false);
 			} else {
-				// unknown length. It will fail if the server requires Content-Length.
+				// unknown length. It will fail if the server requires
+				// Content-Length.
 				sardine.put(uri, in);
 			}
 		} finally {
@@ -95,14 +98,24 @@ public class WebdavClientImpl implements WebdavClient {
 			return;
 		}
 		Sardine sardine = getSardineInstance();
-		if (!parents) {
-			// do not try to create parent directories. It will throw exception
-			// if the parent directory does not exist.
-			sardine.createDirectory(uri);
-		} else {
+		if (parents) {
+			// create parent directories. If parent directories do not exist and
+			// you will not be able to create the child directory.
 			mkdir(PathUtil.getParentDirectory(remotePath, true), true);
-		//	System.out.println("WebDAV: creating remote directory:" + uri);
+		}
+		try {
 			sardine.createDirectory(uri);
+		} catch (SardineException e) {
+			String msg = e.getMessage();
+			if (msg != null && msg.contains("405 Method Not Allowed")) {
+				// NOTE: if http response 405, means the directory already exists. That might be created by other threads.
+				System.out
+						.println("WebDAV Sink: HTTP Response: '405 Method Not Allowed' when creating directory "
+								+ uri
+								+ ". It indicates the directory already exists.");
+			} else {
+				throw e;
+			}
 		}
 	}
 
