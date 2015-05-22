@@ -101,6 +101,7 @@ public class WebdavClientImpl implements WebdavClient {
 			sardine.createDirectory(uri);
 		} else {
 			mkdir(PathUtil.getParentDirectory(remotePath, true), true);
+		//	System.out.println("WebDAV: creating remote directory:" + uri);
 			sardine.createDirectory(uri);
 		}
 	}
