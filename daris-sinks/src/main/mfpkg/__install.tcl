@@ -15,6 +15,10 @@ asset.import :url archive:${plugin_zip} \
         :label -create yes ${plugin_label} :label PUBLISHED \
         :update true
 
+# install the plugin module
+if { [xvalue exists [plugin.module.exists :path ${plugin_namespace}/${plugin_jar} :class ${module_class}]] == "false" } {
+	plugin.module.add :path ${plugin_namespace}/${plugin_jar} :class ${module_class}
+}
 
 # reload the services     
 system.service.reload
