@@ -1,10 +1,14 @@
 # ============================================================================
 # Uninstall Plugins
 # ============================================================================
+
+# uninstall the old package named 'nig-sinks' which is the predecessor of this package.
+source __uninstall-old.tcl
+
 set plugin_label           [string toupper PACKAGE_$package]
 set plugin_namespace       /mflux/plugins
-set plugin_zip             sinks-plugin.zip
-set plugin_jar             sinks-plugin.jar
+set plugin_zip             daris-sinks-plugin.zip
+set plugin_jar             daris-sinks-plugin.jar
 set module_class           nig.mf.plugin.sink.SinkPluginModule
 
 if { [xvalue exists [plugin.module.exists :path ${plugin_namespace}/${plugin_jar} :class ${module_class}]] == "true" } {
