@@ -68,8 +68,14 @@ public class WebdavClientImpl implements WebdavClient {
 		Sardine sardine = getSardineInstance();
 		try {
 			if (length >= 0) {
-				((SardineImpl) sardine).put(uri, new InputStreamEntity(in,
-						length), null, false);
+				try {
+					((SardineImpl) sardine).put(uri, new InputStreamEntity(in,
+							length), null, false);
+				} catch (SardineException e) {
+					// log it in the server log.
+					System.out.println("WebDav Error: " + e.getMessage());
+					throw e;
+				}
 			} else {
 				// unknown length. It will fail if the server requires
 				// Content-Length.
@@ -108,12 +114,15 @@ public class WebdavClientImpl implements WebdavClient {
 		} catch (SardineException e) {
 			String msg = e.getMessage();
 			if (msg != null && msg.contains("405 Method Not Allowed")) {
-				// NOTE: if http response 405, means the directory already exists. That might be created by other threads.
+				// NOTE: if http response 405, means the directory already
+				// exists. That might be created by other threads.
 				System.out
 						.println("WebDAV Sink: HTTP Response: '405 Method Not Allowed' when creating directory "
 								+ uri
 								+ ". It indicates the directory already exists.");
 			} else {
+				// log it in the server log.
+				System.out.println("WebDav Error: " + e.getMessage());
 				throw e;
 			}
 		}
