@@ -1,72 +1,28 @@
-#
 # Install the trigger script for /dicom namespace. The trigger script is triggered when NON-PSSD style
 # DICOM data arrived in /dicom namespace. It sends notifications to system admins to notify the data
 # arrivals in /dicom namespace.
-#
-################################################################################################################################################
-proc installDICOMTrigger { package } {
+set dicom_ns                   dicom
+set dicom_trigger_script       trigger-dicom-ingest.tcl
+set dicom_trigger_script_ns    system/triggers
+set dicom_trigger_script_label [string toupper PACKAGE_$package]
 
-    set script        trigger-dicom-ingest.tcl
-    set scriptNS      system/triggers
-    set dicomNS       dicom
-    set label         [string toupper PACKAGE_$package]
-
-    if { [xvalue exists [asset.namespace.exists :namespace $dicomNS]] == "false" } {
-	puts "Warning: DICOM namespace: ${dicomNS} does not exist."
-	return
-    }
-
-    #
-    # create the trigger script asset
-    #
-    asset.create :url archive:///$script \
-	:namespace -create yes $scriptNS \
-	:label -create yes $label :label PUBLISHED \
-	:name $script
-
-
-    #
-    # create the triggers
-    #
-    asset.trigger.post.create :namespace $dicomNS :event create :script -type ref ${scriptNS}/${script}
-    asset.trigger.post.create :namespace $dicomNS :event content-modify :script -type ref ${scriptNS}/${script}
-}
-
-
-################################################################################################################################
-
-
-# Install trigger for user notification in PSSD namespace of new Subject created by the server
-#
-
-proc installPSSDSubjectTrigger { package } {
-
-    set script        trigger-pssd-dicom-ingest-subject.tcl
-    set scriptNS      system/triggers
-    set pssdNS        pssd
-    set label         [string toupper PACKAGE_$package]
-
-    if { [xvalue exists [asset.namespace.exists :namespace $pssdNS]] == "false" } {
-	puts "Warning: PSSD namespace: ${pssdNS} does not exist."
-	return
-    }
-
-    #
-    # create the trigger script asset
-    #
-    asset.create :url archive:///$script \
-	:namespace -create yes $scriptNS \
-	:label -create yes $label :label PUBLISHED \
-	:name $script
+if { [xvalue exists [asset.namespace.exists :namespace $dicom_ns]] == "true" } {
     
-    # create the trigger. The trigger script will work out whether to send the email or not
-    asset.trigger.post.create :namespace $pssdNS :event create :script -type ref ${scriptNS}/${script}
+    # destroy the script asset if it pre-exists
+    if { [xvalue exists [asset.exists :id path=${dicom_trigger_script_ns}/${dicom_trigger_script}]] == "true" } {
+        asset.hard.destroy :id path=${dicom_trigger_script_ns}/${dicom_trigger_script}
+    }
+
+    # create the trigger script asset
+    asset.create :url archive:///$dicom_trigger_script \
+        :namespace -create yes $dicom_trigger_script_ns \
+        :label -create yes $dicom_trigger_script_label :label PUBLISHED \
+	    :name $dicom_trigger_script
+
+    # remove all old triggers on the namespace
+    asset.trigger.destroy :namespace $dicom_ns
+
+    # create the triggers
+    asset.trigger.post.create :namespace $dicom_ns :event create :script -type ref ${dicom_trigger_script_ns}/${dicom_trigger_script}
+    asset.trigger.post.create :namespace $dicom_ns :event content-modify :script -type ref ${dicom_trigger_script_ns}/${dicom_trigger_script}
 }
-
-
-
-### Main
-source triggers-uninstall.tcl
-#
-installDICOMTrigger $package
-#installPSSDSubjectTrigger $package

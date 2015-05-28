@@ -9,6 +9,7 @@
 		<groupId>au.edu.unimelb.daris</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
+	<version>1.0.0</version>
 	<artifactId>daris-portal</artifactId>
 	<!-- packaging cannot be pom. Can be war or jar. -->
 	<packaging>jar</packaging>
@@ -249,5 +250,4 @@
 			</plugin>
 		</plugins>
 	</build>
-	<version>1.0.0</version>
 </project>

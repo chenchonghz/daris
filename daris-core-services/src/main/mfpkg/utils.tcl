@@ -16,32 +16,14 @@ proc getServerVersion { } {
 #
 # ============================================================================
 proc requireServerVersion { version } {
-	
-	set a [string trimleft [lindex [split $version . ] 0] 0]
-	set b [string trimleft [lindex [split $version . ] 1] 0]
-	set c [string trimleft [lindex [split $version . ] 2] 0]
-	set sver [xvalue version [server.version]]
-	set sa [string trimleft [lindex [split $sver . ] 0] 0]
-	set sb [string trimleft [lindex [split $sver . ] 1] 0]
-	set sc [string trimleft [lindex [split $sver . ] 2] 0]
-	
-	set meet 1
-	if { $a > $sa } {
-		set meet 0
-	}
-	
-	if { $b > $sb } {
-		set meet 0
-	}
-	
-	if { $c > $sc } {
-		set meet 0
-	}	
-	
-	if { ! ${meet} } {
-		error "The server version (${sver}) is less than the required version (${version})."
-	}
+    set server_version [xvalue version [server.version]]
+    set sv [string map { . "" } $server_version]
+    set rv [string map { . "" } $version]
+    if { $sv<$rv } {
+        error "The server version (${server_version}) is less than the required version (${version})."
+    }
 }
+
 
 # ============================================================================
 # proc: checkIfServerVersionNoLessThan

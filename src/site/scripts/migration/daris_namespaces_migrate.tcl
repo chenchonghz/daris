@@ -16,33 +16,13 @@
 #  - Scripts
 #  - Saved queries : are not handled. You must destroy (they are in children of namespace pssd-users) and re-create.
 #
-
 proc requireServerVersion { version } {
-	
-	set a [string trimleft [lindex [split $version . ] 0] 0]
-	set b [string trimleft [lindex [split $version . ] 1] 0]
-	set c [string trimleft [lindex [split $version . ] 2] 0]
-	set sver [xvalue version [server.version]]
-	set sa [string trimleft [lindex [split $sver . ] 0] 0]
-	set sb [string trimleft [lindex [split $sver . ] 1] 0]
-	set sc [string trimleft [lindex [split $sver . ] 2] 0]
-	
-	set meet 1
-	if { $a > $sa } {
-		set meet 0
-	}
-	
-	if { $b > $sb } {
-		set meet 0
-	}
-	
-	if { $c > $sc } {
-		set meet 0
-	}	
-	
-	if { ! ${meet} } {
-		error "The server version (${sver}) is less than the required version (${version})."
-	}
+    set server_version [xvalue version [server.version]]
+    set sv [string map { . "" } $server_version]
+    set rv [string map { . "" } $version]
+    if { $sv<$rv } {
+        error "The server version (${server_version}) is less than the required version (${version})."
+    }
 }
 
 proc migrateStaticRoles {} {
@@ -158,7 +138,9 @@ proc revokeRoleReadWriteAccessDocType { role docType } {
 proc revokeRoleReadWriteAccessDocTypes { role docTypes } {
 	
 	foreach docType $docTypes {
-		revokeRoleReadWriteAccessDocType $role $docType
+        if { [xvalue exists [asset.doc.type.exists :type $docType]] == "true" } {
+		    revokeRoleReadWriteAccessDocType $role $docType
+        }
 	}
 	
 }
@@ -247,7 +229,9 @@ proc revokeDocumentTypePerms {} {
       pssd-dicom-server-registry \
       pssd-shoppingcart-layout-pattern pssd-dicom-ingest }
 
-      revokeRolePerm pssd.dicom-ingest { document pssd-role-member-registry ACCESS }
+    if { [xvalue exists [asset.doc.type.exists :type pssd-role-member-registry]] == "true" } {
+        revokeRolePerm pssd.dicom-ingest { document pssd-role-member-registry ACCESS }
+    }
 }
 
 
@@ -279,9 +263,11 @@ if { $exists == "true" } {
 # CHeck server version
 requireServerVersion 4.0.058
 
-# Check PSSD package version is V2.22 (has a required service)
-set version [xvalue package/version [package.describe :package PSSD]]
-checkVersion $version
+# Check if the required service: om.pssd.doctype.rename service exists.
+if { [xvalue exists [system.service.exists :service om.pssd.doctype.rename]] == "false" } {
+    puts "The required service om.pssd.doctype.rename does not exist. Please install PSSD V2.22, which includes the required service, from the old release stable-2-26: https://daris-1.cloud.unimelb.edu.au/daris/old-releases/stable-2-26/mfpkg-pssd-2.22-mf4.0.030.zip."
+    error "The required service om.pssd.doctype.rename does not exist."
+}
 
 # Create meta-data  namespace
 set exists [xvalue exists [asset.doc.namespace.exists :namespace "daris"]]

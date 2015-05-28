@@ -1,32 +1,14 @@
-#
-# A proc to destroy all the triggers for the specified namespace, also the script assets they refer to.
-#
-proc destroyTriggers { ns } {
+# Uninstall the triggers on namespace: /dicom
+set dicom_ns                   dicom
+set dicom_trigger_script       trigger-dicom-ingest.tcl
+set dicom_trigger_script_ns    system/triggers
 
-    if { [xvalue exists [asset.namespace.exists :namespace ${ns}]] == "true" } {
-	    set ids [xvalues namespace/trigger/@id [asset.trigger.on.list :namespace ${ns}]]
-	    set scripts [xvalues namespace/trigger/script [asset.trigger.on.describe :namespace ${ns}]]
-	
-	    foreach id ${ids} {
-	        asset.trigger.destroy :namespace ${ns} :tid ${id}
-	    }
-	    
-	    foreach script ${scripts} {
-	        if { [ xvalue exists [ asset.exists :id path=${script} ] ] == "true" } {
-	            asset.hard.destroy :id path=${script}
-	        }
-	    }
-    }
-
+if { [xvalue exists [asset.namespace.exists :namespace $dicom_ns]] == "true" } {
+    # remove all old triggers on the namespace
+    asset.trigger.destroy :namespace $dicom_ns
 }
 
-#
-# destroy the triggers for /dicom namespace
-#
-
-destroyTriggers /dicom
-
-#
-# destroy the triggers for /pssd namespace
-#
-destroyTriggers /pssd
+if { [xvalue exists [asset.exists :id path=${dicom_trigger_script_ns}/${dicom_trigger_script}]] == "true" } {
+    # destroy the trigger script asset
+    asset.hard.destroy :id path=${dicom_trigger_script_ns}/${dicom_trigger_script}
+}

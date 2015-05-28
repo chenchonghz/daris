@@ -11,14 +11,9 @@ shopping.cart.template.destroy :name pssd
 source utils.tcl
 
 # ============================================================================
-# Uninstall Plugins
+# Remove plugin module
 # ============================================================================
-set plugin_label [string toupper PACKAGE_$package]
-set plugin_namespace  mflux/plugins
-set plugin_jar        pssd-plugin.jar
-set plugin_path       $plugin_namespace/$plugin_jar
-set module_class      nig.mf.plugin.pssd.PSSDPluginModule
-unloadPlugin $plugin_path $module_class
+source plugin-module-remove.tcl
 
 # ============================================================================
 # Uninstall the trigger for /dicom namespace, which monitoring the arrivals of

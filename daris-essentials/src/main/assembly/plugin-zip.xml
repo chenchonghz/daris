@@ -17,7 +17,7 @@
 	<dependencySets>
 		<dependencySet>
 			<useStrictFiltering>true</useStrictFiltering>
-			<outputDirectory>/lib</outputDirectory>
+			<outputDirectory>/libs</outputDirectory>
 			<useProjectArtifact>true</useProjectArtifact>
 			<scope>provided</scope>
 			<includes>

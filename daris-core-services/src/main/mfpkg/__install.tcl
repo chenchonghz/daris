@@ -1,54 +1,82 @@
-# pssd framework package installer. 
+#
+# daris-core-services (originally pssd)
+#
+# NOTE: It is assumed that the /pssd and /dicom asset namespaces exist and that they were 
+#       configured with stores as part of the Mediaflux installation process.
 # 
-# It is assumed that the pssd and dicom asset namespaces exist and that they 
-# were configured with stores as part of the Mediaflux installation process.
-# 
-# This installer assumes these namespaces in the installation of the trigger scripts
-# Otherwise, pssd is the default asset namespace in which assets are created
+#       This installer assumes these namespaces in the installation of the trigger scripts
+#       Otherwise, pssd is the default asset namespace in which assets are created.
 #
 #
-# Supply arguments with 
-#  package.install :arg -name <arg name> <value>
-#
-# argument: updateSCTemplate - Set to true to replace the existing shopping cart template, which will 
-#           destroy all the existing shopping carts associated with the template.
-#           Defaults to false
-#  
-#           model - Set to false to not make any changes to the object model (e.g. that might have been added
-#           by other packages such as nig-pssd).  Defaults to true which causes pssd to overwrite the
-#           data model and set model registration meta-data.
-#
-#           bypassPerms - Set to true to bypass the setting of the roles and permissions. Defaults to false.
-#           domain - Set to true to activate the creation of some sample domain specific document 
-#                     types, dictionaries (including study types) and Methods
-# ============================================================================
-# Include utils.tcl functions
-# ============================================================================
+
+# arg:           bypassPerms
+#   type:        boolean
+#   default:     false
+#   description: set to true to bypass the settings of the roles and permissions. Defaults
+#                to false.
+
+# arg:           domain
+#   type:        boolean
+#   default:     false
+#   description: set to true to activate the creation of some sample domain specific 
+#                document types, dictionaries (including study types) and methods. Defaults
+#                to false.
+
+# arg:           migrateAcls1
+#   type:        boolean
+#   default:     false
+#   description: run the script to update acls according to the permission model change in
+#                November 2014. Defaults to false, which means if the script detects that 
+#                the system needs to be migrated it will stop the installation. If set to 
+#                true, if the system need to be migrated, it call the migration script, 
+#                which will take a few minutes to finish.
+
+# arg:           migrateNamespaces1
+#   type:        boolean
+#   default:     false
+#   description: set to true to run the script to migrate the document types, dictionaries and roles to
+#                namespace: daris. 
+#                NOTE: this arg is not implemented.
+
+# arg:           model
+#   type:        boolean
+#   default:     true
+#   description: set to false to not make any changes to the object model. (e.g. that 
+#                might have been added by other packages such as daris-nig.) Defaults to 
+#                true, which causes to overwrite the data model and set model registration 
+#                meta-data.
+
+# arg:           updateSCTemplate
+#   type:        boolean
+#   default:     false
+#   description: set to true to replace the existing shopping cart template, which will 
+#                need to destroy all the existing shopping carts associated with the 
+#                template.
+
+
+## acl migration(1) stable-2-26 (Nov-2014):
+## Check if the ACL migration script has been executed. If not, and the migrateAcls1 arg is set to true.
+## It also checks if there is any daris objects in the system (if not, it does not matter as there is 
+## nothing to migrate).
+source migrate-acls-1.tcl
+
+## namespace migration(1) stable-2-27 (Feb-2015): 
+## DaRIS underwent a namespaces migration (stable-2-27).   Document, dictionary and role namespaces
+## were all migrated out of the global namespace.   The migration must have been executed
+## before installing this version (unless it's a fresh install of the current version or later).
+## Just check if the migration is done. If not, throw exception and quit the installation.
+source migrate-namespaces-1-check.tcl
+
+
+
+##
+## Remove the predecessor, PSSD package if it exists
+##
+source old-release-cleanup.tcl
+
+# include utility functions in utils.tcl
 source utils.tcl
 
-
-#==================================================================================
-# DaRIS Migration processes
-#
-# Check if the ACL migration script has been executed. It is required for V2.22.
-# If there are no PSSD projects then we assume this is a fresh install (or if not
-# it does not matter as there is nothing to migrate)
-#==================================================================================
-if { [xvalue value [asset.query :where model='om.pssd.project' :action count]] > 0 } {
-   checkAppProperty daris object-acl-migration-1 "ACL migration script: NIGTK/mf-scripts/update-acls-20141111.tcl needs to executed prior to the installation."
-}
-# If we passed the check, set the property anyway (in the case of a fresh install or no assets to migrate)
-application.property.create :ifexists ignore :property -app daris -name object-acl-migration-1 true < :type -type boolean :value true :description "The property to determine if the acl migration script (Nov 2014) has been executed." >
-
-# DaRIS underwent a namespaces migration (stable-2-27).   Document, dictionary and role namespaces
-# were all migrated out of the global namespace.   The migration must have been executed
-# before installing this version (unless it's a fresh install of the current version or later).
-if { [isDaRISInstalled] == "true" } {
-   checkAppProperty daris daris-namespaces-migrate-1 "DaRIS namespaces migration has not been done. You must undertake this migration first by installing stable-2-27 and undertaking the migration."
-} else {
-# Set the property now  in the case it was a fresh install (nothing to migrate)
-   application.property.create :ifexists ignore  :property -app daris -name daris-namespaces-migrate-1 < :value "true" >
-}
 #============================================================================================
 # Create dictionary namespaces
 dictionary.namespace.create :description "Namespace for DaRIS framework dictionaries" :namespace daris :ifexists ignore
@@ -68,16 +96,9 @@ dictionary.entry.add :dictionary daris:pssd.study.types :term Unspecified
 createRelationshipType pssd-private pssd-private-of
 
 # ============================================================================
-# Install Plugins
+# Install the plugin module
 # ============================================================================
-set plugin_label      [string toupper PACKAGE_$package]
-set plugin_namespace  mflux/plugins
-set plugin_zip        pssd-plugin.zip
-set plugin_jar        pssd-plugin.jar
-set module_class      nig.mf.plugin.pssd.PSSDPluginModule
-set plugin_libs       { nig-commons.jar dcmtools.jar }
-loadPlugin  $plugin_namespace $plugin_zip $plugin_jar $module_class $plugin_label $plugin_libs
-
+source plugin-module-add.tcl
 
 #
 # ============================================================================
