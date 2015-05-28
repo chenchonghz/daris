@@ -1,4 +1,4 @@
-source __uninstall.tcl
+source old-release-cleanup.tcl
 
 # ============================================================================
 # Install Plugins
