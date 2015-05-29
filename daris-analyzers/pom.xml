@@ -9,7 +9,7 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>daris-analyzers</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>daris-analyzers</name>
 	<description>DaRIS analyzers.</description>
 	<url>http://maven.apache.org</url>

@@ -1,3 +1,5 @@
+source old-release-cleanup.tcl
+
 source utils.tcl
 
 # DaRIS underwent a namespaces migration (stable-2-27).   Document, dictionary and role namespaces
@@ -22,11 +24,10 @@ createMimeType minc       "MINC image"
 # ============================================================================
 set plugin_label      [string toupper PACKAGE_$package]
 set plugin_namespace  mflux/plugins
-set plugin_zip        analyzer-plugin.zip
-set plugin_jar        analyzer-plugin.jar
+set plugin_zip        daris-analyzers-plugin.zip
+set plugin_jar        daris-analyzers-plugin.jar
 set plugin_path       $plugin_namespace/$plugin_jar
 set module_class      nig.mf.plugin.analyzer.AnalyzerPluginModule
-
 set plugin_libs       { loni-image-io-plugins.jar }
 
 
@@ -36,17 +37,21 @@ asset.import :url archive:///$plugin_zip \
     :label -create yes $plugin_label :label PUBLISHED \
     :update true
 
-# Add plugin module
-
+# Remove the plugin module if it pre-exists
 if { [xvalue exists [plugin.module.exists :path $plugin_path :class $module_class]] == "true" } {
         plugin.module.remove :path $plugin_path :class $module_class    
 }
-plugin.module.add :path $plugin_path :class $module_class  :lib libs/nig-commons.jar :lib libs/loni-image-io-plugins.jar
+
+# Add plugin module
+plugin.module.add :path $plugin_path \
+                  :class $module_class  \
+                  :lib libs/loni-image-io-plugins.jar
 
 # Because the MF class loader does not work for loni-image-io-plugins.jar (the jar file contains SPI files, MF class loader 
 # does not handle it properly), we have to put the loni-image-io-plugins.jar file into ${MF_HOME}/plugin/bin directory.
 # Note: the server need to be restarted to load the jar files in ${MF_HOME}/plugin/bin/ directory.
-asset.get :id path=/mflux/plugins/libs/loni-image-io-plugins.jar :url file:[xvalue property\[@key='mf.home'\] [server.java.environment] ]/plugin/bin/loni-image-io-plugins.jar
+asset.get :id path=/mflux/plugins/libs/loni-image-io-plugins.jar \
+          :url file:[xvalue property\[@key='mf.home'\] [server.java.environment] ]/plugin/bin/loni-image-io-plugins.jar
 
 system.service.reload
 
