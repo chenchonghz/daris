@@ -12,7 +12,7 @@
 	<version>1.0.0</version>
 	<name>daris-commons</name>
 	<url>http://maven.apache.org</url>
-	<packaging>pom</packaging>
+	<packaging>jar</packaging>
 	<!-- DaRIS maven repository on github.com -->
 	<repositories>
 		<repository>
