@@ -19,14 +19,14 @@
 		<maven.build.timestamp.format>dd-MMM-yyyy HH:mm:ss z</maven.build.timestamp.format>
 	</properties>
 	<modules>
-		<module>daris-portal</module>
 		<module>daris-commons</module>
+		<module>daris-dcmtools</module>
+		<module>daris-essentials</module>
+		<module>daris-core-services</module>
+		<module>daris-sinks</module>
 		<module>daris-transcoders</module>
 		<module>daris-analyzers</module>
-		<module>daris-dcmtools</module>
-		<module>daris-core-services</module>
-		<module>daris-essentials</module>
-		<module>daris-sinks</module>
+		<module>daris-portal</module>
 		<module>daris-client-pvupload</module>
 		<module>daris-client-server-config</module>
 		<module>daris-client-mbcpetct-download</module>
