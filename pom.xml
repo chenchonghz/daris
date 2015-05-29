@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>au.edu.unimelb.daris</groupId>
 	<artifactId>daris</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>pom</packaging>
 	<name>daris</name>
 	<description>Distributed and Reflective Informatics System</description>
