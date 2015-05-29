@@ -15,13 +15,13 @@
 		</file>
 		<file>
 			<source>${project.build.directory}/loni-debabeler.jar</source>
-			<outputDirectory>./lib</outputDirectory>
+			<outputDirectory>./libs</outputDirectory>
 		</file>
 	</files>
 	<dependencySets>
 		<dependencySet>
 			<useStrictFiltering>true</useStrictFiltering>
-			<outputDirectory>/lib</outputDirectory>
+			<outputDirectory>/libs</outputDirectory>
 			<useProjectArtifact>true</useProjectArtifact>
 			<scope>provided</scope>
 			<includes>
