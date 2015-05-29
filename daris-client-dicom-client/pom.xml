@@ -6,10 +6,10 @@
 	<parent>
 		<groupId>au.edu.unimelb.daris</groupId>
 		<artifactId>daris</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 	<artifactId>daris-client-dicom-client</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>daris-client-dicom-client</name>
 	<url>http://maven.apache.org</url>
 	<properties>
