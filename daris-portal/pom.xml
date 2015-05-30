@@ -32,7 +32,7 @@
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<require.mflux.version>4.0.058</require.mflux.version>
+		<require.mflux.version>4.2.033</require.mflux.version>
 	</properties>
 
 	<dependencyManagement>

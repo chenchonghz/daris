@@ -28,7 +28,7 @@
 		<dependency>
 			<groupId>com.arcitecta</groupId>
 			<artifactId>aplugin</artifactId>
-			<version>4.0.005</version>
+			<version>4.2.026</version>
 			<!-- provided so that we do not deploy -->
 			<scope>provided</scope>
 		</dependency>
