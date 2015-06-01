@@ -39,7 +39,7 @@ import com.pixelmed.dicom.TransferSyntax;
 import com.pixelmed.network.StorageSOPClassSCU;
 
 public class SvcDICOMSend extends PluginService {
-	
+
 	public static final String SERVICE_NAME = "om.pssd.dicom.send";
 	public static final String SERVICE_DESCRIPTION = "Send DICOM DataSets to a remote DICOM Application Entity(server).  Each DataSet is sent in a separate DICOM client call.";
 	public static final int DEFAULT_DICOM_PORT = 104;
@@ -459,10 +459,13 @@ public class SvcDICOMSend extends PluginService {
 				}
 			} catch (Throwable t) {
 				if (exceptionOnFail) {
-					throw new Exception("Failed to make association with AE");
+					throw t;
+				} else {
+					// Logging
+					t.printStackTrace(System.out);
+					w.add("id", new String[] { "status", "fail", "reason",
+							"association failed" }, cid);
 				}
-				w.add("id", new String[] { "status", "fail", "reason",
-						"association failed" }, cid);
 			}
 			// Clean up
 			FileUtils.delete(tempDir);
