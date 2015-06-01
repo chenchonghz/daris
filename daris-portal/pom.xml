@@ -206,22 +206,8 @@
 									<token>@DESCRIPTION@</token>
 									<value>${project.description}</value>
 								</replacement>
-							</replacements>
-						</configuration>
-					</execution>
-					<execution>
-						<id>replace-tokens-in-require-mflux-version-tcl</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>replace</goal>
-						</goals>
-						<configuration>
-							<file>${project.parent.basedir}/src/site/mfpkg/require-mflux-version.tcl</file>
-							<outputFile>${project.build.directory}/require-mflux-version.tcl</outputFile>
-							<regex>false</regex>
-							<replacements>
 								<replacement>
-									<token>@REQUIRE_MFLUX_VERSION@</token>
+									<token>@SERVER-VERSION@</token>
 									<value>${require.mflux.version}</value>
 								</replacement>
 							</replacements>

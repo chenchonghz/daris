@@ -17,6 +17,7 @@
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<maven.build.timestamp.format>dd-MMM-yyyy HH:mm:ss z</maven.build.timestamp.format>
+		<require.mflux.version>4.2.033</require.mflux.version>
 	</properties>
 	<modules>
 		<module>daris-commons</module>

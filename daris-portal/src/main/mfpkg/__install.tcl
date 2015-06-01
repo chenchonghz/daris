@@ -21,11 +21,6 @@ proc checkAppProperty { app prop msg } {
 }
 
 
-#
-# Check server version requirements
-#
-source require-mflux-version.tcl
-
 # Daris underwent a namespace migration (stable-2-27).   Make sure this has been done
 # as the current version assumes this.
 checkAppProperty daris daris-namespaces-migrate-1 "DaRIS namespaces migration has not been done. You must undertake this migration first by installing stable-2-27"

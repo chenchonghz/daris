@@ -14,7 +14,6 @@
 			<includes>
 				<include>www.zip</include>
 				<include>__manifest.xml</include>
-				<include>require-mflux-version.tcl</include>
 			</includes>
 			<outputDirectory>.</outputDirectory>
 		</fileSet>

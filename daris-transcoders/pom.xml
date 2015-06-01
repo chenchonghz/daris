@@ -103,6 +103,10 @@
 							<token>@DESCRIPTION@</token>
 							<value>${project.description}</value>
 						</replacement>
+						<replacement>
+							<token>@SERVER-VERSION@</token>
+							<value>${require.mflux.version}</value>
+						</replacement>
 					</replacements>
 				</configuration>
 			</plugin>
