@@ -9,7 +9,7 @@
 		<version>3.0.0</version>
 	</parent>
 	<artifactId>daris-core-services</artifactId>
-	<version>3.0.0</version>
+	<version>${daris-core-services.version}</version>
 	<name>daris-core-services</name>
 	<packaging>jar</packaging>
 	<description>DaRIS core services.</description>
@@ -143,4 +143,5 @@
 			</plugin>
 		</plugins>
 	</build>
+	<url>https://github.com/uom-daris/daris</url>
 </project>

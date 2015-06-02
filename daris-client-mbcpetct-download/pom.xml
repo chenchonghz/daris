@@ -9,9 +9,9 @@
 		<version>3.0.0</version>
 	</parent>
 	<artifactId>daris-client-mbcpetct-download</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>${daris-client-mbcpetct-download.version}</version>
 	<name>daris-client-mbcpetct-download</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/uom-daris/daris</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>

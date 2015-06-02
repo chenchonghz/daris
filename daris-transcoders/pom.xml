@@ -9,7 +9,7 @@
 		<version>3.0.0</version>
 	</parent>
 	<artifactId>daris-transcoders</artifactId>
-	<version>1.0.0</version>
+	<version>${daris-transcoders.version}</version>
 	<name>daris-transcoders</name>
 	<description>DaRIS transcoders.</description>
 	<url>https://github.com/uom-daris/daris</url>

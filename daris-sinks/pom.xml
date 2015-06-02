@@ -9,7 +9,7 @@
 		<version>3.0.0</version>
 	</parent>
 	<artifactId>daris-sinks</artifactId>
-	<version>1.0.0</version>
+	<version>${daris-sinks.version}</version>
 	<name>daris-sinks</name>
 	<description>DaRIS sinks.</description>
 	<url>https://github.com/uom-daris/daris</url>

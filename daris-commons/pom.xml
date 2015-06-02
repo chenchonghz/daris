@@ -9,9 +9,9 @@
 		<version>3.0.0</version>
 	</parent>
 	<artifactId>daris-commons</artifactId>
-	<version>1.0.0</version>
+	<version>${daris-commons.version}</version>
 	<name>daris-commons</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/uom-daris/daris</url>
 	<packaging>jar</packaging>
 	<!-- DaRIS maven repository on github.com -->
 	<repositories>

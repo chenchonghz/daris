@@ -9,9 +9,9 @@
 		<version>3.0.0</version>
 	</parent>
 	<artifactId>daris-client-pvupload</artifactId>
-	<version>1.0.0</version>
+	<version>${daris-client-pvupload.version}</version>
 	<name>daris-client-pvupload</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/uom-daris/daris</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>

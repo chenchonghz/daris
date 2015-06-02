@@ -9,7 +9,7 @@
 		<version>3.0.0</version>
 	</parent>
 	<artifactId>daris-essentials</artifactId>
-	<version>1.0.0</version>
+	<version>${daris-essentials.version}</version>
 	<name>daris-essentials</name>
 	<url>https://github.com/uom-daris/daris</url>
 	<description>DaRIS essentials.</description>

@@ -9,7 +9,7 @@
 		<groupId>au.edu.unimelb.daris</groupId>
 		<version>3.0.0</version>
 	</parent>
-	<version>1.0.0</version>
+	<version>${daris-portal.version}</version>
 	<artifactId>daris-portal</artifactId>
 	<!-- packaging cannot be pom. Can be war or jar. -->
 	<packaging>jar</packaging>
@@ -255,4 +255,5 @@
 			</plugin>
 		</plugins>
 	</build>
+	<url>https://github.com/uom-daris/daris</url>
 </project>
