@@ -115,6 +115,7 @@
 				<version>1.5.3</version>
 				<executions>
 					<execution>
+						<id>make-index-html</id>
 						<phase>prepare-package</phase>
 						<goals>
 							<goal>replace</goal>
@@ -260,6 +261,7 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>make-index-json</id>
 						<phase>prepare-package</phase>
 						<goals>
 							<goal>replace</goal>
