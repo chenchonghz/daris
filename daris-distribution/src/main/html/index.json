@@ -1,0 +1,19 @@
+{
+  "@VERSION@": {
+    "daris-essentials":                     ["@ESSENTIALS_FILE@", "@ESSENTIALS_VERSION@", "@MFLUX_VERSION@"],
+    "daris-core-services":                  ["@CORE_SERVICES_FILE@", "@CORE_SERVICES_VERSION@", "@MFLUX_VERSION@"],
+    "daris_portal":                         ["@PORTAL_FILE@", "@PORTAL_VERSION@", "@MFLUX_VERSION@"],
+    "daris_transcoders":                    ["@TRANSCODERS_FILE@", "@TRANSCODERS_VERSION@", "@MFLUX_VERSION@"],
+    "daris_sinks":                          ["@SINKS_FILE@", "@SINKS_VERSION@", "@MFLUX_VERSION@"],
+    "daris_analyzers":                      ["@ANALYZERS_FILE@", "@ANALYZERS_VERSION@", "@MFLUX_VERSION@"],
+    "daris_client-dicom-client":            ["@DICOM_CLIENT_FILE@", "@DICOM_CLIENT_VERSION@", "@MFLUX_VERSION@"],
+    "daris_client-mbcmr-upload":            ["@MBCMR_UPLOAD_FILE@", "@MBCMR_UPLOAD_VERSION@", "@MFLUX_VERSION@"],
+    "daris_client-mbcpetct-dicom-retrieve": ["@MBCPETCT_DICOM_RETRIEVE_FILE@", "@MBCPETCT_DICOM_RETRIEVE_VERSION@", "@MFLUX_VERSION@"],
+    "daris_client-mbcpetct-download":       ["@MBCPETCT_DOWNLOAD_FILE@", "@MBCPETCT_DOWNLOAD_VERSION@", "@MFLUX_VERSION@"],
+    "daris_client-mbcpetct-upload":         ["@MBCPETCT_UPLOAD_FILE@", "@MBCPETCT_UPLOAD_VERSION@", "@MFLUX_VERSION@"],
+    "daris_client-pvupload":                ["@PVUPLOAD_FILE@", "@PVUPLOAD_VERSION@", "@MFLUX_VERSION@"],
+    "daris_client-server-config":           ["@SERVER_CONFIG_FILE@", "@SERVER_CONFIG_VERSION@", "@MFLUX_VERSION@"],
+    "daris-commons":                        ["@COMMONS_FILE@", "@COMMONS_VERSION@"],
+    "daris-dcmtools":                       ["@DCMTOOLS_FILE@", "@DCMTOOLS_VERSION@"]
+  }
+}

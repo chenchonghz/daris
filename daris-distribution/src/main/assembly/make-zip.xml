@@ -119,5 +119,9 @@
 			<source>${project.build.directory}/index.html</source>
 			<outputDirectory>.</outputDirectory>
 		</file>
+		<file>
+			<source>${project.build.directory}/index.json</source>
+			<outputDirectory>.</outputDirectory>
+		</file>
 	</files>
 </assembly>
