@@ -6,7 +6,7 @@
 	<formats>
 		<format>zip</format>
 	</formats>
-	<baseDirectory>${project.parent.artifactId}</baseDirectory>
+	<baseDirectory>${project.parent.artifactId}-${project.parent.version}</baseDirectory>
 	<includeBaseDirectory>true</includeBaseDirectory>
 	<dependencySets>
 		<dependencySet>
@@ -114,4 +114,10 @@
 			</includes>
 		</fileSet>
 	</fileSets>
+	<files>
+		<file>
+			<source>${project.build.directory}/index.html</source>
+			<outputDirectory>.</outputDirectory>
+		</file>
+	</files>
 </assembly>
