@@ -15,6 +15,7 @@
 	<packaging>jar</packaging>
 	<name>daris-portal</name>
 	<description>DaRIS web portal.</description>
+	<url>https://github.com/uom-daris/daris</url>
 	<!-- DaRIS maven repository on github.com -->
 	<repositories>
 		<repository>
@@ -119,6 +120,18 @@
 								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>gwt-maven-plugin</artifactId>
+					<goals>
+					   <goal>run</goal>
+					</goals>
+					<configuration>
+						<extraJvmArgs>-Xmx1024m</extraJvmArgs>
+						<superDevMode>false</superDevMode>
+						<noServer>true</noServer>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -255,5 +268,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	<url>https://github.com/uom-daris/daris</url>
+
 </project>
