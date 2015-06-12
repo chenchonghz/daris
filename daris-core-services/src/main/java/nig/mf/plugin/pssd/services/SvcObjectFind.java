@@ -547,6 +547,8 @@ public class SvcObjectFind extends PluginService {
 		Boolean destroyed = ae.booleanValue("@destroyed", false);
 		w.add("id", new String[] { "proute", proute, "asset", ae.attribute("id").value(), "destroyed", destroyed.toString(), "rid", rid }, id);
 
+		w.add("namespace", ae.value("namespace"));
+		
 		if (name != null) {
 			w.add("name", name);
 		}

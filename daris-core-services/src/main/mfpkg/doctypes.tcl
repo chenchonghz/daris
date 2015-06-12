@@ -50,6 +50,9 @@ asset.doc.type.update :create true :type daris:pssd-project \
 	    		:value "unspecified" \
 	    	> \
          > \
+         :element -name fill-in-cid -type boolean -default false -index true -min-occurs 0 -max-occurs 1 < \
+             :description "Controls whether or not reuse (fill in) the citeable id when creating subjects within this project." \
+         > \
     >
 
 
