@@ -23,228 +23,233 @@ import daris.client.model.subject.messages.SubjectUpdate;
 
 public class Subject extends DObject {
 
-    private XmlElement _privateMetaForEdit;
+	private XmlElement _privateMetaForEdit;
 
-    private XmlElement _privateMeta;
+	private XmlElement _privateMeta;
 
-    private XmlElement _publicMetaForEdit;
+	private XmlElement _publicMetaForEdit;
 
-    private XmlElement _publicMeta;
+	private XmlElement _publicMeta;
 
-    private boolean _virtual;
+	private boolean _virtual;
 
-    private MethodRef _method;
+	private MethodRef _method;
 
-    private DataUse _dataUse;
+	private DataUse _dataUse;
 
-    public Subject() {
+	public Subject() {
 
-        super(null, null, null, null, false, 0, false);
-    }
+		super(null, null, null, null, false, 0, false);
+	}
 
-    public Subject(String id, String proute, String name, String description) {
-        super(id, proute, name, description, false, 0, false);
-    }
+	public Subject(String id, String proute, String name, String description) {
+		super(id, proute, name, description, false, 0, false);
+	}
 
-    public Subject(XmlElement oe) throws Throwable {
+	public Subject(XmlElement oe) throws Throwable {
 
-        super(oe);
+		super(oe);
 
-        _virtual = oe.booleanValue("virtual", false);
-        _dataUse = DataUse.parse(oe.value("data-use"));
-        XmlElement me = oe.element("method");
-        if (me != null) {
-            _method = new MethodRef(me.value("id"), me.value("name"), me.value("description"));
-        }
-        XmlElement mePrivate = oe.element("private");
-        if (mePrivate != null) {
-            if (mePrivate.element("metadata") == null) {
-                _privateMeta = mePrivate;
-            } else {
-                _privateMetaForEdit = mePrivate;
-            }
-        }
-        XmlElement mePublic = oe.element("public");
-        if (mePublic != null) {
-            if (mePublic.element("metadata") == null) {
-                _publicMeta = mePublic;
-            } else {
-                _publicMetaForEdit = mePublic;
-            }
-        }
-    }
+		_virtual = oe.booleanValue("virtual", false);
+		_dataUse = DataUse.parse(oe.value("data-use"));
+		XmlElement me = oe.element("method");
+		if (me != null) {
+			_method = new MethodRef(me.value("id"), me.value("name"),
+					me.value("description"));
+		}
+		XmlElement mePrivate = oe.element("private");
+		if (mePrivate != null) {
+			if (mePrivate.element("metadata") == null) {
+				_privateMeta = mePrivate;
+			} else {
+				_privateMetaForEdit = mePrivate;
+			}
+		}
+		XmlElement mePublic = oe.element("public");
+		if (mePublic != null) {
+			if (mePublic.element("metadata") == null) {
+				_publicMeta = mePublic;
+			} else {
+				_publicMetaForEdit = mePublic;
+			}
+		}
+	}
 
-    public boolean virtual() {
-        return _virtual;
-    }
+	public boolean virtual() {
+		return _virtual;
+	}
 
-    public DataUse dataUse() {
+	public DataUse dataUse() {
 
-        return _dataUse;
-    }
+		return _dataUse;
+	}
 
-    public void setDataUse(DataUse dataUse) {
+	public void setDataUse(DataUse dataUse) {
 
-        _dataUse = dataUse;
-    }
+		_dataUse = dataUse;
+	}
 
-    public MethodRef method() {
+	public MethodRef method() {
 
-        return _method;
-    }
+		return _method;
+	}
 
-    public void setMethod(MethodRef m) {
+	public void setMethod(MethodRef m) {
 
-        _method = m;
-    }
+		_method = m;
+	}
 
-    public XmlElement publicMeta() {
+	public XmlElement publicMeta() {
 
-        return _publicMeta;
-    }
+		return _publicMeta;
+	}
 
-    public void setPublicMeta(XmlStringWriter w) {
+	public void setPublicMeta(XmlStringWriter w) {
 
-        try {
-            _publicMeta = XmlDoc.parse(w.document());
-        } catch (Throwable e) {
-            ThrowableUtil.rethrowAsUnchecked(e);
-        }
-    }
+		try {
+			_publicMeta = XmlDoc.parse(w.document());
+		} catch (Throwable e) {
+			ThrowableUtil.rethrowAsUnchecked(e);
+		}
+	}
 
-    public XmlElement publicMetaForEdit() {
+	public XmlElement publicMetaForEdit() {
 
-        return _publicMetaForEdit;
-    }
+		return _publicMetaForEdit;
+	}
 
-    public void setPublicMetaForEdit(XmlElement publicMetaForEdit) {
+	public void setPublicMetaForEdit(XmlElement publicMetaForEdit) {
 
-        _publicMetaForEdit = publicMetaForEdit;
-    }
+		_publicMetaForEdit = publicMetaForEdit;
+	}
 
-    public XmlElement privateMeta() {
+	public XmlElement privateMeta() {
 
-        return _privateMeta;
-    }
+		return _privateMeta;
+	}
 
-    public void setPrivateMeta(XmlStringWriter w) {
+	public void setPrivateMeta(XmlStringWriter w) {
 
-        try {
-            _privateMeta = XmlDoc.parse(w.document());
-        } catch (Throwable e) {
-            ThrowableUtil.rethrowAsUnchecked(e);
-        }
-    }
+		try {
+			_privateMeta = XmlDoc.parse(w.document());
+		} catch (Throwable e) {
+			ThrowableUtil.rethrowAsUnchecked(e);
+		}
+	}
 
-    public XmlElement privateMetaForEdit() {
+	public XmlElement privateMetaForEdit() {
 
-        return _privateMetaForEdit;
-    }
+		return _privateMetaForEdit;
+	}
 
-    public void setPrivateMetaForEdit(XmlElement privateMetaForEdit) {
+	public void setPrivateMetaForEdit(XmlElement privateMetaForEdit) {
 
-        _privateMetaForEdit = privateMetaForEdit;
-    }
+		_privateMetaForEdit = privateMetaForEdit;
+	}
 
-    @Override
-    public DObject.Type type() {
+	@Override
+	public DObject.Type type() {
 
-        return DObject.Type.subject;
-    }
+		return DObject.Type.subject;
+	}
 
-    @Override
-    protected DObjectCreate objectCreateMessage(DObjectRef po) {
+	@Override
+	protected DObjectCreate objectCreateMessage(DObjectRef po) {
 
-        return new SubjectCreate(po, this);
-    }
+		return new SubjectCreate(po, this);
+	}
 
-    private boolean _fillIn = false;
+	private Boolean _fillIn = null;
 
-    public boolean fillIn() {
-        return _fillIn;
-    }
+	public Boolean fillIn() {
+		return _fillIn;
+	}
 
-    public void setFillIn(boolean fillIn) {
-        _fillIn = fillIn;
-    }
+	public void setFillIn(Boolean fillIn) {
+		_fillIn = fillIn;
+	}
 
-    @Override
-    public void createServiceArgs(XmlWriter w) {
+	@Override
+	public void createServiceArgs(XmlWriter w) {
 
-        super.createServiceArgs(w);
-        w.add("virtual", _virtual);
-        w.add("data-use", _dataUse);
-        if (_method != null) {
-            w.add("method", _method.id());
-        }
-        if (_privateMeta != null) {
-            w.add(_privateMeta, true);
-        }
-        if (_publicMeta != null) {
-            w.add(_publicMeta, true);
-        }
-        if(_fillIn){
-            w.add("fillin", true);
-        }
-    }
+		super.createServiceArgs(w);
+		w.add("virtual", _virtual);
+		w.add("data-use", _dataUse);
+		if (_method != null) {
+			w.add("method", _method.id());
+		}
+		if (_privateMeta != null) {
+			w.add(_privateMeta, true);
+		}
+		if (_publicMeta != null) {
+			w.add(_publicMeta, true);
+		}
+		if (_fillIn != null) {
+			w.add("fillin", _fillIn);
+		}
+	}
 
-    @Override
-    protected DObjectUpdate objectUpdateMessage() {
+	@Override
+	protected DObjectUpdate objectUpdateMessage() {
 
-        return new SubjectUpdate(this);
-    }
+		return new SubjectUpdate(this);
+	}
 
-    @Override
-    public void updateServiceArgs(XmlWriter w) {
+	@Override
+	public void updateServiceArgs(XmlWriter w) {
 
-        super.updateServiceArgs(w);
-        // w.add("virtual", _virtual);
-        w.add("data-use", _dataUse);
-        if (_privateMeta != null) {
-            w.add(_privateMeta, true);
-        }
-        if (_publicMeta != null) {
-            w.add(_publicMeta, true);
-        }
-    }
+		super.updateServiceArgs(w);
+		// w.add("virtual", _virtual);
+		w.add("data-use", _dataUse);
+		if (_privateMeta != null) {
+			w.add(_privateMeta, true);
+		}
+		if (_publicMeta != null) {
+			w.add(_publicMeta, true);
+		}
+	}
 
-    public static void projectMethods(String pid, String proute, final ObjectMessageResponse<List<MethodRef>> rh) {
+	public static void projectMethods(String pid, String proute,
+			final ObjectMessageResponse<List<MethodRef>> rh) {
 
-        new DObjectRef(pid, proute, false, false, -1).resolve(new ObjectResolveHandler<DObject>() {
+		new DObjectRef(pid, proute, false, false, -1)
+				.resolve(new ObjectResolveHandler<DObject>() {
 
-            @Override
-            public void resolved(DObject o) {
+					@Override
+					public void resolved(DObject o) {
 
-                if (o == null) {
-                    rh.responded(null);
-                    return;
-                }
-                rh.responded(((Project) o).methods());
-            }
-        });
-    }
+						if (o == null) {
+							rh.responded(null);
+							return;
+						}
+						rh.responded(((Project) o).methods());
+					}
+				});
+	}
 
-    public static void setMetaForEdit(final Subject o, String projectId, String methodId, final ActionListener al) {
+	public static void setMetaForEdit(final Subject o, String projectId,
+			String methodId, final ActionListener al) {
 
-        new SubjectMetadataDescribe(projectId, methodId).send(new ObjectMessageResponse<XmlElement>() {
+		new SubjectMetadataDescribe(projectId, methodId)
+				.send(new ObjectMessageResponse<XmlElement>() {
 
-            @Override
-            public void responded(XmlElement xe) {
+					@Override
+					public void responded(XmlElement xe) {
 
-                if (xe == null) {
-                    o.setPublicMetaForEdit(null);
-                    o.setPrivateMetaForEdit(null);
-                } else {
-                    o.setPublicMetaForEdit(xe.element("public"));
-                    o.setPrivateMetaForEdit(xe.element("private"));
-                }
-                al.executed(true);
-            }
-        });
-    }
+						if (xe == null) {
+							o.setPublicMetaForEdit(null);
+							o.setPrivateMetaForEdit(null);
+						} else {
+							o.setPublicMetaForEdit(xe.element("public"));
+							o.setPrivateMetaForEdit(xe.element("private"));
+						}
+						al.executed(true);
+					}
+				});
+	}
 
-    public void setVirtual(boolean virtual) {
-        _virtual = virtual;
-    }
+	public void setVirtual(boolean virtual) {
+		_virtual = virtual;
+	}
 
 }
