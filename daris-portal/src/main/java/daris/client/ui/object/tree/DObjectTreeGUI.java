@@ -16,43 +16,52 @@ import daris.client.model.object.tree.DObjectTreeNode;
  */
 public class DObjectTreeGUI extends TreeGUI {
 
-    private TreeNodeGUI _selectedNodeGUI;
+	private TreeNodeGUI _selectedNodeGUI;
 
-    public DObjectTreeGUI(DObjectTree tree, ScrollPolicy sp, TreeGUIEventHandler teh) {
-        super(tree, sp, teh);
-    }
+	public DObjectTreeGUI(DObjectTree tree, ScrollPolicy sp,
+			TreeGUIEventHandler teh) {
+		super(tree, sp, teh);
+		setMultiSelect(false);
+	}
 
-    protected boolean selectOrDeselectNode(TreeNodeGUI ng) {
-        boolean selectionChanged = super.selectOrDeselectNode(ng);
-        if (selectionChanged) {
-            _selectedNodeGUI = ng;
-        }
-        return selectionChanged;
-    }
+	@Override
+	protected boolean selectNode(TreeNodeGUI ng, boolean add) {
+		boolean r = super.selectNode(ng, add);
+		if (r) {
+			_selectedNodeGUI = ng;
+		}
+		return r;
+	}
 
-    public void refreshSelectedNode() {
-        if (_selectedNodeGUI != null) {
-            ((DObjectTreeNode) _selectedNodeGUI.node()).refresh(_selectedNodeGUI);
-        }
-    }
+	@Override
+	protected boolean deselectNode(TreeNodeGUI ng, boolean removeLast) {
+		boolean r = super.deselectNode(ng, removeLast);
+		if (r) {
+			_selectedNodeGUI = null;
+		}
+		return r;
+	}
 
-    TreeNodeGUI selectedNodeGUI() {
-        return _selectedNodeGUI;
-    }
+	public void refreshSelectedNode() {
+		if (_selectedNodeGUI != null) {
+			((DObjectTreeNode) (_selectedNodeGUI.node()))
+					.refresh(_selectedNodeGUI);
+		}
+	}
 
-    public DObjectTreeNode selectedNode() {
-        if (_selectedNodeGUI != null) {
-            return (DObjectTreeNode) _selectedNodeGUI.node();
-        } else {
-            return null;
-        }
-    }
+	public DObjectTreeNode selectedNode() {
+		if (_selectedNodeGUI != null) {
+			return (DObjectTreeNode) (_selectedNodeGUI.node());
+		} else {
+			return null;
+		}
+	}
 
-    public DObjectRef selectedObject() {
-        DObjectTreeNode node = selectedNode();
-        if (node == null) {
-            return null;
-        }
-        return (DObjectRef) node.object();
-    }
+	public DObjectRef selectedObject() {
+		DObjectTreeNode node = selectedNode();
+		if (node == null) {
+			return null;
+		}
+		return (DObjectRef) node.object();
+	}
 }

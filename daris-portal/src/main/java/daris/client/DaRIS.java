@@ -6,7 +6,7 @@ import arc.mf.client.util.ObjectUtil;
 import arc.mf.client.util.ThrowableUtil;
 import arc.mf.desktop.plugin.PluginApplication;
 import arc.mf.event.SystemEventChannel;
-import arc.mf.model.Model;
+import arc.mf.model.shopping.events.ShoppingEvents;
 import arc.mf.session.Session;
 import arc.mf.session.SessionHandler;
 
@@ -102,9 +102,9 @@ public class DaRIS implements EntryPoint {
 		AnnouncementEvents.initialize();
 
 		/*
-		 * Enable model events
+		 * Enable shopping cart events
 		 */
-		Model.initialize();
+		ShoppingEvents.initialize();
 
 		/*
 		 * Enable drag and drop
