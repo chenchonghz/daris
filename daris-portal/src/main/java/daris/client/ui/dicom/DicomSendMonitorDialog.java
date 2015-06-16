@@ -17,6 +17,7 @@ import arc.mf.model.service.BackgroundServiceMonitorHandler;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.NumberFormat;
 
 import daris.client.model.dicom.messages.DicomSend;
 import daris.client.ui.widget.LoadingBar;
@@ -140,7 +141,8 @@ public class DicomSendMonitorDialog {
 		} else {
 			if (bs.state() == State.PENDING) {
 				_loadingBar.setMessage("pending: "
-						+ String.format("%.2f", bs.waitTime()) + " seconds");
+						+ NumberFormat.getDecimalFormat().format(bs.waitTime())
+						+ " seconds");
 			} else if (bs.currentActivity() != null) {
 				_loadingBar.setMessage(bs.currentActivity());
 			} else {
