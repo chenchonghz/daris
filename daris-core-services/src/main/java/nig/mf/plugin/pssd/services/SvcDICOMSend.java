@@ -352,6 +352,22 @@ public class SvcDICOMSend extends PluginService {
 		int remoteAEPort = remoteAE.port;
 		// local ae
 		String localAET = args.value("local/aet");
+		// override: validate
+		if (args.elementExists("override")) {
+			List<XmlDoc.Element> oes = args.element("override").elements();
+			if (oes != null) {
+				for (XmlDoc.Element oe : oes) {
+					ElementAction action = ElementAction.fromString(
+							oe.value("@action"), ElementAction.set);
+					String value = oe.value("value");
+					if (action == ElementAction.set && value == null) {
+						throw new IllegalArgumentException("override/"
+								+ oe.name()
+								+ "/value is missing because action is set.");
+					}
+				}
+			}
+		}
 		//
 		int compressionLevel = 0;
 		int debugLevel = 0;
