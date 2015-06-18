@@ -130,13 +130,13 @@ public class ClientConnection  {
 
 		// Fetch and set to null if zero length
 		String domain = System.getProperty("mf.domain");
-		if (domain.length()==0) domain = null;
+		if (domain!=null && domain.length()==0) domain = null;
 		String user = System.getProperty("mf.user");
-		if (user.length()==0) user = null;
+		if (user!=null && user.length()==0) user = null;
 		String pw = System.getProperty("mf.password");
-		if (pw.length()==0) pw = null;
+		if (pw!=null && pw.length()==0) pw = null;
 		String token = System.getProperty("mf.token");
-		if (token.length()==0) token = null;	
+		if (token!=null && token.length()==0) token = null;	
 		//
 		return ClientConnection.connect (cxn, tokenApp, token, domain, user, pw, decryptPassword);
 	}
