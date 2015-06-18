@@ -64,21 +64,21 @@
 		<dependency>
 			<groupId>com.arcitecta</groupId>
 			<artifactId>mfclientgwt</artifactId>
-			<version>3.9.008</version>
+			<version>4.2.043</version>
 			<!-- provided so that we do not deploy -->
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.arcitecta</groupId>
 			<artifactId>mfclientguigwt</artifactId>
-			<version>3.9.008</version>
+			<version>4.2.043</version>
 			<!-- provided so that we do not deploy -->
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.arcitecta</groupId>
 			<artifactId>adesktopplugingwt</artifactId>
-			<version>3.9.008</version>
+			<version>4.2.043</version>
 			<!-- provided so that we do not deploy -->
 			<scope>provided</scope>
 		</dependency>
@@ -126,6 +126,7 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>gwt-maven-plugin</artifactId>
 					<goals>
+					   <goal>debug</goal>
 					   <goal>run</goal>
 					</goals>
 					<configuration>
