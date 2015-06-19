@@ -43,8 +43,8 @@ public class ParaVisionUpload {
 		// locate meta data on projects, subjects and studies 
 		public String cid = null;                      // Citable ID of destination Subject. If supplied, over-rides that embedded in Subject file.
 		public String ctype = "zip";                   // Container type (4GB limit)
-		
-	
+
+
 		public void print () {
 			System.out.println("verbose              = " + verbose);
 			System.out.println("wait                 = " + wait);
@@ -78,7 +78,7 @@ public class ParaVisionUpload {
 
 	// User credential after authentication
 	private static UserCredential cred_ = null;
-	
+
 	// The authenticating security token must be made with :app == to this string.
 	// The token must also hold the appropriate permissions to allow it to access the
 	// PSSD Project or namespace into which it is uploading data.
@@ -93,11 +93,11 @@ public class ParaVisionUpload {
 	 * 
 	 */
 	private static ServerClient.Connection createServerConnection() throws Throwable {
-		
+
 		// Make connection to MF server 	
 		Connection cxn = ClientConnection.createServerConnection();
 		cred_ = ClientConnection.connect (cxn, TOKEN_APP, false);
-		
+
 		return cxn;
 	}
 
@@ -109,6 +109,7 @@ public class ParaVisionUpload {
 	 * 
 	 */
 	public static void main(String[] args) {
+
 
 		String srcPath = null;
 		Options ops = new Options();
@@ -241,10 +242,10 @@ public class ParaVisionUpload {
 			if (!src.exists()) {
 				throw new Exception ("The source directory '" + srcPath + "' does not exist");
 			}
-			
+
 			// Declare mime types for Archive classes
 			Archive.declareSupportForAllTypes();
-			
+
 			// There are a lot of assumptions about the directory structure...
 			upload(src.getAbsoluteFile(), ops);
 
@@ -254,6 +255,9 @@ public class ParaVisionUpload {
 			System.exit(1);
 		}
 	}
+
+
+
 
 	/**
 	 * Bruker Directory Hierarchy is
@@ -275,7 +279,9 @@ public class ParaVisionUpload {
 	 * @param ops
 	 * @throws Throwable
 	 */
+
 	private static void upload(File dir, Options ops) throws Throwable {
+
 		if (!dir.exists()) {
 			throw new Exception("Directory does not exist: " + dir.getAbsolutePath());
 		}
@@ -347,6 +353,8 @@ public class ParaVisionUpload {
 		}
 	}
 
+
+
 	/**
 	 * Upload one fid file (the Primary raw data before it is reconstructed) into a Primary DataSet
 	 * 
@@ -390,23 +398,29 @@ public class ParaVisionUpload {
 			}
 			BrukerMeta acqpMeta = new BrukerMeta(acqpFile);
 
-			// Extract the required P.S citable ID from the Bruker SUBJECT_id meta-data in the  Bruker subject file
-			String subjectCID = getSubjectCID (cxn, subjectMeta, ops);
+			// Extract the required P or P.S citable ID from the Bruker SUBJECT_id meta-data in the  Bruker subject file
+			String objectCID = getObjectCID (cxn, subjectMeta, ops);
 
-			// See if the Subject already exists.  If not and if requested, auto-create
-			checkAndCreateSubject (cxn, subjectCID, subjectMeta, ops);
+			// Parse if the NIG domain meta-data if desired
+			NIGBrukerIdentifierMetaData NIGSubjectMeta = null;
+			if (ops.nig_subject_meta_add) {
+				NIGSubjectMeta = parseNIGSubjectMeta (cxn, objectCID, subjectMeta, ops);
+			}
+
+			// Create or find the Subject
+			String subjectCID = checkAndCreateSubject (cxn, objectCID, subjectMeta, NIGSubjectMeta, ops);
 
 			// Now see if the user wants to locate any meta-data on the Subject by parsing the
 			// Subject identifier further.  This is domain specific and currently only implemented for
 			// the FNI small animal facility convention
-			NIGBrukerIdentifierMetaData brukerSubjectIDMeta = null;
 			if (ops.nig_subject_meta_add) {
 				LogUtil.logInfo(cxn, PSSDUtil.BRUKER_LOG_FILE, "Adding nig domain subject meta");
-				brukerSubjectIDMeta = parseAndSetNIGSubjectMeta (cxn, subjectCID, subjectMeta, ops);
+				setNIGDomainMetaData (cxn, subjectCID, NIGSubjectMeta);	
+
 
 				// Add the Subject ID as the name
-				if (brukerSubjectIDMeta!=null) {
-					String name = brukerSubjectIDMeta.animalID();
+				if (NIGSubjectMeta!=null) {
+					String name = NIGSubjectMeta.animalID();
 					if (name!=null) {
 						XmlStringWriter w = new XmlStringWriter();
 						w.add("id", subjectCID);
@@ -420,8 +434,8 @@ public class ParaVisionUpload {
 			// Fetch the Project CID and locate any project meta-data on it from
 			// the domain-specific meta-data if desired
 			String projectCID = nig.mf.pssd.CiteableIdUtil.getProjectId(subjectCID);
-			if (ops.nig_subject_meta_add && brukerSubjectIDMeta!=null) {
-				setNIGDomainMetaData (cxn,  projectCID, brukerSubjectIDMeta);
+			if (ops.nig_subject_meta_add && NIGSubjectMeta!=null) {
+				setNIGDomainMetaData (cxn,  projectCID, NIGSubjectMeta);
 			}
 
 
@@ -445,8 +459,8 @@ public class ParaVisionUpload {
 			if (studyCID==null) studyCID = study.id();
 
 			// Locate any domain-specific Study meta-data on the STudy
-			if (ops.nig_subject_meta_add && brukerSubjectIDMeta!=null) {
-				setNIGDomainMetaData (cxn, studyCID, brukerSubjectIDMeta);
+			if (ops.nig_subject_meta_add && NIGSubjectMeta!=null) {
+				setNIGDomainMetaData (cxn, studyCID, NIGSubjectMeta);
 			}		
 
 			// We have now dealt with the Study.  Move on to the DataSets (Series)
@@ -465,12 +479,12 @@ public class ParaVisionUpload {
 
 			// Search for the Bruker series/DataSet in Mediaflux by seriesUID
 			// How can we find a pre-existing fid file without meta-data ???
-			// PrimaryDataSet brukerSeries = PrimaryDataSet.find(cxn, studyCID, seriesUID, seriesID);
+			//PrimaryDataSet brukerSeries = PrimaryDataSet.find(cxn, studyCID, seriesUID, seriesID);
 			PrimaryDataSet brukerSeries = null;
-			
+
 			// Set correct content mime type
 			String contentMimeType = setContentMimeType(ops.ctype);
-			
+
 			// Update/upload
 			boolean isImage = false;
 			if (brukerSeries != null) {
@@ -488,16 +502,15 @@ public class ParaVisionUpload {
 
 			// Search for DICOM derivation series/dataset in Mediaflux.
 			// The chain should be Primary (fid) -> Derived (bruker) -> Derived (DICOM)
-			/*
-			DerivationDataSet dicomSeries = DerivationDataSet.find(cxn, studyCID, seriesUID, seriesID);
-			if (dicomSeries != null) {
 
-				 // if found, set/update primary on the DICOM derivation series/dataset.
-				DerivationDataSet.setPrimary(cxn, dicomSeries.id(), brukerSeries.id());
-				PSSDUtil.logInfo(cxn, "DICOM derivation dataset/series " + dicomSeries.id()
-						+ " has set primary to Bruker primary dataset/series " + brukerSeries.id());
-			}
-			 */
+			//DerivationDataSet dicomSeries = DerivationDataSet.find(cxn, studyCID, seriesUID, seriesID);
+			//if (dicomSeries != null) {
+
+			// if found, set/update primary on the DICOM derivation series/dataset.
+			//DerivationDataSet.setPrimary(cxn, dicomSeries.id(), brukerSeries.id());
+			//PSSDUtil.logInfo(cxn, "DICOM derivation dataset/series " + dicomSeries.id()
+			//		+ " has set primary to Bruker primary dataset/series " + brukerSeries.id());
+			//}
 			if (ops.verbose) {
 				System.out.println("done.");
 			}
@@ -507,7 +520,7 @@ public class ParaVisionUpload {
 		}
 	}
 
-	
+
 	private static String setContentMimeType (String ctype) {
 		if (ctype.equals("zip")) {
 			return MimeTypes.ZIP;
@@ -547,6 +560,7 @@ public class ParaVisionUpload {
 	 * 
 	 * @throws Throwable
 	 */
+
 	private static void uploadSeries(File recoDir, Options ops) throws Throwable {
 		if (ops.verbose) {
 			System.out.print("Uploading " + recoDir.getAbsolutePath() + "...");
@@ -596,23 +610,28 @@ public class ParaVisionUpload {
 				recoMeta = new BrukerMeta(recoFile);
 			}
 
-			// Extract the required P.S citable ID from the Bruker SUBJECT_id meta-data in the  Bruker subject file
-			String subjectCID = getSubjectCID (cxn, subjectMeta, ops);
+			// Extract the required P.S or P citable ID from the Bruker SUBJECT_id meta-data in the  Bruker subject file
+			String objectCID = getObjectCID (cxn, subjectMeta, ops);
+
+			// Parse if the NIG domain meta-data if desired
+			NIGBrukerIdentifierMetaData NIGSubjectMeta = null;
+			if (ops.nig_subject_meta_add) {
+				NIGSubjectMeta = parseNIGSubjectMeta (cxn, objectCID, subjectMeta, ops);
+			}
 
 			// See if the Subject already exists.  If not and if requested, auto-create
-			checkAndCreateSubject (cxn, subjectCID, subjectMeta, ops);
+			String subjectCID = checkAndCreateSubject (cxn, objectCID, subjectMeta, NIGSubjectMeta, ops);
 
 			// Now see if the user wants to locate any meta-data on the Subject by parsing the
 			// Subject identifier further.  This is domain specific and currently only implemented for
 			// the FNI small animal facility SUBJECT_ID coded string convention
-			NIGBrukerIdentifierMetaData brukerSubjectIDMeta = null;
 			if (ops.nig_subject_meta_add) {
 				LogUtil.logInfo(cxn,PSSDUtil.BRUKER_LOG_FILE, "Adding nig domain subject meta");
-				brukerSubjectIDMeta = parseAndSetNIGSubjectMeta (cxn, subjectCID, subjectMeta, ops);
+				setNIGDomainMetaData (cxn, subjectCID, NIGSubjectMeta);	
 
 				// Add the Subject ID as the name
-				if (brukerSubjectIDMeta!=null) {
-					String name = brukerSubjectIDMeta.animalID();
+				if (NIGSubjectMeta!=null) {
+					String name = NIGSubjectMeta.animalID();
 					if (name!=null) {
 						XmlStringWriter w = new XmlStringWriter();
 						w.add("id", subjectCID);
@@ -625,9 +644,9 @@ public class ParaVisionUpload {
 
 			// Fetch the Project CID and locate any project meta-data on it from
 			// the domain-specific meta-data if desired
-			String projectCID = nig.mf.pssd.CiteableIdUtil.getProjectId(subjectCID);
-			if (ops.nig_subject_meta_add && brukerSubjectIDMeta!=null) {
-				setNIGDomainMetaData (cxn,  projectCID, brukerSubjectIDMeta);
+			String projectCID = nig.mf.pssd.CiteableIdUtil.getProjectId(objectCID);
+			if (ops.nig_subject_meta_add && NIGSubjectMeta!=null) {
+				setNIGDomainMetaData (cxn,  projectCID, NIGSubjectMeta);
 			}
 
 			// Extract optional P.S.ExM or P.S.ExM.St from the SUBJECT_study_name meta-data in the Bruker subject file 
@@ -649,8 +668,8 @@ public class ParaVisionUpload {
 			if (studyCID==null) studyCID = study.id();
 
 			// Locate any domain-specific Study meta-data on the STudy
-			if (ops.nig_subject_meta_add && brukerSubjectIDMeta!=null) {
-				setNIGDomainMetaData (cxn,  studyCID, brukerSubjectIDMeta);
+			if (ops.nig_subject_meta_add && NIGSubjectMeta!=null) {
+				setNIGDomainMetaData (cxn,  studyCID, NIGSubjectMeta);
 			}		
 
 			// We have now dealt with the Study.  Move on to the DataSets (Series)
@@ -725,38 +744,106 @@ public class ParaVisionUpload {
 		}
 	}
 
-	private static void checkAndCreateSubject (ServerClient.Connection cxn, String subjectCID, BrukerMeta subjectMeta, Options ops) throws Throwable {
 
-		if (!Subject.exists(cxn, subjectCID)) {
-			if (ops.auto_subject_create) {
+	private static String checkAndCreateSubject (ServerClient.Connection cxn, String objectCID, BrukerMeta subjectMeta, 
+			NIGBrukerIdentifierMetaData NIGSubjectMeta, Options ops) throws Throwable {
 
-				// Try and clone first subject if desired
-				Boolean cloned = false;
-				if (ops.clone_first_subject) {
-					cloned = cloneFirstSubject (cxn, subjectCID);
-					if (cloned) return;
+		if (CiteableIdUtil.isProjectId(objectCID)) {
+			// The CID provided is a Project.
+
+			// Try to locate the subject pre-existing. We can only find the Subject is pre-existing
+			// by its meta-data. The only useful meta-data to do this with is if there is domain
+			// specific meta-data like for the NIG definition (this specification of domain specific
+			// meta-data needs to be abstracted into  framework)
+
+			String subjectCID = null;
+			if (ops.nig_subject_meta_add) {
+				subjectCID = findSubject (cxn, NIGSubjectMeta, objectCID);
+				if (subjectCID!=null) {
+					LogUtil.logInfo(cxn, PSSDUtil.BRUKER_LOG_FILE, "Found pre-existing Subject " + subjectCID);
+					return subjectCID;
 				}
+			}
 
-				// If we couldn't clone it (no pre-existing subject) or we didn't request that
-				// then auto-create from Method meta-data
-				if (!nig.mf.pssd.client.util.PSSDUtil.createSubject (cxn,  PSSDUtil.BRUKER_LOG_FILE, subjectCID)) {
-					String errMsg = "Failed to auto-create the Subject with CID " + subjectCID + 
-					" (SUBJECT_id=" + subjectMeta.getValueAsString("SUBJECT_id") + ")";
-					LogUtil.logError(cxn, PSSDUtil.BRUKER_LOG_FILE, errMsg);
-					throw new Exception(errMsg);		
-				}
+			// If not found (we may have no means to find it)  create new under the parent if allowed
+			return createSubject (cxn, objectCID, subjectMeta, ops);	
+		} else {
+			// The CID provided is a Subject.  
+			if (!Subject.exists(cxn, objectCID)) {
+				// Create if does not exist
+				createSubject (cxn, objectCID, subjectMeta, ops);	
+				return objectCID;
 			} else {
-				String errMsg = "No existing Subject object found for the citable ID " + subjectCID;
-				LogUtil.logError(cxn, PSSDUtil.BRUKER_LOG_FILE, errMsg);
-				throw new Exception(errMsg);
-			}			
+				return objectCID;
+			}
 		}
 	}
 
 
+	private static String findSubject (ServerClient.Connection cxn, NIGBrukerIdentifierMetaData NIGSubjectMeta, String projectCID) throws Throwable {
+
+		// The only way we can find subjects is via the domain specific meta-data that
+		// is parsed from the Subject_ID string in the subject file.  For the NIG
+		// this pattern is specified, parsed and located on the Subject
+
+		String subjectID = NIGSubjectMeta.animalID();
+		XmlStringWriter dm = new XmlStringWriter();
+		String query = "cid starts with '" + projectCID + "'";
+		query += " and model='om.pssd.subject' and xpath(nig-daris:pssd-amrif-subject/id)='" + subjectID + "'";
+		dm.add("where", query);
+		dm.add("action", "get-cid");
+		dm.add("pdist", "0");
+		XmlDoc.Element r = cxn.execute("asset.query", dm.document());
+		String cid = r.value("cid");     // First if many :-(
+		return cid;	
+	}
+
+	private static String createSubject (ServerClient.Connection cxn, String objectCID, BrukerMeta subjectMeta, Options ops) throws Throwable {
+		if (ops.auto_subject_create) {
+
+			// Auto-create Subject
+
+			boolean isSubject = true;
+			if (CiteableIdUtil.isSubjectId(objectCID)) {
+				// If the CID is for a subject, try to clone from the first into the CID (and allocate it)
+				if (ops.clone_first_subject) {
+					String subjectCID = cloneFirstSubject (cxn, objectCID);
+					if (subjectCID!=null) return subjectCID;
+				}
+			} else {
+				isSubject = false;
+			}
+
+			// We didn't clone.  Try to create the Subject either under the given Project or
+			// importing the given Subject CID
+			String subjectCID = nig.mf.pssd.client.util.PSSDUtil.createSubject (cxn, PSSDUtil.BRUKER_LOG_FILE, objectCID);
+			if (subjectCID==null) {
+				if (isSubject) {
+					String errMsg = "Failed to auto-create the Subject with CID " + objectCID + 
+							" (SUBJECT_id=" + subjectMeta.getValueAsString("SUBJECT_id") + ")";
+					LogUtil.logError(cxn, PSSDUtil.BRUKER_LOG_FILE, errMsg);
+					throw new Exception(errMsg);	
+				} else {
+					String errMsg = "Failed to auto-create the Subject under project CID " + objectCID + 
+							" (SUBJECT_id=" + subjectMeta.getValueAsString("SUBJECT_id") + ")";
+					LogUtil.logError(cxn, PSSDUtil.BRUKER_LOG_FILE, errMsg);
+					throw new Exception(errMsg);	
+
+				}
+			} else {
+				return subjectCID;
+			}
+		} else {
+			// Does not exist and not allowed to auto-create
+			String errMsg = "No existing Subject object found for the citable ID " + objectCID;
+			LogUtil.logError(cxn, PSSDUtil.BRUKER_LOG_FILE, errMsg);
+			throw new Exception(errMsg);
+		}
+	}
+
 
 	/**
-	 * Get subject CID. If does not exist, optionally try to create
+	 * Get object CID. If does not exist, optionally try to create
 	 * 
 	 * @param cxn
 	 * @param subjectMeta
@@ -764,47 +851,54 @@ public class ParaVisionUpload {
 	 * @return
 	 * @throws Throwable
 	 */
-	private static String getSubjectCID (ServerClient.Connection cxn, BrukerMeta subjectMeta, Options ops) throws Throwable {
+	private static String getObjectCID (ServerClient.Connection cxn, BrukerMeta subjectMeta, Options ops) throws Throwable {
 
 		// Externally supplied SUbject ID over-rides values found in meta-data
-		String subjectCID = null;
+		String objectCID = null;
 		if (ops.cid != null) {
-			subjectCID = ops.cid;
+			objectCID = ops.cid;
 		} else {
 			// Get the Subject CID from the SUBJECT_ID expected to be of the form <String><delim><CID>
 			// Strip off leading characters ahead of the delimiter if requested
-			subjectCID = subjectMeta.getValueAsString("SUBJECT_id");
+			objectCID = subjectMeta.getValueAsString("SUBJECT_id");
 
 			// If the cid delimiter is null, we expect that SUBJECT_id holds the CID directly.
 			if (ops.cid_delimiter!=null) {
-				subjectCID = extractCID (ops, subjectCID);
+				objectCID = extractCID (ops, objectCID);
+
+				// Check what we extracted is a CID
+				if (!CiteableIdUtil.isCiteableId(objectCID)) {
+					throw new Exception ("The string '" + objectCID + "' parsed from the subject file is not a valid Citable Identifier");
+				}
 			}
 		}
 
 		// If the CID is not full, add on the root.
 		String projectIDRoot = CiteableIdUtil.getProjectIdRoot(cxn);
-		if (!ops.cid_is_full) subjectCID = projectIDRoot + "." + subjectCID;			
+		if (!ops.cid_is_full) objectCID = projectIDRoot + "." + objectCID;			
 		//
-		System.out.println("cid = " + subjectCID);
-		if (!CiteableIdUtil.isSubjectId(subjectCID)) {
+		System.out.println("cid = " + objectCID);
+
+		// We can handle a Project or a Subject CID.
+		if (! (CiteableIdUtil.isSubjectId(objectCID) || CiteableIdUtil.isProjectId(objectCID) )) {
 			String errMsg = null;
 			if (ops.cid!=null) {
-				errMsg = "The citable ID " + subjectCID + " is not a valid citable ID";
+				errMsg = "The citable ID " + objectCID + " is not a valid Project or Subject citable ID";
 			} else {
-				errMsg = "No valid citeable id found in SUBJECT_id field of the Bruker subject file."
-					+ " (SUBJECT_id=" + subjectMeta.getValueAsString("SUBJECT_id") + ")";
+				errMsg = "No valid Project or Subject citeable id found in SUBJECT_id field of the Bruker subject file."
+						+ " (SUBJECT_id=" + subjectMeta.getValueAsString("SUBJECT_id") + ")";
 			}
-			LogUtil.logError(cxn, PSSDUtil.BRUKER_LOG_FILE, errMsg);
+			//			LogUtil.logError(cxn, PSSDUtil.BRUKER_LOG_FILE, errMsg);
 			throw new Exception(errMsg);
 		}
 
 
 
-		return subjectCID;
+		return objectCID;
 	}
 
 
-	private static NIGBrukerIdentifierMetaData parseAndSetNIGSubjectMeta  (ServerClient.Connection cxn, String subjectCID, BrukerMeta subjectMeta, Options ops) throws Throwable {
+	private static NIGBrukerIdentifierMetaData parseNIGSubjectMeta  (ServerClient.Connection cxn, String subjectCID, BrukerMeta subjectMeta, Options ops) throws Throwable {
 
 		NIGBrukerIdentifierMetaData brukerMeta = null;
 
@@ -842,7 +936,6 @@ public class ParaVisionUpload {
 
 			// Parse the identifier meta-data into a container
 			brukerMeta = new NIGBrukerIdentifierMetaData(parts);
-			setNIGDomainMetaData (cxn, subjectCID, brukerMeta);		
 		} else {
 			// Not the correct format
 			String errMsg = "The subject identifier was not of the correct form to extract the NIG meta-data";
@@ -873,7 +966,6 @@ public class ParaVisionUpload {
 		}
 	}
 
-
 	/**
 	 * Function to try to auto-create a Subject of the given CID, if it is of the correct depth
 	 * 
@@ -883,10 +975,10 @@ public class ParaVisionUpload {
 	 * @return
 	 * @throws Throwable
 	 */
-	private static boolean cloneFirstSubject (ServerClient.Connection cxn, String subjectCID) throws Throwable {
+	private static String cloneFirstSubject (ServerClient.Connection cxn, String subjectCID) throws Throwable {
 
 		// CHeck CID depth
-		if (!nig.mf.pssd.CiteableIdUtil.isSubjectId(subjectCID)) return false;
+		if (!nig.mf.pssd.CiteableIdUtil.isSubjectId(subjectCID)) return null;
 
 		// Get Project
 		String projectCID = nig.mf.pssd.CiteableIdUtil.getProjectId(subjectCID);
@@ -894,7 +986,7 @@ public class ParaVisionUpload {
 		// Find the first subject; if none, return for auto-create from Method meta-data
 		String firstSubject = findFirstSubject (cxn, projectCID);
 		if (firstSubject==null) {
-			return false;
+			return null;
 		}
 
 		// CLone it
@@ -920,7 +1012,7 @@ public class ParaVisionUpload {
 			System.err.print(t.getMessage());
 			// Do nothing if it bombs
 		}
-		return true;
+		return subjectCID;
 	}
 
 
@@ -955,7 +1047,6 @@ public class ParaVisionUpload {
 		}
 	}
 
-
 	/**
 	 * Parse <String><delim><cid> and return <cid>
 	 * The <String> may contain the delimiter as well of course
@@ -965,6 +1056,9 @@ public class ParaVisionUpload {
 	 * @return
 	 * @throws Throwable
 	 */
+
+
+
 	private static String extractCID (Options ops, String cid) throws Throwable {
 		String[] t = cid.split(ops.cid_delimiter);  
 		int n = t.length;
@@ -983,6 +1077,7 @@ public class ParaVisionUpload {
 		}
 		return id;
 	}
+
 
 
 	private static Study updateOrCreateStudy (ServerClient.Connection cxn, BrukerMeta subjectMeta, String subjectCID, String exMethodCID, String studyCID) throws Throwable {
@@ -1049,6 +1144,7 @@ public class ParaVisionUpload {
 	 * @param os
 	 * 
 	 */
+
 	public static void printHelp(PrintStream os) {
 		os.println("ParaVisionUpload");
 		os.println();
@@ -1101,6 +1197,4 @@ public class ParaVisionUpload {
 		os.println("   " + CTYPE_ARG + "                  Container type. Select from 'zip,tar,aar. Defaults to zip.  zip is limited to 4GB, tar to 8GB and aar unlimited.");
 		os.println();
 	}
-
-
 }
