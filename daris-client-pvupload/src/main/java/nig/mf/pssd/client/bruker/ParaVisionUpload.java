@@ -1184,13 +1184,13 @@ public class ParaVisionUpload {
 		os.println("   " + UPLOAD_FID_ARG + "                    Indicates whether to upload the fid file:  1 [own DataSet], 2 [with image; default]");
 		os.println("   " + COMPRESSION_LEVEL_ARG + "                 Gives the compression level (default 0): zip and tar (0 [none],1 [gz],2 [bz2]), aar (0-9) ");
 		os.println("   " + CID_DELIMITER_ARG + "          We parse the CID from the 'SUBJECT_id' field of the SUbject meta-data file");
-		os.println("                                This gives a delimiter to separate names from the CID in the form: <string><delim><cid>.");
+		os.println("                                This gives a delimiter to separate names from the CID (Project or Subject) in the form: <string><delim><cid>.");
 		os.println("                                Defaults to '_'. Use the string 'null' if none required in which case the name string should hold just the CID");
 		os.println("   " + CID_IS_FULL_ARG + "            If supplied indicates that the Server.Namespace CID prefix should not be added.");
 		os.println("                                When not supplied, the CID is assumed to be partial starting with the Project.");
-		os.println("   " + AUTO_SUBJECT_CREATE_ARG + "    If supplied indicates that subjects can be auto-created from the CID.");
+		os.println("   " + AUTO_SUBJECT_CREATE_ARG + "    If supplied indicates that subjects can be auto-created from the CID (Project or Subject). If possible will attempt to find subject pre-existing and re-use. Else creates Subject under Project or imports given Subject CID if not yet allocated.");
 		os.println("   " + CLONE_FIRST_SUBJECT_ARG + "    If supplied indicates that auto-created subjects will be cloned from the first pre-existing subject. If none, then standard auto-create occurs.");
-		os.println("   " + CITABLE_ID_ARG + "                     If supplied then this gives the Subject's citable ID. Over-rides extraction from the Subject meta-data");
+		os.println("   " + CITABLE_ID_ARG + "                     If supplied then this gives the CID (Project or Subject). Over-rides extraction from the Subject meta-data");
 		os.println("   " + NIG_SUBJECT_META_ADD_ARG + "   If supplied indicates that the 'SUBJECT_id' field is configured with the NIG layout.");
 		os.println("                                The layout is <Proj id>_<Coil>_<Animal ID>_<Gender>_<Exp Group>_<Vivo>_<Date>_<CID>");
 		os.println("                                Parse this and extract extra meta-data and locate on the Project, Subject and Study");
