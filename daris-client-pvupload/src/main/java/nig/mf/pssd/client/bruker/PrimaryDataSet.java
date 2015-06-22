@@ -196,7 +196,7 @@ public class PrimaryDataSet extends DataSet {
 		
 		// Restrict the query to the desired CID tree
 		if (studyCID != null && seriesID != null) {
-			where += " and ( cid starts with '" + studyCID + "' and xpath(hfi-daris:bruker-series/id) = '" + seriesID + "' )";
+			where += " and ( cid starts with '" + studyCID + "' and xpath(daris:bruker-series/id) = '" + seriesID + "' )";
 		}
 
 		// Query to find the bruker primary data set.

@@ -31,59 +31,72 @@ public class PSSDUtil extends nig.mf.pssd.CiteableIdUtil{
 		return r.stringValue("asset/meta/daris:pssd-object/type");
 	}
 
-	
+
 	/**
-	 * Function to try to auto-create a Subject with the given CID (must be Subject depth)
-	 * If CID exists, re-use
-	 * If CID does not exist, import
+	 * Function to try to auto-create a Subject with the given CID (must be Subject or Project depth)
+	 * If CID is SUbject depth and exists, re-use
+	 * If CID is SUbject depth and does not exist, import
+	 * If CID is Project create Subject under
+	 * 
 	 * Set Method defined meta-data on the Subject
 	 * 
 	 * 
 	 * @param cid
 	 * @param logFile. Can be null for no server-side logging
 	 * @param subjectCID 
-	 * @return
+	 * @return the subject CID (either that passed in or created under Project)
 	 * @throws Throwable
 	 */
-	public static boolean createSubject (ServerClient.Connection cxn, String logFile, String subjectCID) throws Throwable {
+	public static String createSubject (ServerClient.Connection cxn, String logFile, String objectCID) throws Throwable {
 
-		// CHeck CID depth
-		if (!nig.mf.pssd.CiteableIdUtil.isSubjectId(subjectCID)) return false;
+		String projectCID = null;
+		boolean cidIsSubject = true;
+		if (nig.mf.pssd.CiteableIdUtil.isProjectId(objectCID)) {
+			projectCID = objectCID;
+			cidIsSubject = false;
+		} else if (nig.mf.pssd.CiteableIdUtil.isSubjectId(objectCID)) {
+			projectCID = nig.mf.pssd.CiteableIdUtil.getProjectId(objectCID);
+		} else {
+			return null;
+		}
 
 		// Get Project CID and get any Methods
-		String pid = nig.mf.pssd.CiteableIdUtil.getProjectId(subjectCID);
 		XmlStringWriter w = new XmlStringWriter();
-		w.add("id", pid);
+		w.add("id", projectCID);
 		XmlDoc.Element r = cxn.execute("om.pssd.object.describe", w.document());
 		Collection<XmlDoc.Element> methods = r.elements("object/method");
 
 		// We can't proceed if there are no Methods or more than one (how could we choose ?)
-		if (methods==null) return false;
-		if (methods.size()>1) return false;
+		if (methods==null) return null;
+		if (methods.size()>1) return null;
 
 		// Get the Method CID
 		Iterator<XmlDoc.Element> it = methods.iterator();
 		XmlDoc.Element method = it.next();
 		String mid = method.value("id");
-		if (mid==null) return false;
+		if (mid==null) return null;
+
+		// Populate meta-data for Subject creation
+		XmlDocMaker dm = new XmlDocMaker("args");
+		dm.add("pid", projectCID);
 
 		// If the Subject CID has not been allocated, import it.  
-		if (!nig.mf.pssd.client.util.CiteableIdUtil.cidExists(cxn, subjectCID)) {
-			String importedCID = nig.mf.pssd.client.util.CiteableIdUtil.importCid(cxn, subjectCID);
-			if (!importedCID.equals(subjectCID)) {
-				String errMsg = "   Imported Subject CID:" + importedCID + " is not consistent with expected:" + subjectCID;
-				LogUtil.logError(cxn, logFile, errMsg);
-				throw new Exception(errMsg);
+		if (cidIsSubject) {
+			if (!nig.mf.pssd.client.util.CiteableIdUtil.cidExists(cxn, objectCID)) {
+				String importedCID = nig.mf.pssd.client.util.CiteableIdUtil.importCid(cxn, objectCID);
+				if (!importedCID.equals(objectCID)) {
+					String errMsg = "   Imported Subject CID:" + importedCID + " is not consistent with expected:" + objectCID;
+					LogUtil.logError(cxn, logFile, errMsg);
+					throw new Exception(errMsg);
+				}
 			}
+
+
+			// We already know the asset does not exist so now we can try to create it
+			String subjectNumber = nig.mf.pssd.CiteableIdUtil.getLastSection(objectCID);
+			// XmlStringWriter dm = new XmlStringWriter();
+			dm.add("subject-number", subjectNumber);			
 		}
-
-
-		// We already know the asset does not exist so now we can try to create it
-		String subjectNumber = nig.mf.pssd.CiteableIdUtil.getLastSection(subjectCID);
-		XmlDocMaker dm = new XmlDocMaker("args");
-		// XmlStringWriter dm = new XmlStringWriter();
-		dm.add("pid", pid);
-		dm.add("subject-number", subjectNumber);
 		dm.add("method", mid);
 
 		// Set the meta-data pre-specified by the Method.  Because this code is shared 
@@ -91,11 +104,11 @@ public class PSSDUtil extends nig.mf.pssd.CiteableIdUtil{
 		Executor cExecutor = new ClientExecutor(cxn);
 		SubjectMethodMetadata.addSubjectMethodMeta (cExecutor, mid, dm);
 
-		// Create the subject
+		// Create the subject and return the CID
 		r = cExecutor.execute("om.pssd.subject.create", dm);
-
-		return true;
+		return r.value("id");
 	}
+
 
 
 
