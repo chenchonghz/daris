@@ -774,6 +774,7 @@ public class ParaVisionUpload {
 				createSubject (cxn, objectCID, subjectMeta, ops);	
 				return objectCID;
 			} else {
+				LogUtil.logInfo(cxn, PSSDUtil.BRUKER_LOG_FILE, "Found pre-existing Subject " + objectCID);
 				return objectCID;
 			}
 		}
@@ -808,7 +809,11 @@ public class ParaVisionUpload {
 				// If the CID is for a subject, try to clone from the first into the CID (and allocate it)
 				if (ops.clone_first_subject) {
 					String subjectCID = cloneFirstSubject (cxn, objectCID);
-					if (subjectCID!=null) return subjectCID;
+					if (subjectCID!=null) {
+						LogUtil.logInfo(cxn, PSSDUtil.BRUKER_LOG_FILE, "Cloned first subject into Subject " + subjectCID);
+
+						return subjectCID;
+					}
 				}
 			} else {
 				isSubject = false;
@@ -831,6 +836,7 @@ public class ParaVisionUpload {
 
 				}
 			} else {
+				LogUtil.logInfo(cxn, PSSDUtil.BRUKER_LOG_FILE, "Auto created  Subject " + subjectCID);
 				return subjectCID;
 			}
 		} else {
@@ -1119,7 +1125,7 @@ public class ParaVisionUpload {
 			// Found the Study UID pre-existing in MF in the desired CID tree.  
 			// Update it with Bruker meta-data
 			study = Study.update(cxn, study.id(), study.name(), study.description(), studyUID, studyID, cred_);
-			LogUtil.logInfo(cxn, PSSDUtil.BRUKER_LOG_FILE, "Bruker study " + studyCID + " has been updated.");
+			LogUtil.logInfo(cxn, PSSDUtil.BRUKER_LOG_FILE, "Bruker study " + study.id() + " has been updated.");
 		}
 		return study;
 	}
