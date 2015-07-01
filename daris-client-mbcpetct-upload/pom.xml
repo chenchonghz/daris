@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>com.arcitecta</groupId>
 			<artifactId>mfclient</artifactId>
-			<version>4.0.005</version>
+			<version>4.2.026</version>
 		</dependency>
 		<dependency>
 			<groupId>au.edu.unimelb.daris</groupId>
