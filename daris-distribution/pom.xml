@@ -105,6 +105,11 @@
 			<version>${daris-client-mbcpetct-upload.version}</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>commons-cli</groupId>
+			<artifactId>commons-cli</artifactId>
+			<version>1.3.1</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -426,6 +431,27 @@
 							<finalName>${project.parent.artifactId}-${project.parent.version}</finalName>
 							<descriptors>
 								<descriptor>src/main/assembly/make-zip.xml</descriptor>
+							</descriptors>
+							<attach>false</attach>
+						</configuration>
+					</execution>
+					<execution>
+						<!-- make installer jar -->
+						<id>installer-jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<finalName>daris-installer-${project.parent.version}</finalName>
+							<archive>
+								<manifest>
+									<mainClass>daris.installer.DarisInstallerCLI</mainClass>
+								</manifest>
+							</archive>
+							<descriptors>
+								<descriptor>src/main/assembly/installer-jar.xml</descriptor>
 							</descriptors>
 							<attach>false</attach>
 						</configuration>
