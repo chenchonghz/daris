@@ -26,22 +26,33 @@ public class DarisInstallerCLI {
 		try {
 			options = createOptions();
 			CommandLine line = parser.parse(options, args);
+			if (line.hasOption("h")) {
+				// show help
+				showHelp(options);
+				System.exit(0);
+			}
 			validate(line);
 			execute(line);
 		} catch (ParseException pe) {
 			System.err.println(pe.getMessage());
-			if (options != null) {
-				HelpFormatter formatter = new HelpFormatter();
-				formatter.setWidth(120);
-				formatter.printHelp("daris-installer <options>", options);
-			}
+			showHelp(options);
 		} catch (Throwable e) {
 			e.printStackTrace(System.err);
 		}
 	}
 
+	private static void showHelp(Options options) {
+		if (options != null) {
+			HelpFormatter formatter = new HelpFormatter();
+			formatter.setWidth(120);
+			formatter.printHelp("daris-installer <options>", options);
+		}
+	}
+
 	private static Options createOptions() {
 		Options options = new Options();
+		Option help = new Option("h", "help", false, "Show help text.");
+		options.addOption(help);
 		Option nogui = new Option(
 				"nogui",
 				"No GUI. Command line interface. If it is set, host, port, transport, domain, user and password options will be required.");
@@ -49,9 +60,8 @@ public class DarisInstallerCLI {
 		Option pkgs = new Option(
 				"pkgs",
 				"The packages to install. Can include essentials, core-services, portal, sinks, analyzers and transcoders. If not given, essentials, core-services and portal packages will be installed.");
-		pkgs.setArgName("pkg1,pkg2,pkg3");
-		pkgs.setArgs(5);
-		pkgs.setValueSeparator(',');
+		pkgs.setArgName("package1,package2,package3");
+		pkgs.setArgs(1);
 		pkgs.setRequired(false);
 		options.addOption(pkgs);
 
@@ -122,7 +132,7 @@ public class DarisInstallerCLI {
 	private static Set<PackageEntry.Type> parsePackageTypes(CommandLine line)
 			throws Throwable {
 		String[] pkgNames = line.hasOption("pkgs") ? line
-				.getOptionValues("pkgs") : null;
+				.getOptionValue("pkgs").split(",") : null;
 		Set<PackageEntry.Type> selections = new TreeSet<PackageEntry.Type>();
 		if (pkgNames != null) {
 			for (String pkgName : pkgNames) {
@@ -130,7 +140,7 @@ public class DarisInstallerCLI {
 						.fromString(pkgName);
 				if (pkgType == null) {
 					throw new IllegalArgumentException("Invalid package name: "
-							+ pkgName);
+							+ pkgName + ".");
 				}
 				selections.add(pkgType);
 			}
