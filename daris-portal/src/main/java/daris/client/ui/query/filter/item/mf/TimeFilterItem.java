@@ -51,7 +51,8 @@ public class TimeFilterItem extends FilterItem<TimeFilter> {
 
     }
 
-    private void updateForm() {
+    @SuppressWarnings("rawtypes")
+	private void updateForm() {
 
         _formSP.clear();
 

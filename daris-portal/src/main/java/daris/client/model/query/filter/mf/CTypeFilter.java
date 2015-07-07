@@ -4,9 +4,7 @@ import arc.mf.client.util.IsNotValid;
 import arc.mf.client.util.IsValid;
 import arc.mf.client.util.Validity;
 import arc.mf.client.xml.XmlWriter;
-import arc.mf.expr.Operator;
 import daris.client.model.query.filter.Filter;
-import daris.client.model.query.filter.mf.NameFilter.NameOperator;
 import daris.client.model.query.filter.operators.OperatorUtil;
 
 public class CTypeFilter extends Filter {

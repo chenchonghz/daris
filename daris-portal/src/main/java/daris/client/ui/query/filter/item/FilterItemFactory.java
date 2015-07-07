@@ -16,6 +16,7 @@ import daris.client.model.query.filter.mf.ACLFilter;
 import daris.client.model.query.filter.mf.AssetFilter;
 import daris.client.model.query.filter.mf.AssetModifiedFilter;
 import daris.client.model.query.filter.mf.CIDFilter;
+import daris.client.model.query.filter.mf.CSizeFilter;
 import daris.client.model.query.filter.mf.CTypeFilter;
 import daris.client.model.query.filter.mf.ClassFilter;
 import daris.client.model.query.filter.mf.ContentStatusFilter;
@@ -45,6 +46,7 @@ import daris.client.ui.query.filter.item.mf.ACLFilterItem;
 import daris.client.ui.query.filter.item.mf.AssetFilterItem;
 import daris.client.ui.query.filter.item.mf.AssetModifiedFilterItem;
 import daris.client.ui.query.filter.item.mf.CIDFilterItem;
+import daris.client.ui.query.filter.item.mf.CSizeFilterItem;
 import daris.client.ui.query.filter.item.mf.CTypeFilterItem;
 import daris.client.ui.query.filter.item.mf.ClassFilterItem;
 import daris.client.ui.query.filter.item.mf.ContentStatusFilterItem;
@@ -108,6 +110,9 @@ public class FilterItemFactory {
             return (FilterItem<T>) new TypeFilterItem(form, (TypeFilter) filter, editable);
         } else if (filter instanceof CTypeFilter) {
             return (FilterItem<T>) new CTypeFilterItem(form, (CTypeFilter) filter, editable);
+        } else if (filter instanceof CSizeFilter) {
+            return (FilterItem<T>) new CSizeFilterItem(form, (CSizeFilter) filter, editable);
+
         } else if (filter instanceof PatientBirthDateFilter) {
             return (FilterItem<T>) new PatientBirthDateFilterItem(form,
                     (PatientBirthDateFilter) filter, editable);
