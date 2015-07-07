@@ -37,6 +37,7 @@ public class ObjectInterfaceMetadata {
         default:
             break;
         }
+        _docs.add(new MetadataDocumentRef("daris:pssd-filename"));
     }
 
     public DObject.Type type() {
