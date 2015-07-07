@@ -17,6 +17,7 @@ import arc.mf.dtype.DynamicEnumerationDataSource;
 import arc.mf.dtype.DynamicEnumerationExistsHandler;
 import arc.mf.dtype.EnumerationType.Value;
 import arc.mf.dtype.NumericDataType;
+import arc.mf.dtype.StringType;
 import arc.mf.object.ObjectResolveHandler;
 import arc.mf.xml.defn.Node;
 import daris.client.model.query.filter.Filter;
@@ -52,6 +53,8 @@ public class MetadataFilter extends Filter {
                 STARTS_WITH, ENDS_WITH };
         public static final List<MetadataOperator> DOC_TYPE_OPERATORS = ListUtil.list(HAS_VALUE, HASNO_VALUE, IS_VALID,
                 IS_INVALID);
+        
+        public static final List<MetadataOperator> STRING_TYPE_OPERATORS = ListUtil.list(HAS_VALUE, HASNO_VALUE, EQ, NE, CONTAINS, CONTAINS_ALL, CONTAINS_ANY, CONTAINS_NO, LIKE, STARTS_WITH, ENDS_WITH);
 
         private MetadataOperator(String value, String description, int nbValues) {
             super(value, value, description, nbValues);
@@ -79,6 +82,9 @@ public class MetadataFilter extends Filter {
         }
 
         public static List<MetadataOperator> operatorsFor(DataType type) {
+        	if(type instanceof StringType){
+        		return STRING_TYPE_OPERATORS;
+        	}
             List<arc.mf.expr.Operator> ops = type.operators();
             if (ops == null) {
                 // DocType.operators() returns null
