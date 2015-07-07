@@ -14,6 +14,7 @@ import arc.gui.gwt.widget.panel.HorizontalPanel;
 import arc.gui.gwt.widget.panel.SimplePanel;
 import arc.mf.client.util.StateChangeListener;
 import arc.mf.dtype.BooleanType;
+import arc.mf.dtype.DataType;
 import arc.mf.dtype.EnumerationType;
 import arc.mf.dtype.StringType;
 import arc.mf.expr.Operator;
@@ -34,238 +35,289 @@ import daris.client.ui.query.filter.item.mf.MetadataFilterItem;
 
 public class ObjectMetadataFilterItem extends FilterItem<ObjectMetadataFilter> {
 
-    private HorizontalPanel _hp;
+	private HorizontalPanel _hp;
 
-    private MetadataPathSelectComboBox _mp;
-    private SimplePanel _mpSP;
-    private HorizontalPanel _formsHP;
-    private Form _operatorForm;
-    private Form _ignoreCaseForm;
-    private Form _valueForm;
+	private MetadataPathSelectComboBox _mp;
+	private SimplePanel _mpSP;
+	private HorizontalPanel _formsHP;
+	private Form _operatorForm;
+	private Form _ignoreCaseForm;
+	private Form _valueForm;
 
-    public ObjectMetadataFilterItem(CompositeFilterForm cform, ObjectMetadataFilter filter, boolean editable) {
-        super(cform, filter, editable);
+	public ObjectMetadataFilterItem(CompositeFilterForm cform,
+			ObjectMetadataFilter filter, boolean editable) {
+		super(cform, filter, editable);
 
-        _hp = new HorizontalPanel();
-        _hp.setHeight(22);
+		_hp = new HorizontalPanel();
+		_hp.setHeight(22);
 
-        Form typeForm = new Form(editable ? FormEditMode.UPDATE : FormEditMode.READ_ONLY);
-        typeForm.setShowDescriptions(false);
-        typeForm.setShowHelp(false);
-        typeForm.setShowLabels(false);
+		Form typeForm = new Form(editable ? FormEditMode.UPDATE
+				: FormEditMode.READ_ONLY);
+		typeForm.setShowDescriptions(false);
+		typeForm.setShowHelp(false);
+		typeForm.setShowLabels(false);
 
-        Field<DObject.Type> typeField = new Field<DObject.Type>(new FieldDefinition("type",
-                new EnumerationType<DObject.Type>(new DObject.Type[] { DObject.Type.subject, DObject.Type.ex_method,
-                        DObject.Type.study, DObject.Type.dataset }), null, null, 1, 1));
-        typeField.setInitialValue(filter.objectType(), false);
-        typeField.addListener(new FormItemListener<DObject.Type>() {
+		Field<DObject.Type> typeField = new Field<DObject.Type>(
+				new FieldDefinition("type", new EnumerationType<DObject.Type>(
+						new DObject.Type[] { DObject.Type.subject,
+								DObject.Type.ex_method, DObject.Type.study,
+								DObject.Type.dataset }), null, null, 1, 1));
+		typeField.setInitialValue(filter.objectType(), false);
+		typeField.addListener(new FormItemListener<DObject.Type>() {
 
-            @Override
-            public void itemValueChanged(FormItem<Type> f) {
-                filter().setObjectType(f.value());
-                updateGUI();
-            }
+			@Override
+			public void itemValueChanged(FormItem<Type> f) {
+				filter().setObjectType(f.value());
+				updateGUI();
+			}
 
-            @Override
-            public void itemPropertyChanged(FormItem<Type> f, Property property) {
+			@Override
+			public void itemPropertyChanged(FormItem<Type> f, Property property) {
 
-            }
-        });
-        typeForm.add(typeField);
-        typeForm.render();
+			}
+		});
+		typeForm.add(typeField);
+		typeForm.render();
 
-        _hp.setSpacing(3);
-        addMustBeValid(typeForm);
-        _hp.add(typeForm);
+		_hp.setSpacing(3);
+		addMustBeValid(typeForm);
+		_hp.add(typeForm);
 
-        HTML label = new HTML("metadata:");
-        label.setFontSize(11);
-        label.setMarginTop(7);
-        _hp.setSpacing(3);
-        _hp.add(label);
+		HTML label = new HTML("metadata:");
+		label.setFontSize(11);
+		label.setMarginTop(7);
+		_hp.setSpacing(3);
+		_hp.add(label);
 
-        _mpSP = new SimplePanel();
-        _mpSP.setHeight100();
-        _mpSP.setWidth(150);
-        _hp.add(_mpSP);
+		_mpSP = new SimplePanel();
+		_mpSP.setHeight100();
+		_mpSP.setWidth(150);
+		_hp.add(_mpSP);
 
-        _formsHP = new HorizontalPanel();
-        _formsHP.setHeight100();
-        _hp.add(_formsHP);
+		_formsHP = new HorizontalPanel();
+		_formsHP.setHeight100();
+		_hp.add(_formsHP);
 
-        updateGUI();
+		updateGUI();
 
-    }
+	}
 
-    private void updateGUI() {
+	private void updateGUI() {
 
-        if (filter().objectType() == null) {
-            return;
-        }
+		if (filter().objectType() == null) {
+			return;
+		}
 
-        _mp = new MetadataPathSelectComboBox(filter().path(), new ObjectMetadataTree(filter().project(), filter()
-                .objectType()), true);
-        _mp.setReadOnly(!editable());
-        _mp.addChangeListener(new StateChangeListener() {
+		_mp = new MetadataPathSelectComboBox(filter().path(),
+				new ObjectMetadataTree(filter().project(), filter()
+						.objectType()), true);
+		_mp.setReadOnly(!editable());
+		_mp.addChangeListener(new StateChangeListener() {
 
-            @Override
-            public void notifyOfChangeInState() {
-                filter().setPath(_mp.value());
-                updateForms();
-            }
-        });
-        _mp.setHeight100();
-        _mp.setWidth(150);
+			@Override
+			public void notifyOfChangeInState() {
+				filter().setPath(_mp.value());
+				updateForms();
+			}
+		});
+		_mp.setHeight100();
+		_mp.setWidth(150);
 
-        _mpSP.setContent(_mp);
+		_mpSP.setContent(_mp);
 
-        updateForms();
+		updateForms();
 
-    }
+	}
 
-    private void updateForms() {
+	private void updateForms() {
 
-        /*
-         * clear all forms in _formsHP
-         */
-        _formsHP.removeAll();
-        if (_operatorForm != null) {
-            removeMustBeValid(_operatorForm);
-        }
-        if (_ignoreCaseForm != null) {
-            removeMustBeValid(_ignoreCaseForm);
-        }
+		/*
+		 * clear all forms in _formsHP
+		 */
+		_formsHP.removeAll();
+		if (_operatorForm != null) {
+			removeMustBeValid(_operatorForm);
+		}
+		if (_ignoreCaseForm != null) {
+			removeMustBeValid(_ignoreCaseForm);
+		}
 
-        if (filter().path() == null) {
-            // path not selected yet. no form required.
-            return;
-        }
+		if (filter().path() == null) {
+			// path not selected yet. no form required.
+			return;
+		}
 
-        _operatorForm = new Form(editable() ? FormEditMode.UPDATE : FormEditMode.READ_ONLY);
-        _operatorForm.setNumberOfColumns(1);
-        _operatorForm.setShowLabels(false);
-        _operatorForm.setShowDescriptions(false);
-        _operatorForm.setShowHelp(false);
+		_operatorForm = new Form(editable() ? FormEditMode.UPDATE
+				: FormEditMode.READ_ONLY);
+		_operatorForm.setNumberOfColumns(1);
+		_operatorForm.setShowLabels(false);
+		_operatorForm.setShowDescriptions(false);
+		_operatorForm.setShowHelp(false);
 
-        Operator op = filter().operator();
-        Field<Operator> opField = new Field<Operator>(new FieldDefinition("operator", new EnumerationType<Operator>(
-                filter().availableOperators()), null, null, 1, 1));
-        opField.setInitialValue(op);
-        FieldRenderOptions fro = new FieldRenderOptions();
-        fro.setWidth(100);
-        opField.setRenderOptions(fro);
-        opField.addListener(new FormItemListener<MetadataFilter.MetadataOperator>() {
+		Operator op = filter().operator();
+		Field<Operator> opField = new Field<Operator>(new FieldDefinition(
+				"operator", new EnumerationType<Operator>(filter()
+						.availableOperators()), null, null, 1, 1));
+		opField.setInitialValue(op);
+		FieldRenderOptions fro = new FieldRenderOptions();
+		fro.setWidth(100);
+		opField.setRenderOptions(fro);
+		opField.addListener(new FormItemListener<MetadataFilter.MetadataOperator>() {
 
-            @Override
-            public void itemValueChanged(FormItem<MetadataFilter.MetadataOperator> f) {
-                filter().setOperator(f.value());
-                updateForms();
-            }
+			@Override
+			public void itemValueChanged(
+					FormItem<MetadataFilter.MetadataOperator> f) {
+				filter().setOperator(f.value());
+				updateForms();
+			}
 
-            @Override
-            public void itemPropertyChanged(FormItem<MetadataFilter.MetadataOperator> f, Property property) {
+			@Override
+			public void itemPropertyChanged(
+					FormItem<MetadataFilter.MetadataOperator> f,
+					Property property) {
 
-            }
-        });
-        _operatorForm.add(opField);
-        _operatorForm.render();
-        addMustBeValid(_operatorForm);
-        _formsHP.add(_operatorForm);
-        
-        
-        if (filter().requiresValue()) {
-            addValueForm();
-        }
+			}
+		});
+		_operatorForm.add(opField);
+		_operatorForm.render();
+		addMustBeValid(_operatorForm);
+		_formsHP.add(_operatorForm);
 
-    }
+		if (filter().requiresValue()) {
+			addValueForm();
+		}
 
-    private void addValueForm() {
-        filter().path().resolveNode(new ObjectResolveHandler<Node>() {
+	}
 
-            @SuppressWarnings({ "rawtypes" })
-            @Override
-            public void resolved(Node n) {
-                if (n == null) {
-                    return;
-                }
+	private static boolean canIgnoreCase(DataType type, Operator op) {
+		if (type != null && type instanceof StringType) {
+			if (op != null) {
+				if (op.value().equals(
+						MetadataFilter.MetadataOperator.EQ.value())) {
+					return true;
+				}
+				if (op.value().equals(
+						MetadataFilter.MetadataOperator.NE.value())) {
+					return true;
+				}
+				if (op.value().equals(
+						MetadataFilter.MetadataOperator.GT.value())) {
+					return true;
+				}
+				if (op.value().equals(
+						MetadataFilter.MetadataOperator.LT.value())) {
+					return true;
+				}
+				if (op.value().equals(
+						MetadataFilter.MetadataOperator.GE.value())) {
+					return true;
+				}
+				if (op.value().equals(
+						MetadataFilter.MetadataOperator.LE.value())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
-                /*
-                 * ignore-case
-                 */
-                if (_ignoreCaseForm != null) {
-                    removeMustBeValid(_ignoreCaseForm);
-                }
-                if (n.type() instanceof StringType) {
-                    _ignoreCaseForm = new Form(editable() ? FormEditMode.UPDATE : FormEditMode.READ_ONLY);
-                    _ignoreCaseForm.setShowLabels(false);
-                    _ignoreCaseForm.setShowDescriptions(false);
-                    _ignoreCaseForm.setShowHelp(false);
-                    _ignoreCaseForm.setBooleanAs(BooleanAs.CHECKBOX);
-                    Field<Boolean> ignoreCaseField = new Field<Boolean>(new FieldDefinition("ignore-case",
-                            BooleanType.DEFAULT_TRUE_FALSE, null, null, 0, 1));
-                    ignoreCaseField.addListener(new FormItemListener<Boolean>() {
+	private void addValueForm() {
+		filter().path().resolveNode(new ObjectResolveHandler<Node>() {
 
-                        @Override
-                        public void itemValueChanged(FormItem<Boolean> f) {
-                            filter().setIgnoreCase(f.value());
-                        }
+			@SuppressWarnings({ "rawtypes" })
+			@Override
+			public void resolved(Node n) {
+				if (n == null) {
+					return;
+				}
 
-                        @Override
-                        public void itemPropertyChanged(FormItem<Boolean> f, Property property) {
+				/*
+				 * ignore-case
+				 */
+				if (_ignoreCaseForm != null) {
+					removeMustBeValid(_ignoreCaseForm);
+				}
+				Operator op = filter().operator();
+				if ((n.type() instanceof StringType) && op != null
+						&& canIgnoreCase(n.type(), op)) {
+					_ignoreCaseForm = new Form(editable() ? FormEditMode.UPDATE
+							: FormEditMode.READ_ONLY);
+					_ignoreCaseForm.setShowLabels(false);
+					_ignoreCaseForm.setShowDescriptions(false);
+					_ignoreCaseForm.setShowHelp(false);
+					_ignoreCaseForm.setBooleanAs(BooleanAs.CHECKBOX);
+					Field<Boolean> ignoreCaseField = new Field<Boolean>(
+							new FieldDefinition("ignore-case",
+									BooleanType.DEFAULT_TRUE_FALSE, null, null,
+									0, 1));
+					ignoreCaseField
+							.addListener(new FormItemListener<Boolean>() {
 
-                        }
-                    });
-                    ignoreCaseField.setValue(filter().ignoreCase(), false);
-                    _ignoreCaseForm.add(ignoreCaseField);
+								@Override
+								public void itemValueChanged(FormItem<Boolean> f) {
+									filter().setIgnoreCase(f.value());
+								}
 
-                    addMustBeValid(_ignoreCaseForm);
-                    _ignoreCaseForm.render();
+								@Override
+								public void itemPropertyChanged(
+										FormItem<Boolean> f, Property property) {
 
-                    _formsHP.add(_ignoreCaseForm);
-                    
-                    HTML label = new HTML("ignore-case");
-                    label.setFontSize(11);
-                    label.setMarginTop(5);
-                    _formsHP.add(label);
-                }
+								}
+							});
+					ignoreCaseField.setValue(filter().ignoreCase(), false);
+					_ignoreCaseForm.add(ignoreCaseField);
 
-                /*
-                 * value
-                 */
-                if (_valueForm != null) {
-                    removeMustBeValid(_valueForm);
-                }
-                _valueForm = new Form(editable() ? FormEditMode.UPDATE : FormEditMode.READ_ONLY);
-                _valueForm.setNumberOfColumns(1);
-                _valueForm.setShowLabels(false);
-                _valueForm.setShowDescriptions(false);
-                _valueForm.setShowHelp(false);
-                Field<?> valueField = MetadataFilterItem.createValueField(filter().value(), n);
-                valueField.addListener(new FormItemListener() {
+					addMustBeValid(_ignoreCaseForm);
+					_ignoreCaseForm.render();
 
-                    @Override
-                    public void itemValueChanged(FormItem f) {
-                        filter().setValue(f.valueAsString());
-                    }
+					_formsHP.add(_ignoreCaseForm);
 
-                    @Override
-                    public void itemPropertyChanged(FormItem f, Property property) {
+					HTML label = new HTML("ignore-case");
+					label.setFontSize(11);
+					label.setMarginTop(5);
+					_formsHP.add(label);
+				}
 
-                    }
-                });
-                _valueForm.add(valueField);
-                _valueForm.render();
-                addMustBeValid(_valueForm);
+				/*
+				 * value
+				 */
+				if (_valueForm != null) {
+					removeMustBeValid(_valueForm);
+				}
+				_valueForm = new Form(editable() ? FormEditMode.UPDATE
+						: FormEditMode.READ_ONLY);
+				_valueForm.setNumberOfColumns(1);
+				_valueForm.setShowLabels(false);
+				_valueForm.setShowDescriptions(false);
+				_valueForm.setShowHelp(false);
+				Field<?> valueField = MetadataFilterItem.createValueField(
+						filter().value(), n);
+				valueField.addListener(new FormItemListener() {
 
-                _formsHP.add(_valueForm);
-            }
-        });
+					@Override
+					public void itemValueChanged(FormItem f) {
+						filter().setValue(f.valueAsString());
+					}
 
-    }
+					@Override
+					public void itemPropertyChanged(FormItem f,
+							Property property) {
 
-    @Override
-    public Widget gui() {
-        return _hp;
-    }
+					}
+				});
+				_valueForm.add(valueField);
+				_valueForm.render();
+				addMustBeValid(_valueForm);
+
+				_formsHP.add(_valueForm);
+			}
+		});
+
+	}
+
+	@Override
+	public Widget gui() {
+		return _hp;
+	}
 
 }
