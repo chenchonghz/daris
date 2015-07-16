@@ -650,7 +650,7 @@ public class Execute {
 			System.exit(0);
 			return;
 		}
-		if (cmd == null || optionsArray == null || optionsArray.length == 0) {
+		if (cmd == null) {
 			System.err.println("Invalid arguments.");
 			showHelp(null);
 			System.exit(1);
