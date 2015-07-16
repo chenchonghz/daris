@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.apache.commons.codec.binary.Base64;
@@ -75,8 +76,20 @@ public class Execute {
 
 		public Options() {
 			try {
+				// try read from system environment variables first.
+				Map<String, String> env = System.getenv();
+				setHost(env.get("MFLUX_HOST"));
+				setPort(env.get("MFLUX_PORT"));
+				setTransport(env.get("MFLUX_TRANSPORT"));
+				setSid(env.get("MFLUX_SID"));
+				setToken(env.get("MFLUX_TOKEN"));
+				setAuth(env.get("MFLUX_AUTH"));
+				setOutputFormat(env.get("MFLUX_OUTPUT"));
+				// read from jvm properties (it overrides system environment
+				// variables
 				setHost(System.getProperty("mf.host"));
 				setPort(System.getProperty("mf.port"));
+				setTransport(System.getProperty("mf.transport"));
 				setSid(System.getProperty("mf.sid"));
 				setToken(System.getProperty("mf.token"));
 				setAuth(System.getProperty("mf.auth"));
@@ -865,8 +878,8 @@ public class Execute {
 						.println("    -mf.output <xml|shell>          The output format. Can be xml or shell.");
 				break;
 			case LOGOFF:
-				System.out.println("Usage: " + prefix()
-						+ " [<options>] logoff");
+				System.out
+						.println("Usage: " + prefix() + " [<options>] logoff");
 				System.out.println("");
 				System.out.println("Description:");
 				System.out.println("    Log off Mediaflux.");
