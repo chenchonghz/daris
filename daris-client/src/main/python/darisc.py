@@ -15,15 +15,27 @@ import sys
 
 DARIS_CLIENT_JAR_PATH = None
 
+def get_daris_client_jar_path():
+    global DARIS_CLIENT_JAR_PATH
+    if not DARIS_CLIENT_JAR_PATH:
+        try:
+            DARIS_CLIENT_JAR_PATH = os.environ['DARIS_CLIENT_JAR_PATH']
+        except(KeyError):
+            pass
+    if not DARIS_CLIENT_JAR_PATH:
+        DARIS_CLIENT_JAR_PATH = os.path.dirname(__file__) + '/daris-client.jar'
+    return DARIS_CLIENT_JAR_PATH
+
 def set_daris_client_jar_path(path):
     global  DARIS_CLIENT_JAR_PATH
-    DARIS_CLIENT_JAR_PATH=path
+    DARIS_CLIENT_JAR_PATH = path
 
 def check_daris_client_jar():
-    if not DARIS_CLIENT_JAR_PATH:
+    path = get_daris_client_jar_path()
+    if not path:
         raise Exception('DARIS_CLIENT_JAR_PATH is not set.')
-    if not os.path.isfile(DARIS_CLIENT_JAR_PATH):
-        raise Exception('DaRIS client jar file: ' + DARIS_CLIENT_JAR_PATH + ' does not exist.')
+    if not os.path.isfile(path):
+        raise Exception('DaRIS client jar file: ' + path + ' does not exist.')
 
 def check_java():
     try:
@@ -49,6 +61,10 @@ def check_java():
 def check_dependencies():
     check_java()
     check_daris_client_jar()
+
+def create_daris_client_command():
+    basename = os.path.basename(__file__)
+    return  ['java', '-Ddc.prefix=' + basename, '-jar', get_daris_client_jar_path()]
 
 class XmlElement(object):
 
@@ -396,7 +412,7 @@ class Session(object):
     
     def logon(self, domain, user, password):
         self.__check_server()
-        cmd = ['java', '-jar', DARIS_CLIENT_JAR_PATH]
+        cmd = ['java', '-Ddc.prefix=darisc.py', '-jar', get_daris_client_jar_path()]
         cmd += ['-mf.host', self.__host]
         cmd += ['-mf.port', str(self.__port)]
         cmd += ['-mf.transport', self.__transport]
@@ -415,7 +431,7 @@ class Session(object):
         self.__check_server()
         if not self.__token and not self.__sid:
             raise Exception('Not logged on. No sid or secure identity token is set.')
-        cmd = ['java', '-jar', DARIS_CLIENT_JAR_PATH]
+        cmd = ['java', '-Ddc.prefix=darisc.py', '-jar', DARIS_CLIENT_JAR_PATH]
         cmd += ['-mf.host', self.__host]
         cmd += ['-mf.port', str(self.__port)]
         cmd += ['-mf.transport', self.__transport]
@@ -473,7 +489,7 @@ class Session(object):
     
     def logoff(self):
         self.__check_server()
-        cmd = ['java', '-jar', DARIS_CLIENT_JAR_PATH]
+        cmd = ['java', '-Ddc.prefix=darisc.py', '-jar', DARIS_CLIENT_JAR_PATH]
         cmd += ['-mf.host', self.__host]
         cmd += ['-mf.port', str(self.__port)]
         cmd += ['-mf.transport', self.__transport]
@@ -495,29 +511,14 @@ class Session(object):
             raise Exception('Server transport is not set.')
 
 def main(argv):
-    # detect DARIS_CLIENT_JAR_PATH
-    if not DARIS_CLIENT_JAR_PATH and os.environ['DARIS_CLIENT_JAR_PATH']:
-        set_daris_client_jar_path(os.environ['DARIS_CLIENT_JAR_PATH'])
-    if not DARIS_CLIENT_JAR_PATH:
-        dir = os.path.dirname(os.path.abspath(argv[0])) 
-        daris_client_jar_path = dir + '/daris-client.jar'
-        if os.path.isfile(daris_client_jar_path):
-            set_daris_client_jar_path(daris_client_jar_path)
     check_dependencies()
-    cmd = ['java', '-jar', DARIS_CLIENT_JAR_PATH]
-    cmd += argv[1:]
+    cmd = create_daris_client_command()
+    cmd += argv
     sp = subprocess.call(cmd)
     
-#     set_daris_client_jar_path('/tmp/daris-client.jar')
-#     session = Session()
-#     session.set_server('localhost', 8086, 'http')
-#     session.logon('system', 'manager', 'change_me')
-#     print str(session.execute('server.version'))
-#     session.logoff()
-
 if __name__ == '__main__':
     set_daris_client_jar_path('/tmp/daris-client.jar')
-    main(sys.argv)
+    main(sys.argv[1:])
 
     
     
