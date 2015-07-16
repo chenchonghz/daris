@@ -470,7 +470,16 @@ public class Execute {
 		}
 	}
 
-	public static final String PREFIX = "daris-client";
+	public static final String DEFAULT_PREFIX = "daris-client";
+
+	public static String prefix() {
+		String prefix = System.getProperty("dc.prefix");
+		if (prefix != null) {
+			return prefix;
+		} else {
+			return DEFAULT_PREFIX;
+		}
+	}
 
 	private static void execute(Options options, String[] cmdArgs)
 			throws Throwable {
@@ -778,7 +787,7 @@ public class Execute {
 
 	private static void showHelp(Command cmd) {
 		if (cmd == null) {
-			System.out.println("Usage: " + PREFIX
+			System.out.println("Usage: " + prefix()
 					+ " [<options>] <command> [<args>]");
 			System.out.println("");
 			System.out.println("Description:");
@@ -808,12 +817,12 @@ public class Execute {
 			System.out.println("    execute    Execute a service.");
 			System.out.println("    logoff     Log off Mediaflux.");
 			System.out.println("");
-			System.out.println("See '" + PREFIX
+			System.out.println("See '" + prefix()
 					+ " -help <command>' to read about a specific command.");
 		} else {
 			switch (cmd) {
 			case LOGON:
-				System.out.println("Usage: " + PREFIX
+				System.out.println("Usage: " + prefix()
 						+ " [<options>] logon <domain> <user> <password>");
 				System.out.println("");
 				System.out.println("Description:");
@@ -831,7 +840,7 @@ public class Execute {
 						.println("    -mf.transport <transport>       The Mediaflux server transport. Can be http, https or tcp/ip.");
 				break;
 			case EXECUTE:
-				System.out.println("Usage: " + PREFIX
+				System.out.println("Usage: " + prefix()
 						+ " [<options>] execute <service> [<args|args-file>]");
 				System.out.println("");
 				System.out.println("Description:");
@@ -856,7 +865,8 @@ public class Execute {
 						.println("    -mf.output <xml|shell>          The output format. Can be xml or shell.");
 				break;
 			case LOGOFF:
-				System.out.println("Usage: " + PREFIX + " [<options>] logoff");
+				System.out.println("Usage: " + prefix()
+						+ " [<options>] logoff");
 				System.out.println("");
 				System.out.println("Description:");
 				System.out.println("    Log off Mediaflux.");
