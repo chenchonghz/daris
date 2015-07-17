@@ -67,7 +67,6 @@ public class Transcode {
 			return maxMem_;
 		};
 
-
 		/**
 		 * Start the resource management process. Wait until there are
 		 * sufficient resources.
@@ -116,11 +115,12 @@ public class Transcode {
 
 		public final String[] arguments;
 
-		public Mapping(String from, String fromDescription, String to, String toDescription, String program,
-				String[] arguments) {
+		public Mapping(String from, String fromDescription, String to,
+				String toDescription, String program, String[] arguments) {
 
 			this.from = from;
-			this.fromDescription = fromDescription == null ? from : fromDescription;
+			this.fromDescription = fromDescription == null ? from
+					: fromDescription;
 			this.to = to;
 			this.toDescription = toDescription == null ? to : toDescription;
 			this.provider = program;
@@ -144,10 +144,11 @@ public class Transcode {
 		public static final String MRTRIX_TRANSCODER = "mrtrix/mrconvert Transcoder";
 	}
 
-	private static void addMapping(String from, String fromDescription, String to, String toDescription,
-			String provider, String[] arguments) {
+	private static void addMapping(String from, String fromDescription,
+			String to, String toDescription, String provider, String[] arguments) {
 
-		Mapping m = new Mapping(from, fromDescription, to, toDescription, provider, arguments);
+		Mapping m = new Mapping(from, fromDescription, to, toDescription,
+				provider, arguments);
 		_mappings.put(from + "-" + to, m);
 	}
 
@@ -188,28 +189,33 @@ public class Transcode {
 	static {
 
 		// DICOM to ...
-		addMapping(MimeTypes.DICOM_SERIES, "DICOM series", MimeTypes.ANALYZE_SERIES_NL, "Analyze(Neurological)",
-				Providers.LONI_DEBABELER, new String[] { "-target", "analyze", "-mapping",
-		"DicomToAnalyze_NL_Wilson_05Jan2007.xml" });
-		addMapping(MimeTypes.DICOM_SERIES, "DICOM series", MimeTypes.ANALYZE_SERIES_RL, "Analyze(Radiological)",
-				Providers.LONI_DEBABELER, new String[] { "-target", "analyze", "-mapping",
-		"DicomToAnalyze_RL_Wilson_05Jan2007.xml" });
+		addMapping(MimeTypes.DICOM_SERIES, "DICOM series",
+				MimeTypes.ANALYZE_SERIES_NL, "Analyze(Neurological)",
+				Providers.LONI_DEBABELER, new String[] { "-target", "analyze",
+						"-mapping", "DicomToAnalyze_NL_Wilson_05Jan2007.xml" });
+		addMapping(MimeTypes.DICOM_SERIES, "DICOM series",
+				MimeTypes.ANALYZE_SERIES_RL, "Analyze(Radiological)",
+				Providers.LONI_DEBABELER, new String[] { "-target", "analyze",
+						"-mapping", "DicomToAnalyze_RL_Wilson_05Jan2007.xml" });
 
 		/*
-        addMapping(MimeTypes.DICOM_SERIES, "DICOM series", MimeTypes.NIFTI_SERIES, "NIFTI series",
-                Providers.LONI_DEBABELER, new String[] { "-target", "nifti",
-                        // "-mapping", "DicomToNifti_Wilson_23Feb2007.xml" });
-                        // "-mapping", "DicomToNifti_Wilson_05Jul2012.xml" });
-                        "-mapping", "DicomToNifti_Wilson_14Aug2012.xml" });
+		 * addMapping(MimeTypes.DICOM_SERIES, "DICOM series",
+		 * MimeTypes.NIFTI_SERIES, "NIFTI series", Providers.LONI_DEBABELER, new
+		 * String[] { "-target", "nifti", // "-mapping",
+		 * "DicomToNifti_Wilson_23Feb2007.xml" }); // "-mapping",
+		 * "DicomToNifti_Wilson_05Jul2012.xml" }); "-mapping",
+		 * "DicomToNifti_Wilson_14Aug2012.xml" });
 		 */
 
-		//		addMapping(MimeTypes.DICOM_SERIES, "DICOM series", MimeTypes.NIFTI_SERIES, "NIFTI series",
-		//				Providers.MRTRIX_TRANSCODER, null);
+		// addMapping(MimeTypes.DICOM_SERIES, "DICOM series",
+		// MimeTypes.NIFTI_SERIES, "NIFTI series",
+		// Providers.MRTRIX_TRANSCODER, null);
 
-		addMapping(MimeTypes.DICOM_SERIES, "DICOM series", MimeTypes.NIFTI_SERIES, "NIFTI series",
-				Providers.COMBINED_TRANSCODER,  new String[]{"-target", "nifti",
-				"-mapping", "DicomToNifti_Wilson_14Aug2012.xml" });
-
+		addMapping(MimeTypes.DICOM_SERIES, "DICOM series",
+				MimeTypes.NIFTI_SERIES, "NIFTI series",
+				Providers.COMBINED_TRANSCODER, new String[] { "-target",
+						"nifti", "-mapping",
+						"DicomToNifti_Wilson_14Aug2012.xml" });
 
 		// debabeler
 		/*
@@ -218,21 +224,25 @@ public class Transcode {
 		 * Providers.LONI_DEBABELER, new String[] { "-target", "minc",
 		 * "-mapping", "DicomToMinc_26Oct2011.xml" });
 		 */
-		
-		// MINC binary. Can have only one transcoder per mimetype in/out pair
-		addMapping(MimeTypes.DICOM_SERIES, "DICOM series", MimeTypes.MINC_SERIES,
-				"MINC series with MINC dcm2mnc binary", Providers.MINC_TRANSCODER, null);
 
-		addMapping(MimeTypes.DICOM_SERIES, "DICOM series", MimeTypes.SIEMENS_RDA, "RDA(Siemens Spectrum)",
+		// MINC binary. Can have only one transcoder per mimetype in/out pair
+		addMapping(MimeTypes.DICOM_SERIES, "DICOM series",
+				MimeTypes.MINC_SERIES, "MINC series with MINC dcm2mnc binary",
+				Providers.MINC_TRANSCODER, null);
+
+		addMapping(MimeTypes.DICOM_SERIES, "DICOM series",
+				MimeTypes.SIEMENS_RDA, "RDA(Siemens Spectrum)",
 				Providers.NIG_TRANSCODER, null);
 
 		// Bruker to...
-		addMapping(MimeTypes.BRUKER_SERIES, "Bruker/Paravision image series", MimeTypes.ANALYZE_SERIES_NL,
-				"Analyze(Neurological)", Providers.PVCONV, null);
-		addMapping(MimeTypes.BRUKER_SERIES, "Bruker/Paravision image series", MimeTypes.ANALYZE_SERIES_RL,
-				"Analyze(Radiological)", Providers.PVCONV, null);
-		addMapping(MimeTypes.BRUKER_SERIES, "Bruker/Paravision image series", MimeTypes.MINC_SERIES, "Minc",
+		addMapping(MimeTypes.BRUKER_SERIES, "Bruker/Paravision image series",
+				MimeTypes.ANALYZE_SERIES_NL, "Analyze(Neurological)",
 				Providers.PVCONV, null);
+		addMapping(MimeTypes.BRUKER_SERIES, "Bruker/Paravision image series",
+				MimeTypes.ANALYZE_SERIES_RL, "Analyze(Radiological)",
+				Providers.PVCONV, null);
+		addMapping(MimeTypes.BRUKER_SERIES, "Bruker/Paravision image series",
+				MimeTypes.MINC_SERIES, "Minc", Providers.PVCONV, null);
 
 	}
 
@@ -241,7 +251,8 @@ public class Transcode {
 		if (_mappings == null)
 			return null;
 
-		Vector<Transcoder> transcoders = new Vector<Transcoder>(_mappings.size());
+		Vector<Transcoder> transcoders = new Vector<Transcoder>(
+				_mappings.size());
 		for (Iterator<String> it = _mappings.keySet().iterator(); it.hasNext();) {
 			Mapping mp = _mappings.get(it.next());
 			if (mp != null) {
@@ -250,15 +261,16 @@ public class Transcode {
 				} catch (Throwable t) {
 					System.out.println(t.getMessage());
 				}
-				transcoders.add(new Transcoder(mp.from, mp.to, new TranscodeBridge(mp)));
+				transcoders.add(new Transcoder(mp.from, mp.to,
+						new TranscodeBridge(mp)));
 			}
 		}
 		return transcoders;
 
 	}
 
-	public static String transcode(File in, String fromMime, MimeType fromContentType, String toMime, File out)
-			throws Throwable {
+	public static String transcode(File in, String fromMime,
+			MimeType fromContentType, String toMime, File out) throws Throwable {
 
 		return transcode(in, fromContentType, getMapping(fromMime, toMime), out);
 
@@ -274,20 +286,24 @@ public class Transcode {
 	 * @return
 	 * @throws Throwable
 	 */
-	public static String transcode(File in, MimeType fromContentType, Mapping mapping, File out) throws Throwable {
+	public static String transcode(File in, MimeType fromContentType,
+			Mapping mapping, File out) throws Throwable {
 
 		// Directory to unpack asset contents
 		File tmpDir = PluginService.createTemporaryDirectory();
 		try {
 
 			// Unpack the content for this PSSD asset (one asset per call) into
-			// the temp directory. If DICOM, there will be one file per 2D slice.
-			
+			// the temp directory. If DICOM, there will be one file per 2D
+			// slice.
+
 			String name = fromContentType.name();
-			if (name.equalsIgnoreCase("application/zip") || name.equalsIgnoreCase(MimeTypes.ZIP)) {
+			if (name.equalsIgnoreCase("application/zip")
+					|| name.equalsIgnoreCase(MimeTypes.ZIP)) {
 				ZipUtil.unzip2(in, tmpDir, null, true);
 			} else if (name.equalsIgnoreCase(MimeTypes.AAR)) {
-				ArchiveInput ai = ArchiveRegistry.createInput(in, fromContentType);
+				ArchiveInput ai = ArchiveRegistry.createInput(in,
+						fromContentType);
 				try {
 					ArchiveExtractor.extract(ai, tmpDir, false, true, true);
 				} finally {
@@ -296,7 +312,8 @@ public class Transcode {
 			} else if (name.equalsIgnoreCase(MimeTypes.TAR)) {
 				TarUtil.untar(tmpDir, in);
 			} else {
-				throw new Exception("Content MimeType " + name + " is not handled");
+				throw new Exception("Content MimeType " + name
+						+ " is not handled");
 			}
 
 			// Find the top-level files (this is all we want for Bruker) in the
@@ -304,7 +321,8 @@ public class Transcode {
 			Collection<File> inputFiles = Arrays.asList(tmpDir.listFiles());
 
 			// Get size of directory in MB
-			Integer sizeOf = (Integer) ((int) (org.apache.commons.io.FileUtils.sizeOf(tmpDir) / 1000000));
+			Integer sizeOf = (Integer) ((int) (org.apache.commons.io.FileUtils
+					.sizeOf(tmpDir) / 1000000));
 			/*
 			 * System.out.println("");
 			 * System.out.println("No. of tmp dir files="+inputs.size());
@@ -313,21 +331,23 @@ public class Transcode {
 			if (mapping.provider.equals(Providers.LONI_DEBABELER)) {
 				doDebabeler(tmpDir, mapping, sizeOf);
 			} else if (mapping.provider.equals(Providers.PVCONV)) {
-				doPVConv (tmpDir, mapping, inputFiles);
+				doPVConv(tmpDir, mapping, inputFiles);
 			} else if (mapping.provider.equals(Providers.NIG_TRANSCODER)) {
-				doRDA (tmpDir, inputFiles);
+				doRDA(tmpDir, inputFiles);
 			} else if (mapping.provider.equals(Providers.MINC_TRANSCODER)) {
-				doMINC (tmpDir, inputFiles, sizeOf);
+				doMINC(tmpDir, inputFiles, sizeOf);
 			} else if (mapping.provider.equals(Providers.COMBINED_TRANSCODER)) {
 
 				// Which transcoder are we using
-				String t = DICOMtoNIFTITranscoder;				
+				String t = DICOMtoNIFTITranscoder;
 				if (t.equals("debabeler")) {
 					doDebabeler(tmpDir, mapping, sizeOf);
 				} else if (t.equals("mrtrix")) {
 					doMRTrix(tmpDir, mapping, sizeOf);
 				} else {
-					throw new Exception (t + " is not a valid DICOM to NIFTI transcoder user setting.  Must be one of 'debabeler,mrtrix'");
+					throw new Exception(
+							t
+									+ " is not a valid DICOM to NIFTI transcoder user setting.  Must be one of 'debabeler,mrtrix'");
 				}
 			}
 
@@ -335,7 +355,7 @@ public class Transcode {
 			// before packaging the output
 			for (File inputFile : inputFiles) {
 				if (inputFile.isDirectory()) {
-					FileUtils.deleteDirectory(inputFile); 
+					FileUtils.deleteDirectory(inputFile);
 					// File.delete seems to fail to work reliably
 				} else {
 					FileUtils.deleteQuietly(inputFile);
@@ -354,9 +374,16 @@ public class Transcode {
 
 			// Use aar as the output container as it has no limit in size
 			int clevel = 6;
-			ArchiveUtil.compressDirectory(tmpDir, out, MimeTypes.AAR, clevel, null);
+			ArchiveUtil.compressDirectory(tmpDir, out, MimeTypes.AAR, clevel,
+					null);
 		} finally {
-			FileUtils.deleteDirectory(tmpDir);
+			try {
+				FileUtils.deleteDirectory(tmpDir);
+			} catch (Throwable e) {
+				if (tmpDir != null) {
+					FileUtils.forceDeleteOnExit(tmpDir);
+				}
+			}
 		}
 		return MimeTypes.AAR;
 	}
@@ -411,7 +438,8 @@ public class Transcode {
 		 * output zip file holdin the transformed data
 		 */
 		@Override
-		public String transcode(File in, MimeType fromType, MimeType fromContentType, MimeType toType, File out,
+		public String transcode(File in, MimeType fromType,
+				MimeType fromContentType, MimeType toType, File out,
 				Map<String, String> params) throws Throwable {
 
 			return Transcode.transcode(in, fromContentType, _mapping, out);
@@ -456,14 +484,16 @@ public class Transcode {
 
 	}
 
-	private static void createErrorFile(File dir, String error) throws Throwable {
+	private static void createErrorFile(File dir, String error)
+			throws Throwable {
 		String t = dir.getAbsolutePath() + "/" + "error.txt";
 		PrintWriter writer = new PrintWriter(t, "UTF-8");
 		writer.println(error);
 		writer.close();
 	}
 
-	private static void doDebabeler (File tmpDir, Mapping mapping, Integer sizeOf) throws Throwable {
+	private static void doDebabeler(File tmpDir, Mapping mapping, Integer sizeOf)
+			throws Throwable {
 
 		final String debabelerJar = "loni-debabeler.jar";
 		String[] jars = new String[] { debabelerJar };
@@ -472,13 +502,15 @@ public class Transcode {
 
 		// Suppress messages so we don't end up with giant XML Documents
 		// which fail to parse
-		String[] mainArgs = concat(new String[] { "-input", tmpDir.getAbsolutePath(), "-suppress" },
+		String[] mainArgs = concat(
+				new String[] { "-input", tmpDir.getAbsolutePath(), "-suppress" },
 				mapping.arguments);
 		String[] args = concat(mainClass, mainArgs);
 
 		// Assess whether there are sufficient resources to start this
 		// debabeler
-//		System.out.println("ReseourceManager max memory = " + ResourceManager.getMaxMem());
+		// System.out.println("ReseourceManager max memory = " +
+		// ResourceManager.getMaxMem());
 		ResourceManager.start(sizeOf);
 		try {
 			// Run Debabeler externally. Runs in its own thread and so
@@ -496,17 +528,19 @@ public class Transcode {
 
 	}
 
-	private static void doMRTrix (File tmpDir, Mapping mapping, Integer sizeOf) throws Throwable {
+	private static void doMRTrix(File tmpDir, Mapping mapping, Integer sizeOf)
+			throws Throwable {
 
 		// Use the same resource management approach as debabeler
 
 		// DICOM to NIFTI via the external binary mrconvert
 		String cmd = "mrconvert";
-		String args = "-datatype int16 ";          // Output data type
+		String args = "-datatype int16 "; // Output data type
 		String outFileName = tmpDir.getAbsolutePath() + "/" + "mriconvert.nii";
 		args += tmpDir.getAbsolutePath() + " " + outFileName;
 
-		// Assess whether there are sufficient resources to start this transcoding
+		// Assess whether there are sufficient resources to start this
+		// transcoding
 		ResourceManager.start(sizeOf);
 		try {
 			// Will throw exception if binary missing
@@ -518,7 +552,8 @@ public class Transcode {
 		}
 	}
 
-	private static void doPVConv (File tmpDir, Mapping mapping, Collection<File> inputFiles) throws Throwable {
+	private static void doPVConv(File tmpDir, Mapping mapping,
+			Collection<File> inputFiles) throws Throwable {
 		// These are fairly light weight and don't need any careful
 		// resource
 		// management
@@ -549,7 +584,8 @@ public class Transcode {
 		}
 	}
 
-	private static void doMINC (File tmpDir, Collection<File> inputFiles, Integer sizeOf) throws Throwable {
+	private static void doMINC(File tmpDir, Collection<File> inputFiles,
+			Integer sizeOf) throws Throwable {
 		// Use the same resource management approach as debabeler
 		// DICOM to MINC via the external MINC binary dcm2mnc
 		String cmd = "dcm2mnc";
@@ -575,8 +611,8 @@ public class Transcode {
 		}
 	}
 
-	
-	private static void doRDA (File tmpDir, Collection<File> inputFiles) throws Throwable {
+	private static void doRDA(File tmpDir, Collection<File> inputFiles)
+			throws Throwable {
 		// These are fairly light weight and don't need any careful
 		// resource management
 
