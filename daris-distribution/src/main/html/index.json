@@ -6,6 +6,7 @@
     "daris_transcoders":                    ["@TRANSCODERS_FILE@", "@TRANSCODERS_VERSION@", "@MFLUX_VERSION@"],
     "daris_sinks":                          ["@SINKS_FILE@", "@SINKS_VERSION@", "@MFLUX_VERSION@"],
     "daris_analyzers":                      ["@ANALYZERS_FILE@", "@ANALYZERS_VERSION@", "@MFLUX_VERSION@"],
+    "daris_client":                         ["@CLIENT_FILE@", "@CLIENT_VERSION@", "@MFLUX_VERSION@"],
     "daris_client-dicom-client":            ["@DICOM_CLIENT_FILE@", "@DICOM_CLIENT_VERSION@", "@MFLUX_VERSION@"],
     "daris_client-mbcmr-upload":            ["@MBCMR_UPLOAD_FILE@", "@MBCMR_UPLOAD_VERSION@", "@MFLUX_VERSION@"],
     "daris_client-mbcpetct-dicom-retrieve": ["@MBCPETCT_DICOM_RETRIEVE_FILE@", "@MBCPETCT_DICOM_RETRIEVE_VERSION@", "@MFLUX_VERSION@"],

@@ -207,6 +207,14 @@
 									<value>daris-dcmtools-${daris-dcmtools.version}.jar</value>
 								</replacement>
 								<replacement>
+									<token>@CLIENT_VERSION@</token>
+									<value>${daris-client.version}</value>
+								</replacement>
+								<replacement>
+									<token>@CLIENT_FILE@</token>
+									<value>daris-client-${daris-client.version}.zip</value>
+								</replacement>
+								<replacement>
 									<token>@DICOM_CLIENT_VERSION@</token>
 									<value>${daris-client-dicom-client.version}</value>
 								</replacement>
@@ -351,6 +359,14 @@
 								<replacement>
 									<token>@DCMTOOLS_FILE@</token>
 									<value>daris-dcmtools-${daris-dcmtools.version}.jar</value>
+								</replacement>
+								<replacement>
+									<token>@CLIENT_VERSION@</token>
+									<value>${daris-client.version}</value>
+								</replacement>
+								<replacement>
+									<token>@CLIENT_FILE@</token>
+									<value>daris-client-${daris-client.version}.zip</value>
 								</replacement>
 								<replacement>
 									<token>@DICOM_CLIENT_VERSION@</token>
