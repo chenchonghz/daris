@@ -113,6 +113,13 @@
 				<include>daris-client-dicom-client-*.zip</include>
 			</includes>
 		</fileSet>
+		<fileSet>
+			<directory>${project.parent.basedir}/daris-client/target</directory>
+			<outputDirectory>.</outputDirectory>
+			<includes>
+				<include>daris-client-*.zip</include>
+			</includes>
+		</fileSet>
 	</fileSets>
 	<files>
 		<file>
