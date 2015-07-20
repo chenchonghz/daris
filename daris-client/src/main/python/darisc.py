@@ -16,6 +16,8 @@ import sys
 DARIS_CLIENT_JAR_PATH = None
 
 def get_daris_client_jar_path():
+    """ Returns the path to daris-client.jar.
+    """
     global DARIS_CLIENT_JAR_PATH
     if not DARIS_CLIENT_JAR_PATH:
         try:
@@ -23,14 +25,20 @@ def get_daris_client_jar_path():
         except(KeyError):
             pass
     if not DARIS_CLIENT_JAR_PATH:
-        DARIS_CLIENT_JAR_PATH = os.path.dirname(__file__) + '/daris-client.jar'
+        path = os.path.dirname(__file__) + '/daris-client.jar'
+        if os.path.isfile(path):
+            DARIS_CLIENT_JAR_PATH = path
     return DARIS_CLIENT_JAR_PATH
 
 def set_daris_client_jar_path(path):
+    """ Sets the location of daris-client.jar.
+    """
     global  DARIS_CLIENT_JAR_PATH
     DARIS_CLIENT_JAR_PATH = path
 
 def check_daris_client_jar():
+    """ Checks if daris-client.jar is available.
+    """
     path = get_daris_client_jar_path()
     if not path:
         raise Exception('DARIS_CLIENT_JAR_PATH is not set.')
@@ -38,9 +46,11 @@ def check_daris_client_jar():
         raise Exception('DaRIS client jar file: ' + path + ' does not exist.')
 
 def check_java():
+    """ Checks if java is available. 
+    """
     try:
         sp = subprocess.Popen(["java", "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (stdout, stderr) = sp.communicate()
+        (stdout, stderr) = sp.communicate()  # @UnusedVariable
         if not stderr or not stderr.startswith('java version'):
             raise Exception('Failed to parse java version. Found : ' + stderr)
         i1 = stderr.find('"')
@@ -59,15 +69,19 @@ def check_java():
         raise Exception('Java not found.')
 
 def check_dependencies():
+    """ Checks the dependencies(Java and daris-client.jar).
+    """
     check_java()
     check_daris_client_jar()
 
 def create_daris_client_command():
+    """ Creates the command string for executing the daris-client.jar
+    """
     basename = os.path.basename(__file__)
     return  ['java', '-Ddc.prefix=' + basename, '-jar', get_daris_client_jar_path()]
 
 class XmlElement(object):
-
+    """ The class for Xml Element. It wraps ElementTree.Element."""
     def __init__(self, element=None, name=None, attributes=None, value=None):
         if element is not None:
             if name is not None:
@@ -245,6 +259,8 @@ class XmlElement(object):
         return self._element.__len__()
 
 class XmlDoc(object):
+    """ A class contains only a class method to parse a xml string or file to a XmlElement object.
+    """
     @classmethod
     def parse(cls, text):
         if os.path.isfile(text):  # text is a file
@@ -257,6 +273,8 @@ class XmlDoc(object):
             return XmlElement(ElementTree.fromstring(str(text)))
 
 class XmlStringWriter(object):
+    """ A class to build a string in xml format.
+    """
     def __init__(self, root=None):
         self.__stack = []
         self.__items = []
@@ -268,7 +286,7 @@ class XmlStringWriter(object):
         return ''.join(self.__items)
 
     def doc_elem(self):
-        doc = XmlDocument(text=self.doc_text())
+        doc = XmlDoc.parse(self.doc_text())
         if doc is not None:
             return doc.root()
 
@@ -333,6 +351,8 @@ class XmlStringWriter(object):
                     self.add_element(sub_elem, parent=True)
 
 class XmlDocWriter(object):
+    """ A class to build xml document.
+    """
     def __init__(self, root=None):
         self.__stack = []
         self.__tb = ElementTree.TreeBuilder()
@@ -479,7 +499,7 @@ class Session(object):
             if args is not None:
                 if (inputs is not None and len(inputs) > 0) or output is not None:
                     if inputs is not None:
-                        for input in inputs:
+                        for input in inputs:  # @ReservedAssignment
                             args.add_element(XmlElement(name='in', value=input))
                     if output is not None:
                         args.add_element(XmlElement(name='out', value=output))
@@ -496,7 +516,7 @@ class Session(object):
         cmd.append('logoff')
         try:
             sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            (stdout, stderr) = sp.communicate()
+            (stdout, stderr) = sp.communicate()  # @UnusedVariable
             if stderr:
                 raise Exception('Failed to log off DaRIS(Mediaflux). \nError: ' + stderr);
         finally:
@@ -511,16 +531,19 @@ class Session(object):
             raise Exception('Server transport is not set.')
 
 def main(argv):
+    """ The main method wraps daris-client.jar. It checks availability of Java and daris-client.jar, executes daris-client.jar by passing the command arguments to it.
+    """
+    # check the dependencies: java and daris-client.jar
     check_dependencies()
+    # start making the command line.
     cmd = create_daris_client_command()
+    # append the arguments
     cmd += argv
-    sp = subprocess.call(cmd)
+    # execute the command line
+    subprocess.call(cmd)
     
 if __name__ == '__main__':
-    set_daris_client_jar_path('/tmp/daris-client.jar')
+    # set_daris_client_jar_path('/path/to/daris-client.jar')
     main(sys.argv[1:])
-
-    
-    
-    
+ 
     
