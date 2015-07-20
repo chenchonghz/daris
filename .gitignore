@@ -14,3 +14,4 @@ buildNumber.properties
 #.settings/
 # mac os
 .DS_Store
+.pyc
