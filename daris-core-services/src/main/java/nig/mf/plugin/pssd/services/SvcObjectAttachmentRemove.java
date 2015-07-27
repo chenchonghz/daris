@@ -2,6 +2,7 @@ package nig.mf.plugin.pssd.services;
 
 import java.util.Collection;
 
+import nig.mf.plugin.pssd.Asset;
 import nig.mf.plugin.pssd.object.Attachment;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.dtype.AssetType;
@@ -14,8 +15,10 @@ public class SvcObjectAttachmentRemove extends PluginService {
 
 	public SvcObjectAttachmentRemove() {
 		_defn = new Interface();
-		_defn.add(new Interface.Element("id", CiteableIdType.DEFAULT, "The citeable identity of the object.", 1, 1));
-		_defn.add(new Interface.Element("aid", AssetType.DEFAULT, "The asset id of the attachment to be removed.", 0,
+		_defn.add(new Interface.Element("id", CiteableIdType.DEFAULT,
+				"The citeable identity of the object.", 1, 1));
+		_defn.add(new Interface.Element("aid", AssetType.DEFAULT,
+				"The asset id of the attachment to be removed.", 0,
 				Integer.MAX_VALUE));
 	}
 
@@ -35,10 +38,25 @@ public class SvcObjectAttachmentRemove extends PluginService {
 		return ACCESS_MODIFY;
 	}
 
-	public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w) throws Throwable {
+	public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w)
+			throws Throwable {
 		String cid = args.value("id");
-		Collection<String> aids = args.values("aid");
-		Attachment.destroy(executor(), cid, aids);
+		String assetId = executor().execute("asset.get",
+				"<args><cid>" + cid + "</cid></args>", null, null).value(
+				"asset/@id");
+		Collection<String> attachmentAssetIds = args.values("aid");
+		if (attachmentAssetIds != null) {
+			for (String aaid : attachmentAssetIds) {
+				executor().execute(
+						"asset.relationship.remove",
+						"<args><id>" + assetId
+								+ "</id><to relationship=\"attachment\">" + aaid
+								+ "</to></args>", null, null);
+				executor().execute("asset.hard.destroy",
+						"<args><id>" + aaid + "</id></args>", null, null);
+			}
+		}
+		// Attachment.destroy(executor(), cid, aids);
 	}
 
 }

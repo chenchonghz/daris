@@ -17,7 +17,8 @@ public class Attachment extends RelatedAsset {
 		RelatedAsset.create(executor, cid, RELATIONSHIP_TYPE, null, name, description, input, ifExists, w);
 	}
 
-	public static void destroy(ServiceExecutor executor, String cid, Collection<String> aids) throws Throwable {
+	// TODO: remove it as it is deprecated.
+	private static void destroy(ServiceExecutor executor, String cid, Collection<String> aids) throws Throwable {
 		RelatedAsset.remove(executor, cid, RELATIONSHIP_TYPE, aids);
 	}
 
@@ -34,7 +35,8 @@ public class Attachment extends RelatedAsset {
 		return RelatedAsset.exists(executor, sroute, cid, RELATIONSHIP_TYPE, null, name);
 	}
 
-	public static void clear(ServiceExecutor executor, String cid) throws Throwable {
+	// TODO: remove it as it is deprecated.
+	private static void clear(ServiceExecutor executor, String cid) throws Throwable {
 		RelatedAsset.clear(executor, cid, RELATIONSHIP_TYPE);
 	}
 

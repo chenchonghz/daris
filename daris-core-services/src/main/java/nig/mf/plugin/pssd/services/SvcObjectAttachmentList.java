@@ -14,8 +14,9 @@ public class SvcObjectAttachmentList extends PluginService {
 
 	public SvcObjectAttachmentList() {
 		_defn = new Interface();
-		Interface.Element me = new Interface.Element("id", CiteableIdType.DEFAULT, "The identity of the PSSD object.",
-				1, 1);
+		Interface.Element me = new Interface.Element("id",
+				CiteableIdType.DEFAULT, "The identity of the PSSD object.", 1,
+				1);
 		_defn.add(me);
 
 	}
@@ -36,22 +37,21 @@ public class SvcObjectAttachmentList extends PluginService {
 		return ACCESS_ACCESS;
 	}
 
-	public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w) throws Throwable {
+	public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w)
+			throws Throwable {
 
 		String id = args.value("id");
-		String where = "related to{" + Attachment.INVERSE_RELATIONSHIP_TYPE + "} ( cid = '" + id + "' )";
-		XmlDocMaker dm = new XmlDocMaker("args");
-		dm.add("where", where);
-		dm.add("action", "get-meta");
-		dm.add("size", "infinity");
-		dm.add("pdist", 0);
-		XmlDoc.Element r = executor().execute("asset.query", dm.root());
-		Collection<XmlDoc.Element> aes = r.elements("asset");
-		if (aes != null) {
-			for (XmlDoc.Element ae : aes) {
+		Collection<String> attachmentAssetIds = executor().execute("asset.get",
+				"<args><cid>" + id + "</cid></args>", null, null).values(
+				"asset/related[@type='attachment']/to");
+
+		if (attachmentAssetIds != null) {
+			for (String aaid : attachmentAssetIds) {
+				XmlDoc.Element ae = executor().execute("asset.get", "<args><id>"+aaid+"</id></args>", null, null ).element("asset");
 				String proute = ae.value("@proute");
 				if (proute != null) {
-					w.push("attachment", new String[] { "proute", proute, "id", ae.value("@id") });
+					w.push("attachment", new String[] { "proute", proute, "id",
+							ae.value("@id") });
 				} else {
 					w.push("attachment", new String[] { "id", ae.value("@id") });
 				}
@@ -65,5 +65,34 @@ public class SvcObjectAttachmentList extends PluginService {
 				w.pop();
 			}
 		}
+
+//		String where = "related to{" + Attachment.INVERSE_RELATIONSHIP_TYPE
+//				+ "} ( cid = '" + id + "' )";
+//		XmlDocMaker dm = new XmlDocMaker("args");
+//		dm.add("where", where);
+//		dm.add("action", "get-meta");
+//		dm.add("size", "infinity");
+//		dm.add("pdist", 0);
+//		XmlDoc.Element r = executor().execute("asset.query", dm.root());
+//		Collection<XmlDoc.Element> aes = r.elements("asset");
+//		if (aes != null) {
+//			for (XmlDoc.Element ae : aes) {
+//				String proute = ae.value("@proute");
+//				if (proute != null) {
+//					w.push("attachment", new String[] { "proute", proute, "id",
+//							ae.value("@id") });
+//				} else {
+//					w.push("attachment", new String[] { "id", ae.value("@id") });
+//				}
+//				w.add("name", ae.value("name"));
+//				String desc = ae.value("description");
+//				if (desc != null) {
+//					w.add("description", desc);
+//				}
+//				w.add(ae.element("content/type"), true);
+//				w.add(ae.element("content/size"), true);
+//				w.pop();
+//			}
+//		}
 	}
 }
