@@ -29,7 +29,7 @@ import daris.client.ui.transform.TransformBrowser;
  */
 public class DaRIS implements EntryPoint {
 
-	public static final String PACKAGE = "daris";
+	public static final String PACKAGE = "daris-portal";
 
 	public DaRIS() {
 	}
