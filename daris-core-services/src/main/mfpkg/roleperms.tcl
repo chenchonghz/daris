@@ -87,6 +87,7 @@ grantRoleWriteAccessServices  daris:pssd.model.user \
 	  server.io.write \
 	  server.io.write.finish \
 	  server.log \
+      server.task.named.begin \
       authorization.role.create \
       user.self.* \
       secure.wallet.* \
