@@ -237,7 +237,7 @@ if { [info exists domain] } {
     }
 }
 if { $dmn == 1 } {
-   source DomainSpecific/install.tcl
+   source domain-specific/dmn-install.tcl
 }
 
 
