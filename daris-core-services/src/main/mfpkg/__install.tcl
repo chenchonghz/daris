@@ -111,9 +111,9 @@ source pssd-namespaces.tcl
 # Install DICOM ingest FCP file
 # ============================================================================
 source fcp.tcl
-
-install_fcp /pssd/fcp pssd.dicom.ingest.fcp "Import local DICOM files"
-install_fcp /pssd/fcp pssd.import.fcp "Import local files"
+set daris_fcp_namespace [get_daris_fcp_namespace]
+install_fcp ${daris_fcp_namespace} pssd.dicom.ingest.fcp "Import local DICOM files"
+install_fcp ${daris_fcp_namespace} pssd.import.fcp "Import local files"
 
 
 #

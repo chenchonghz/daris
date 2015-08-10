@@ -1,3 +1,12 @@
+proc get_daris_method_namespace { } {
+    set ns [xvalue property [application.property.get :property -app daris daris.namespace.default]]
+    if { ${ns} == "pssd" || [string_ends_with ${ns} "pssd"] == 1 } {
+        return "${ns}/methods"
+    } else {
+        return "${ns}/pssd/methods"
+    }
+}
+
 #============================================================================#
 # Very generic Method as an example. No specific Subject meta-data as  that  #
 # would be domain specific.                                                  #
@@ -38,11 +47,12 @@ proc create_domain_method_generic { cid_root doc_ns { action 0 } { fillin 0 } } 
 
     # The subject meta-data just lets you populate mf-note
     # Generally this meta-data would be defined in your own package
+    set method_ns [get_daris_method_namespace]
     set args "${args} \
-        :namespace pssd/methods  \
-        :name ${name} \
+        :namespace \"${method_ns}\"  \
+        :name \"${name}\" \
         :cid-root-name ${cid_root} \
-        :description ${description} \
+        :description \"${description}\" \
         :subject < \
             :project < \
                 :public < \

@@ -305,6 +305,10 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcTempAssetCreate());
 
         _services.add(new SvcTransformFind());
+        
+        _services.add(new SvcNamespaceDefaultGet());
+        _services.add(new SvcNamespaceDefaultSet());
+        _services.add(new SvcProjectNamespaceDefaultGet());
 
         // Register a DICOM handler specific to NIG.
         DicomAssetEngineRegistry.register(new DicomAssetHandlerFactory());

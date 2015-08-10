@@ -15,54 +15,67 @@ public class ApplicationProperty {
 
     public static final String APPLICATION_NAME = Application.DARIS;
 
-    public static void set(ServiceExecutor executor, String name, String value) throws Throwable {
+    public static void set(ServiceExecutor executor, String name, String value)
+            throws Throwable {
         // create the property
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("ifexists", "ignore");
-        dm.push("property", new String[] { "app", APPLICATION_NAME, "name", name });
+        dm.push("property", new String[] { "app", APPLICATION_NAME, "name",
+                name });
         executor.execute("application.property.create", dm.root());
 
         // set the property value
         dm = new XmlDocMaker("args");
-        dm.add("property", new String[] { "app", APPLICATION_NAME, "name", name }, value);
+        dm.add("property",
+                new String[] { "app", APPLICATION_NAME, "name", name }, value);
         executor.execute("application.property.set", dm.root());
     }
 
-    public static String get(ServiceExecutor executor, String name) throws Throwable {
+    public static String get(ServiceExecutor executor, String name)
+            throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("app", APPLICATION_NAME);
         dm.add("name", name);
-        return executor.execute("application.property.describe", dm.root()).value("property/value");
+        return executor.execute("application.property.describe", dm.root())
+                .value("property/value");
     }
 
-    public static void destroy(ServiceExecutor executor, String name) throws Throwable {
+    public static void destroy(ServiceExecutor executor, String name)
+            throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
-        dm.add("property", new String[] { "app", APPLICATION_NAME, "name", name });
+        dm.add("property",
+                new String[] { "app", APPLICATION_NAME, "name", name });
         executor.execute("application.property.destroy", dm.root());
     }
 
-    public static boolean exists(ServiceExecutor executor, String name) throws Throwable {
+    public static boolean exists(ServiceExecutor executor, String name)
+            throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("property", new String[] { "app", APPLICATION_NAME }, name);
-        return executor.execute("application.property.exists", dm.root()).booleanValue("exists");
+        return executor.execute("application.property.exists", dm.root())
+                .booleanValue("exists");
     }
 
     public static class TemporaryNamespace {
 
-        public static final String TMP_NAMESPACE_DEFAULT = Application.NAMESPACE + "/tmp";
         public static final String TMP_NAMESPACE_PROPERTY = "namespace.tmp";
 
         public static String get(ServiceExecutor executor) throws Throwable {
             if (!ApplicationProperty.exists(executor, TMP_NAMESPACE_PROPERTY)) {
-                set(executor, TMP_NAMESPACE_DEFAULT);
-                return TMP_NAMESPACE_DEFAULT;
+                String namespace = Application.defaultNamespace(executor)
+                        + "/tmp";
+                set(executor, namespace);
+                return namespace;
             } else {
-                return ApplicationProperty.get(executor, TMP_NAMESPACE_PROPERTY);
+                return ApplicationProperty
+                        .get(executor, TMP_NAMESPACE_PROPERTY);
             }
         }
 
-        public static void set(ServiceExecutor executor, String namespace) throws Throwable {
-            ApplicationProperty.set(executor, TMP_NAMESPACE_PROPERTY, namespace);
+        public static void set(ServiceExecutor executor, String namespace)
+                throws Throwable {
+            ApplicationProperty
+                    .set(executor, TMP_NAMESPACE_PROPERTY, namespace);
         }
 
     }
@@ -111,9 +124,11 @@ public class ApplicationProperty {
             }
             String[] fields = s.split(FIELD_REGEX);
             if (fields.length != 3) {
-                throw new IllegalArgumentException("Failed to parse layout pattern entry: " + s);
+                throw new IllegalArgumentException(
+                        "Failed to parse layout pattern entry: " + s);
             }
-            return new Layout.Pattern(fields[0], "".equals(fields[1]) ? null : fields[1], fields[2]);
+            return new Layout.Pattern(fields[0], "".equals(fields[1]) ? null
+                    : fields[1], fields[2]);
         }
 
         private static List<Layout.Pattern> decodeAll(String s) {
@@ -121,16 +136,19 @@ public class ApplicationProperty {
                 return null;
             }
             String[] entries = s.split(ENTRY_REGEX);
-            List<Layout.Pattern> lps = new ArrayList<Layout.Pattern>(entries.length);
+            List<Layout.Pattern> lps = new ArrayList<Layout.Pattern>(
+                    entries.length);
             for (int i = 0; i < entries.length; i++) {
                 lps.add(decode(entries[i]));
             }
             return lps;
         }
 
-        public static void setAll(ServiceExecutor executor, List<Layout.Pattern> layoutPatterns) throws Throwable {
+        public static void setAll(ServiceExecutor executor,
+                List<Layout.Pattern> layoutPatterns) throws Throwable {
             if (layoutPatterns == null || layoutPatterns.isEmpty()) {
-                ApplicationProperty.destroy(executor, SHOPPING_CART_LAYOUT_PATTERN_PROPERTY);
+                ApplicationProperty.destroy(executor,
+                        SHOPPING_CART_LAYOUT_PATTERN_PROPERTY);
                 return;
             }
             /*
@@ -140,30 +158,39 @@ public class ApplicationProperty {
             Set<String> patterns = new HashSet<String>();
             for (Layout.Pattern lp : layoutPatterns) {
                 if (names.contains(lp.name)) {
-                    throw new IllegalArgumentException("Duplicated layout pattern name: " + lp.name);
+                    throw new IllegalArgumentException(
+                            "Duplicated layout pattern name: " + lp.name);
                 } else {
                     names.add(lp.name);
                 }
                 if (patterns.contains(lp.pattern)) {
-                    throw new IllegalArgumentException("Duplicated layout pattern:" + lp.pattern);
+                    throw new IllegalArgumentException(
+                            "Duplicated layout pattern:" + lp.pattern);
                 } else {
                     patterns.add(lp.pattern);
                 }
             }
-            ApplicationProperty.set(executor, SHOPPING_CART_LAYOUT_PATTERN_PROPERTY, encodeAll(layoutPatterns));
+            ApplicationProperty.set(executor,
+                    SHOPPING_CART_LAYOUT_PATTERN_PROPERTY,
+                    encodeAll(layoutPatterns));
         }
 
-        public static List<Layout.Pattern> getAll(ServiceExecutor executor) throws Throwable {
-            if (!ApplicationProperty.exists(executor, SHOPPING_CART_LAYOUT_PATTERN_PROPERTY)) {
-                List<Layout.Pattern> defaultPatterns = Arrays.asList(Layout.Pattern.PSSD_DEFAULT);
+        public static List<Layout.Pattern> getAll(ServiceExecutor executor)
+                throws Throwable {
+            if (!ApplicationProperty.exists(executor,
+                    SHOPPING_CART_LAYOUT_PATTERN_PROPERTY)) {
+                List<Layout.Pattern> defaultPatterns = Arrays
+                        .asList(Layout.Pattern.PSSD_DEFAULT);
                 setAll(executor, defaultPatterns);
                 return defaultPatterns;
             } else {
-                return decodeAll(ApplicationProperty.get(executor, SHOPPING_CART_LAYOUT_PATTERN_PROPERTY));
+                return decodeAll(ApplicationProperty.get(executor,
+                        SHOPPING_CART_LAYOUT_PATTERN_PROPERTY));
             }
         }
 
-        public static Layout.Pattern getPattern(ServiceExecutor executor, String pattern) throws Throwable {
+        public static Layout.Pattern getPattern(ServiceExecutor executor,
+                String pattern) throws Throwable {
             List<Layout.Pattern> lps = getAll(executor);
             if (lps != null) {
                 for (Layout.Pattern lp : lps) {
@@ -175,8 +202,10 @@ public class ApplicationProperty {
             return null;
         }
 
-        public static boolean exists(ServiceExecutor executor, Layout.Pattern layoutPattern) throws Throwable {
-            if (layoutPattern == null || layoutPattern.pattern == null || layoutPattern.name == null) {
+        public static boolean exists(ServiceExecutor executor,
+                Layout.Pattern layoutPattern) throws Throwable {
+            if (layoutPattern == null || layoutPattern.pattern == null
+                    || layoutPattern.name == null) {
                 return false;
             }
             List<Layout.Pattern> lps = getAll(executor);
@@ -191,7 +220,8 @@ public class ApplicationProperty {
             return false;
         }
 
-        public static boolean exists(ServiceExecutor executor, String pattern) throws Throwable {
+        public static boolean exists(ServiceExecutor executor, String pattern)
+                throws Throwable {
             if (pattern == null) {
                 return false;
             }
@@ -207,8 +237,10 @@ public class ApplicationProperty {
             return false;
         }
 
-        public static void add(ServiceExecutor executor, Layout.Pattern layoutPattern) throws Throwable {
-            if (layoutPattern == null || layoutPattern.pattern == null || layoutPattern.name == null) {
+        public static void add(ServiceExecutor executor,
+                Layout.Pattern layoutPattern) throws Throwable {
+            if (layoutPattern == null || layoutPattern.pattern == null
+                    || layoutPattern.name == null) {
                 return;
             }
             List<Layout.Pattern> lps = getAll(executor);
@@ -218,10 +250,12 @@ public class ApplicationProperty {
             }
             for (Layout.Pattern lp : lps) {
                 if (lp.name.equals(layoutPattern.name)) {
-                    throw new IllegalArgumentException("Layout pattern named: " + lp.name + " already exists.");
+                    throw new IllegalArgumentException("Layout pattern named: "
+                            + lp.name + " already exists.");
                 }
                 if (lp.pattern.equals(layoutPattern.pattern)) {
-                    throw new IllegalArgumentException("Layout pattern: \"" + lp.pattern + "\" already exists.");
+                    throw new IllegalArgumentException("Layout pattern: \""
+                            + lp.pattern + "\" already exists.");
                 }
             }
             List<Layout.Pattern> nlps = new ArrayList<Layout.Pattern>(lps);
@@ -229,7 +263,8 @@ public class ApplicationProperty {
             setAll(executor, nlps);
         }
 
-        public static void remove(ServiceExecutor executor, String name) throws Throwable {
+        public static void remove(ServiceExecutor executor, String name)
+                throws Throwable {
             if (name == null) {
                 return;
             }

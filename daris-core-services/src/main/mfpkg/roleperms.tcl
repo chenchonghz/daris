@@ -39,6 +39,7 @@ createRole    daris:pssd.model.user
 grantRoleReadAccessServices   daris:pssd.model.user \
     { daris.project.metadata.harvest \
       om.pssd.* \
+      daris.* \
       nig.* \
       asset.model.* \
       actor.have \
@@ -76,6 +77,7 @@ grantRoleReadAccessServices   daris:pssd.model.user \
 grantRoleWriteAccessServices  daris:pssd.model.user \
     { daris.project.metadata.harvest \
       om.pssd.*  \
+      daris.*  \
       nig.* \
       asset.create \
       asset.destroy \
@@ -88,6 +90,7 @@ grantRoleWriteAccessServices  daris:pssd.model.user \
 	  server.io.write.finish \
 	  server.log \
       server.task.named.begin \
+      server.task.named.end \
       authorization.role.create \
       user.self.* \
       secure.wallet.* \
@@ -247,6 +250,7 @@ grantRolePerms daris:pssd.administrator  \
       { service om.pssd.study.type.create ADMINISTER } \
       { service om.pssd.study.type.destroy ADMINISTER } \
       { service om.pssd.study.type.destroy.all ADMINISTER } \
+      { service daris.* ADMINISTER } \
     }
     
 # Allow the pssd.administrator to administer the document namespace

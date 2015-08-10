@@ -41,24 +41,24 @@ proc create_dict_pssd_animal_species { ns } {
     if { [xvalue exists [dictionary.exists :name ${dict}]] == "false" } {
         dictionary.create :name ${dict} :description ${desc} :case-sensitive true
     }
-    dictionary.entry.add :dictionary test :term human
-    dictionary.entry.add :dictionary test :term baboon
-    dictionary.entry.add :dictionary test :term cat
-    dictionary.entry.add :dictionary test :term "cane toad"
-    dictionary.entry.add :dictionary test :term chicken
-    dictionary.entry.add :dictionary test :term dog
-    dictionary.entry.add :dictionary test :term echidna
-    dictionary.entry.add :dictionary test :term goanna
-    dictionary.entry.add :dictionary test :term guineapig
-    dictionary.entry.add :dictionary test :term harrier
-    dictionary.entry.add :dictionary test :term marmoset
-    dictionary.entry.add :dictionary test :term mouse
-    dictionary.entry.add :dictionary test :term monkey
-    dictionary.entry.add :dictionary test :term pig
-    dictionary.entry.add :dictionary test :term rat
-    dictionary.entry.add :dictionary test :term rabbit
-    dictionary.entry.add :dictionary test :term sheep
-    dictionary.entry.add :dictionary test :term wallaby
+    dictionary.entry.add :dictionary ${dict} :term human
+    dictionary.entry.add :dictionary ${dict} :term baboon
+    dictionary.entry.add :dictionary ${dict} :term cat
+    dictionary.entry.add :dictionary ${dict} :term "cane toad"
+    dictionary.entry.add :dictionary ${dict} :term chicken
+    dictionary.entry.add :dictionary ${dict} :term dog
+    dictionary.entry.add :dictionary ${dict} :term echidna
+    dictionary.entry.add :dictionary ${dict} :term goanna
+    dictionary.entry.add :dictionary ${dict} :term guineapig
+    dictionary.entry.add :dictionary ${dict} :term harrier
+    dictionary.entry.add :dictionary ${dict} :term marmoset
+    dictionary.entry.add :dictionary ${dict} :term mouse
+    dictionary.entry.add :dictionary ${dict} :term monkey
+    dictionary.entry.add :dictionary ${dict} :term pig
+    dictionary.entry.add :dictionary ${dict} :term rat
+    dictionary.entry.add :dictionary ${dict} :term rabbit
+    dictionary.entry.add :dictionary ${dict} :term sheep
+    dictionary.entry.add :dictionary ${dict} :term wallaby
 }
 
 #============================================================================#

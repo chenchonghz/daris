@@ -55,10 +55,10 @@ public class Announcement {
         return _expiry;
     }
 
-    public static Announcement create(ServiceExecutor executor, String title, String text, Date expiry,
-            boolean broadcast) throws Throwable {
+    public static Announcement create(ServiceExecutor executor, String title,
+            String text, Date expiry, boolean broadcast) throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
-        dm.add("namespace", Application.NAMESPACE);
+        dm.add("namespace", Application.defaultNamespace(executor));
         dm.push("meta");
         dm.push(DOC_TYPE);
         dm.add("uid", UniqueID.next(DOC_TYPE));
@@ -70,7 +70,8 @@ public class Announcement {
         }
         dm.pop();
         dm.pop();
-        String assetId = executor.execute("asset.create", dm.root()).value("id");
+        String assetId = executor.execute("asset.create", dm.root())
+                .value("id");
         Announcement ao = get(executor, assetId);
         if (broadcast) {
             SystemEventChannel.generate(new PSSDAnnouncementEvent(ao));
@@ -78,34 +79,46 @@ public class Announcement {
         return ao;
     }
 
-    public static Announcement get(ServiceExecutor executor, String assetId) throws Throwable {
+    public static Announcement get(ServiceExecutor executor, String assetId)
+            throws Throwable {
 
-        XmlDoc.Element ae = executor.execute("asset.get", "<args><id>" + assetId + "</id></args>", null, null).element(
+        XmlDoc.Element ae = executor.execute("asset.get",
+                "<args><id>" + assetId + "</id></args>", null, null).element(
                 "asset");
         if (ae != null) {
             return new Announcement(ae);
         } else {
-            throw new NullPointerException("Could you find the announcement asset. (id=" + assetId + ")");
+            throw new NullPointerException(
+                    "Could you find the announcement asset. (id=" + assetId
+                            + ")");
         }
     }
 
-    public static Announcement get(ServiceExecutor executor, long uid) throws Throwable {
-        XmlDoc.Element ae = executor.execute(
-                "asset.query",
-                "<args><where>xpath(daris:pssd-system-announcement/uid) = " + uid
-                        + "</where><action>get-meta</action><size>1</size></args>", null, null).element("asset");
+    public static Announcement get(ServiceExecutor executor, long uid)
+            throws Throwable {
+        XmlDoc.Element ae = executor
+                .execute(
+                        "asset.query",
+                        "<args><where>xpath(daris:pssd-system-announcement/uid) = "
+                                + uid
+                                + "</where><action>get-meta</action><size>1</size></args>",
+                        null, null).element("asset");
         if (ae != null) {
             return new Announcement(ae);
         } else {
-            throw new NullPointerException("Could you find the announcement asset. (uid=" + uid + ")");
+            throw new NullPointerException(
+                    "Could you find the announcement asset. (uid=" + uid + ")");
         }
     }
 
-    public static void destroy(ServiceExecutor executor, String assetId) throws Throwable {
-        executor.execute("asset.destroy", "<args><id>" + assetId + "</id></args>", null, null);
+    public static void destroy(ServiceExecutor executor, String assetId)
+            throws Throwable {
+        executor.execute("asset.destroy", "<args><id>" + assetId
+                + "</id></args>", null, null);
     }
 
-    public static void destroy(ServiceExecutor executor, long uid) throws Throwable {
+    public static void destroy(ServiceExecutor executor, long uid)
+            throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("where", "xpath(daris:pssd-system-announcement/uid) = " + uid);
         dm.add("size", 1);

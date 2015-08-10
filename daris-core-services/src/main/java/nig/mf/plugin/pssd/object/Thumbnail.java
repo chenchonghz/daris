@@ -105,7 +105,8 @@ public class Thumbnail {
 			executor.execute("asset.set", dm.root(), new PluginService.Inputs(input), null);
 		} else {
 			XmlDocMaker dm = new XmlDocMaker("args");
-			dm.add("namespace", Application.NAMESPACE);
+			// save to the same namespace as the object.
+			dm.add("namespace", Asset.getNamespaceByCid(executor, null, cid));
 			dm.push("related");
 			dm.add("from", new String[] { "relationship", RELATIONSHIP }, Asset.getIdByCid(executor, cid));
 			dm.pop();

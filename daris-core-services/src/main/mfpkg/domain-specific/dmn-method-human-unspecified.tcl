@@ -1,3 +1,13 @@
+proc get_daris_method_namespace { } {
+    set ns [xvalue property [application.property.get :property -app daris daris.namespace.default]]
+    if { ${ns} == "pssd" || [string_ends_with ${ns} "pssd"] == 1 } {
+        return "${ns}/methods"
+    } else {
+        return "${ns}/pssd/methods"
+    }
+}
+
+
 #============================================================================#
 # Simple method for Human MRI acquisitions appropriate to standard RCH usage #
 # with no re-usable RSubject (now deprecated)                                #
@@ -35,12 +45,13 @@ proc create_domain_method_human_unspecified { cid_root doc_ns { action 0 } { fil
     } else {
        set args "${args} :fillin false"
     }
-        
+    
+    set method_ns [get_daris_method_namespace]
     set args "${args} \
-        :namespace \"pssd/methods\"  \
-        :name ${name} \
+        :namespace \"${method_ns}\"  \
+        :name \"${name}\" \
         :cid-root-name ${cid_root} \
-        :description ${description} \
+        :description \"${description}\" \
         :subject < \
             :project < \
                 :public < \

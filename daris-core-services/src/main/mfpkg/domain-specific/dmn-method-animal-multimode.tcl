@@ -1,3 +1,12 @@
+proc get_daris_method_namespace { } {
+    set ns [xvalue property [application.property.get :property -app daris daris.namespace.default]]
+    if { ${ns} == "pssd" || [string_ends_with ${ns} "pssd"] == 1 } {
+        return "${ns}/methods"
+    } else {
+        return "${ns}/pssd/methods"
+    }
+}
+
 #============================================================================#
 # Simple method for multi mode animal acquisitions.                          #
 #                                                                            #
@@ -8,7 +17,7 @@
 #             fillin=0 (don't fill in cid allocator space),                  #
 #                    1 (fill in cid allocator space)                         #
 #============================================================================#
- 
+
 proc create_domain_method_animal_multimode { cid_root doc_ns { action 0 } { fillin 0 } } {
     
     set name "DaRIS Generic Animal Method for Multi-mode Imaging"
@@ -36,12 +45,13 @@ proc create_domain_method_animal_multimode { cid_root doc_ns { action 0 } { fill
     } else {
        set args "${args} :fillin false"
     }
-    
+   
+    set method_ns [get_daris_method_namespace] 
     set args "${args} \
-        :namespace pssd/methods  \
+        :namespace \"${method_ns}\"  \
         :cid-root-name ${cid_root} \
-        :name ${name} \
-        :description ${description} \
+        :name \"${name}\" \
+        :description \"${description}\" \
         :subject < \
             :project < \
                 :public < \
