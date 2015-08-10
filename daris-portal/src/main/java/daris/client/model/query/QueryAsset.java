@@ -3,12 +3,15 @@ package daris.client.model.query;
 import arc.mf.client.xml.XmlElement;
 import arc.mf.client.xml.XmlWriter;
 import arc.mf.model.asset.Asset;
+import daris.client.model.object.DObjectRef;
 import daris.client.model.query.filter.Filter;
+import daris.client.model.query.options.ObjectQueryOptions;
 import daris.client.model.query.options.QueryOptions;
 import daris.client.model.query.options.QueryOptions.Purpose;
 
 public class QueryAsset extends Asset {
 
+    public static final String NAMESPACE_SUFFIX = "saved-queries";
     public static final String MIME_TYPE = "application/daris-query";
 
     private Filter _filter;
@@ -43,7 +46,15 @@ public class QueryAsset extends Asset {
         return _filter;
     }
 
-    // TODO: this method is not used atm. Should think about use it in QueryAssetSet.java.
+    public DObjectRef project() {
+        if (_opts != null && _opts instanceof ObjectQueryOptions) {
+            return ((ObjectQueryOptions) _opts).project();
+        }
+        return null;
+    }
+
+    // TODO: This method is not being used. Should think about use it in
+    // QueryAssetSet.java.
     public void save(XmlWriter w) {
         w.push("query");
         if (_filter != null) {

@@ -31,6 +31,7 @@ import daris.client.model.query.filter.mf.TimeRangeFilter;
 import daris.client.model.query.filter.mf.TypeFilter;
 import daris.client.model.query.filter.pssd.ObjectMetadataFilter;
 import daris.client.model.query.filter.pssd.ObjectTagFilter;
+import daris.client.model.query.filter.pssd.ObjectTypeFilter;
 import daris.client.ui.query.filter.form.CompositeFilterForm;
 import daris.client.ui.query.filter.item.dicom.PatientBirthDateFilterItem;
 import daris.client.ui.query.filter.item.dicom.PatientIdFilterItem;
@@ -61,6 +62,7 @@ import daris.client.ui.query.filter.item.mf.TimeRangeFilterItem;
 import daris.client.ui.query.filter.item.mf.TypeFilterItem;
 import daris.client.ui.query.filter.item.pssd.ObjectMetadataFilterItem;
 import daris.client.ui.query.filter.item.pssd.ObjectTagFilterItem;
+import daris.client.ui.query.filter.item.pssd.ObjectTypeFilterItem;
 
 public class FilterItemFactory {
 
@@ -97,6 +99,8 @@ public class FilterItemFactory {
                     (ObjectMetadataFilter) filter, editable);
         } else if (filter instanceof ObjectTagFilter) {
             return (FilterItem<T>) new ObjectTagFilterItem(form, (ObjectTagFilter) filter, editable);
+        } else if (filter instanceof ObjectTypeFilter) {
+            return (FilterItem<T>) new ObjectTypeFilterItem(form, (ObjectTypeFilter) filter, editable);
         } else if (filter instanceof MetadataFilter) {
             return (FilterItem<T>) new MetadataFilterItem(form, (MetadataFilter) filter, editable);
         } else if (filter instanceof ModifiedByFilter) {

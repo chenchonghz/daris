@@ -32,13 +32,10 @@ public class Project extends DObject {
 
     public static final String ASSET_NAMESPACE_DICTIONARY = "daris:pssd.project.asset.namespaces";
 
-    public static final String ASSET_NAMESPACE_DEFAULT = "pssd";
-
     private DataUse _dataUse;
     private List<MethodRef> _methods;
     private List<ProjectMember> _members;
     private List<ProjectRoleMember> _roleMembers;
-    private String _namespace;
 
     public Project() {
 
@@ -47,18 +44,12 @@ public class Project extends DObject {
 
     public Project(String id, String proute, String name, String description) {
         super(id, proute, name, description, false, 0, false);
-        _namespace = Project.ASSET_NAMESPACE_DEFAULT;
         _cidRootName = Project.CID_ROOT_NAME_DEFAULT;
     }
 
     public Project(XmlElement oe) throws Throwable {
 
         super(oe);
-
-        /*
-         * namespace
-         */
-        _namespace = oe.value("namespace");
 
         /*
          * data-use
@@ -72,7 +63,8 @@ public class Project extends DObject {
             if (!mthdes.isEmpty()) {
                 _methods = new Vector<MethodRef>(mthdes.size());
                 for (XmlElement mde : mthdes) {
-                    _methods.add(new MethodRef(mde.value("id"), mde.value("name"), mde.value("description")));
+                    _methods.add(new MethodRef(mde.value("id"), mde
+                            .value("name"), mde.value("description")));
                 }
             }
         }
@@ -120,12 +112,8 @@ public class Project extends DObject {
         return !_methods.isEmpty();
     }
 
-    public String namespace() {
-        return _namespace;
-    }
-
     public void setNamespace(String namespace) {
-        _namespace = namespace;
+        super.setNamespace(namespace);
     }
 
     public DataUse dataUse() {
@@ -250,8 +238,8 @@ public class Project extends DObject {
     public void createServiceArgs(XmlWriter w) {
 
         super.createServiceArgs(w);
-        if (_namespace != null) {
-            w.add("namespace", _namespace);
+        if (namespace() != null) {
+            w.add("namespace", namespace());
         }
         w.add("data-use", _dataUse);
         if (_methods != null) {
@@ -266,7 +254,8 @@ public class Project extends DObject {
                 w.push("member");
                 if (pm.user().authority() != null) {
                     if (pm.user().protocol() != null) {
-                        w.add("authority", new String[] { "protocol", pm.user().protocol() }, pm.user().authority());
+                        w.add("authority", new String[] { "protocol",
+                                pm.user().protocol() }, pm.user().authority());
                     } else {
                         w.add("authority", pm.user().authority());
                     }
@@ -320,7 +309,8 @@ public class Project extends DObject {
                 w.push("member");
                 if (pm.user().authority() != null) {
                     if (pm.user().protocol() != null) {
-                        w.add("authority", new String[] { "protocol", pm.user().protocol() }, pm.user().authority());
+                        w.add("authority", new String[] { "protocol",
+                                pm.user().protocol() }, pm.user().authority());
                     } else {
                         w.add("authority", pm.user().authority());
                     }
@@ -405,15 +395,16 @@ public class Project extends DObject {
      */
     public static void setMetaForEdit(final Project o, final ActionListener al) {
 
-        new ProjectMetadataDescribe().send(new ObjectMessageResponse<XmlElement>() {
+        new ProjectMetadataDescribe()
+                .send(new ObjectMessageResponse<XmlElement>() {
 
-            @Override
-            public void responded(XmlElement metaForEdit) {
+                    @Override
+                    public void responded(XmlElement metaForEdit) {
 
-                o.setMetaForEdit(metaForEdit);
-                al.executed(true);
-            }
-        });
+                        o.setMetaForEdit(metaForEdit);
+                        al.executed(true);
+                    }
+                });
     }
 
     public static String adminRoleFromId(String cid) {
@@ -429,7 +420,8 @@ public class Project extends DObject {
         if (projectCid == null) {
             return null;
         }
-        return Project.SPECIFIC_SUBJECT_ADMINISTRATOR_ROLE_NAME_ROOT + "." + projectCid;
+        return Project.SPECIFIC_SUBJECT_ADMINISTRATOR_ROLE_NAME_ROOT + "."
+                + projectCid;
     }
 
     public static String memberRoleFromeId(String cid) {

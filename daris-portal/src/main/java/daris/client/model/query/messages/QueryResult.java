@@ -15,12 +15,26 @@ import daris.client.model.sc.ActiveShoppingCart;
 
 public class QueryResult {
 
-    public static <T extends ObjectRef<?>> void addToShoppingCart(ResultCollectionRef<T> rc, final Action postAction)
-            throws Throwable {
-        ActiveShoppingCart.addContents(rc.query().filter().toString(), postAction);
+    public static <T extends ObjectRef<?>> void addToShoppingCart(
+            ResultCollectionRef<T> rc, boolean includeContainingDataSets,
+            final Action postAction) throws Throwable {
+        StringBuilder sb = new StringBuilder();
+        String queryString = rc.query().filter().toString();
+        if (includeContainingDataSets) {
+            sb.append("(");
+            sb.append(queryString);
+            sb.append(") or (");
+            sb.append("(cid contained by (");
+            sb.append(queryString);
+            sb.append(")) and (model='om.pssd.dataset'))");
+        } else {
+            sb.append(queryString);
+        }
+        ActiveShoppingCart.addContents(sb.toString(), postAction);
     }
 
-    public static <T extends ObjectRef<?>> void addToShoppingCart(List<T> objects, final Action postAction) {
+    public static <T extends ObjectRef<?>> void addToShoppingCart(
+            List<T> objects, final Action postAction) {
         if (objects == null || objects.isEmpty()) {
             return;
         }
@@ -41,38 +55,45 @@ public class QueryResult {
         }
     }
 
-    public static <T extends ObjectRef<?>> void addToShoppingCart(T o, final Action postAction) {
+    public static <T extends ObjectRef<?>> void addToShoppingCart(T o,
+            final Action postAction) {
         if (o instanceof AssetRef) {
-            ActiveShoppingCart.addContents(ListUtil.list(((AssetRef) o).id()), postAction);
+            ActiveShoppingCart.addContents(ListUtil.list(((AssetRef) o).id()),
+                    postAction);
         }
         if (o instanceof DObjectRef) {
             ActiveShoppingCart.addContents((DObjectRef) o, true, postAction);
         }
     }
 
-    public static <T extends ObjectRef<?>> void export(ResultCollectionRef<T> rc, long idx, int size,
-            QueryResultExport.Format fileFormat, String fileName, final Action postAction) {
-        new QueryResultExport(rc, idx, size, fileFormat, fileName).send(new ObjectMessageResponse<Null>() {
+    public static <T extends ObjectRef<?>> void export(
+            ResultCollectionRef<T> rc, long idx, int size,
+            QueryResultExport.Format fileFormat, String fileName,
+            final Action postAction) {
+        new QueryResultExport(rc, idx, size, fileFormat, fileName)
+                .send(new ObjectMessageResponse<Null>() {
 
-            @Override
-            public void responded(Null r) {
-                if (postAction != null) {
-                    postAction.execute();
-                }
-            }
-        });
+                    @Override
+                    public void responded(Null r) {
+                        if (postAction != null) {
+                            postAction.execute();
+                        }
+                    }
+                });
     }
 
-    public static <T extends ObjectRef<?>> void export(ResultCollectionRef<T> rc, QueryResultExport.Format fileFormat,
+    public static <T extends ObjectRef<?>> void export(
+            ResultCollectionRef<T> rc, QueryResultExport.Format fileFormat,
             String fileName, final Action postAction) {
-        new QueryResultExport(rc, fileFormat, fileName).send(new ObjectMessageResponse<Null>() {
+        new QueryResultExport(rc, fileFormat, fileName)
+                .send(new ObjectMessageResponse<Null>() {
 
-            @Override
-            public void responded(Null r) {
-                if (postAction != null) {
-                    postAction.execute();
-                }
-            }
-        });
+                    @Override
+                    public void responded(Null r) {
+                        if (postAction != null) {
+                            postAction.execute();
+                        }
+                    }
+                });
     }
 }

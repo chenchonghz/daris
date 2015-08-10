@@ -17,8 +17,8 @@ public class QuerySaveAction extends ActionInterface<Query> {
     }
 
     @Override
-    public void createInterface(InterfaceCreateHandler ch) {
-        ch.created(new QuerySaveForm(_query));
+    public void createInterface(final InterfaceCreateHandler ch) {
+        ch.created(new QuerySaveForm(_query));        
     }
 
     @Override

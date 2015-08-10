@@ -3,6 +3,7 @@ package daris.client.ui.query.action;
 import java.util.List;
 
 import arc.gui.ValidatedInterfaceComponent;
+import arc.gui.dialog.Dialog;
 import arc.gui.gwt.colour.RGB;
 import arc.gui.gwt.colour.RGBA;
 import arc.gui.gwt.widget.BaseWidget;
@@ -48,39 +49,42 @@ import daris.client.ui.query.filter.form.ObjectCompositeFilterForm.ProjectChange
 import daris.client.ui.query.options.QueryOptionsForm;
 import daris.client.ui.query.result.ResultBrowser;
 
-public class SearchForm extends ValidatedInterfaceComponent implements AsynchronousAction {
+public class SearchForm extends ValidatedInterfaceComponent implements
+        AsynchronousAction {
 
     public static final int DEFAULT_WIDTH = 800;
     public static final int DEFAULT_HEIGHT = 600;
 
-    public static final arc.gui.image.Image ICON_LOAD = new arc.gui.image.Image(Resource.INSTANCE.folderBlueOpen16()
-            .getSafeUri().asString(), 16, 16);
-    public static final arc.gui.image.Image ICON_SAVE = new arc.gui.image.Image(Resource.INSTANCE.save16().getSafeUri()
-            .asString(), 16, 16);
-    public static final arc.gui.image.Image ICON_SEARCH = new arc.gui.image.Image(Resource.INSTANCE.search16()
-            .getSafeUri().asString(), 16, 16);
+    public static final arc.gui.image.Image ICON_LOAD = new arc.gui.image.Image(
+            Resource.INSTANCE.folderBlueOpen16().getSafeUri().asString(), 16,
+            16);
+    public static final arc.gui.image.Image ICON_SAVE = new arc.gui.image.Image(
+            Resource.INSTANCE.save16().getSafeUri().asString(), 16, 16);
+    public static final arc.gui.image.Image ICON_SEARCH = new arc.gui.image.Image(
+            Resource.INSTANCE.search16().getSafeUri().asString(), 16, 16);
 
-    public static final arc.gui.image.Image ICON_DOWNLOAD = new arc.gui.image.Image(Resource.INSTANCE.download16()
-            .getSafeUri().asString(), 16, 16);
-    public static final arc.gui.image.Image ICON_SC = new arc.gui.image.Image(Resource.INSTANCE.shoppingcartGreen16()
-            .getSafeUri().asString(), 16, 16);
+    public static final arc.gui.image.Image ICON_DOWNLOAD = new arc.gui.image.Image(
+            Resource.INSTANCE.download16().getSafeUri().asString(), 16, 16);
+    public static final arc.gui.image.Image ICON_SC = new arc.gui.image.Image(
+            Resource.INSTANCE.shoppingcartGreen16().getSafeUri().asString(),
+            16, 16);
 
-    public static final arc.gui.image.Image ICON_EXPORT = new arc.gui.image.Image(Resource.INSTANCE.export16()
-            .getSafeUri().asString(), 16, 16);
-    public static final arc.gui.image.Image ICON_CSV = new arc.gui.image.Image(Resource.INSTANCE.csv16().getSafeUri()
-            .asString(), 16, 16);
-    public static final arc.gui.image.Image ICON_XML = new arc.gui.image.Image(Resource.INSTANCE.xml16().getSafeUri()
-            .asString(), 16, 16);
+    public static final arc.gui.image.Image ICON_EXPORT = new arc.gui.image.Image(
+            Resource.INSTANCE.export16().getSafeUri().asString(), 16, 16);
+    public static final arc.gui.image.Image ICON_CSV = new arc.gui.image.Image(
+            Resource.INSTANCE.csv16().getSafeUri().asString(), 16, 16);
+    public static final arc.gui.image.Image ICON_XML = new arc.gui.image.Image(
+            Resource.INSTANCE.xml16().getSafeUri().asString(), 16, 16);
 
-    public static final arc.gui.image.Image ICON_DICOM_SEND = new arc.gui.image.Image(Resource.INSTANCE.send16()
-            .getSafeUri().asString(), 16, 16);
+    public static final arc.gui.image.Image ICON_DICOM_SEND = new arc.gui.image.Image(
+            Resource.INSTANCE.send16().getSafeUri().asString(), 16, 16);
 
-    public static final arc.gui.image.Image ICON_VIEW = new arc.gui.image.Image(Resource.INSTANCE.view16().getSafeUri()
-            .asString(), 16, 16);
-    public static final arc.gui.image.Image ICON_SHOW = new arc.gui.image.Image(Resource.INSTANCE.hideLeft16()
-            .getSafeUri().asString(), 16, 16);
-    public static final arc.gui.image.Image ICON_HIDE = new arc.gui.image.Image(Resource.INSTANCE.hideRight16()
-            .getSafeUri().asString(), 16, 16);
+    public static final arc.gui.image.Image ICON_VIEW = new arc.gui.image.Image(
+            Resource.INSTANCE.view16().getSafeUri().asString(), 16, 16);
+    public static final arc.gui.image.Image ICON_SHOW = new arc.gui.image.Image(
+            Resource.INSTANCE.hideLeft16().getSafeUri().asString(), 16, 16);
+    public static final arc.gui.image.Image ICON_HIDE = new arc.gui.image.Image(
+            Resource.INSTANCE.hideRight16().getSafeUri().asString(), 16, 16);
 
     private Query _query;
 
@@ -144,7 +148,8 @@ public class SearchForm extends ValidatedInterfaceComponent implements Asynchron
 
             @Override
             public void notifyOfChangeInState() {
-                boolean v = _query.filter() == null ? false : _query.filter().valid().valid();
+                boolean v = _query.filter() == null ? false : _query.filter()
+                        .valid().valid();
                 _saveQueryButton.setEnabled(v);
                 _searchButton.setEnabled(v);
                 _resultBrowser = null;
@@ -161,24 +166,29 @@ public class SearchForm extends ValidatedInterfaceComponent implements Asynchron
         if (_activeTabId == _filterTabId || _activeTabId == _optTabId) {
             // load button
             if (_loadQueryButton == null) {
-               
-                _loadQueryButton = new Button(new arc.gui.gwt.widget.image.Image(ICON_LOAD), "Load", false);
+
+                _loadQueryButton = new Button(
+                        new arc.gui.gwt.widget.image.Image(ICON_LOAD), "Load",
+                        false);
                 _loadQueryButton.addClickHandler(new ClickHandler() {
 
                     @Override
                     public void onClick(ClickEvent event) {
-                        SavedQueryBrowser.get().show(window(), new ObjectResolveHandler<Query>(){
+                        SavedQueryBrowser.get().show(window(),
+                                new ObjectResolveHandler<Query>() {
 
-                            @Override
-                            public void resolved(Query query) {
-                                setQuery(query);
-                            }});
-//                        new QueryLoadAction(new ObjectResolveHandler<Query>() {
-//                            @Override
-//                            public void resolved(Query query) {
-//                                setQuery(query);
-//                            }
-//                        }, window()).execute();
+                                    @Override
+                                    public void resolved(Query query) {
+                                        setQuery(query);
+                                    }
+                                });
+                        // new QueryLoadAction(new ObjectResolveHandler<Query>()
+                        // {
+                        // @Override
+                        // public void resolved(Query query) {
+                        // setQuery(query);
+                        // }
+                        // }, window()).execute();
                     }
                 });
             }
@@ -186,7 +196,9 @@ public class SearchForm extends ValidatedInterfaceComponent implements Asynchron
 
             // save button
             if (_saveQueryButton == null) {
-                _saveQueryButton = new Button(new arc.gui.gwt.widget.image.Image(ICON_SAVE), "Save", false);
+                _saveQueryButton = new Button(
+                        new arc.gui.gwt.widget.image.Image(ICON_SAVE), "Save",
+                        false);
                 _saveQueryButton.addClickHandler(new ClickHandler() {
 
                     @Override
@@ -207,17 +219,20 @@ public class SearchForm extends ValidatedInterfaceComponent implements Asynchron
                             if (e instanceof ActionEntry) {
                                 // enable/disable the menu entries based on
                                 // whether there is any result.
-                                ((ActionEntry) e).setEnabled(rc.totalNumberOfMembers() > 0);
+                                ((ActionEntry) e).setEnabled(rc
+                                        .totalNumberOfMembers() > 0);
                             }
                         }
                     }
                 }
             };
-            MenuButton downloadMenuButton = new MenuButton("Download", downloadMenu);
+            MenuButton downloadMenuButton = new MenuButton("Download",
+                    downloadMenu);
             downloadMenuButton.setEnabled(_resultBrowser != null);
             mb.add(downloadMenuButton);
 
-            downloadMenu.add(new ActionEntry(ICON_SC, "Add the selected result in current page to shopping-cart",
+            downloadMenu.add(new ActionEntry(ICON_SC,
+                    "Add the selected result in current page to shopping-cart",
                     new Action() {
 
                         @Override
@@ -226,21 +241,33 @@ public class SearchForm extends ValidatedInterfaceComponent implements Asynchron
                         }
                     }));
 
-            downloadMenu.add(new ActionEntry(ICON_SC, "Add results in current page to shopping-cart", new Action() {
+            downloadMenu.add(new ActionEntry(ICON_SC,
+                    "Add results in current page to shopping-cart",
+                    new Action() {
 
-                @Override
-                public void execute() {
-                    _resultBrowser.downloadCurrentPage();
-                }
-            }));
+                        @Override
+                        public void execute() {
+                            _resultBrowser.downloadCurrentPage();
+                        }
+                    }));
 
-            downloadMenu.add(new ActionEntry(ICON_SC, "Add all results to to shopping-cart", new Action() {
+            downloadMenu.add(new ActionEntry(ICON_SC,
+                    "Add all results to shopping-cart", new Action() {
 
-                @Override
-                public void execute() {
-                    _resultBrowser.downloadAll();
-                }
-            }));
+                        @Override
+                        public void execute() {
+                            _resultBrowser.downloadAll(false);
+                        }
+                    }));
+
+            downloadMenu.add(new ActionEntry(ICON_SC,
+                    "Add all results(include containing datasets) to shopping-cart", new Action() {
+
+                        @Override
+                        public void execute() {
+                            _resultBrowser.downloadAll(true);
+                        }
+                    }));
 
             Menu exportMenu = new Menu("Export") {
                 public void preShow() {
@@ -251,7 +278,8 @@ public class SearchForm extends ValidatedInterfaceComponent implements Asynchron
                             if (e instanceof ActionEntry) {
                                 // enable/disable the menu entries based on
                                 // whether there is any result.
-                                ((ActionEntry) e).setEnabled(rc.totalNumberOfMembers() > 0);
+                                ((ActionEntry) e).setEnabled(rc
+                                        .totalNumberOfMembers() > 0);
                             }
                         }
                     }
@@ -261,54 +289,62 @@ public class SearchForm extends ValidatedInterfaceComponent implements Asynchron
             exportMenuButton.setEnabled(_resultBrowser != null);
             mb.add(exportMenuButton);
 
-            exportMenu.add(new ActionEntry(ICON_CSV, "Export results in current page to .csv", new Action() {
+            exportMenu.add(new ActionEntry(ICON_CSV,
+                    "Export results in current page to .csv", new Action() {
 
-                @Override
-                public void execute() {
-                    _resultBrowser.exportCurrentPageToCSV();
-                }
-            }));
+                        @Override
+                        public void execute() {
+                            _resultBrowser.exportCurrentPageToCSV();
+                        }
+                    }));
 
-            exportMenu.add(new ActionEntry(ICON_CSV, "Export all results to .csv", new Action() {
-                @Override
-                public void execute() {
-                    _resultBrowser.exportAllToCSV();
-                }
-            }));
+            exportMenu.add(new ActionEntry(ICON_CSV,
+                    "Export all results to .csv", new Action() {
+                        @Override
+                        public void execute() {
+                            _resultBrowser.exportAllToCSV();
+                        }
+                    }));
 
-            exportMenu.add(new ActionEntry(ICON_XML, "Export results in current page to .xml", new Action() {
+            exportMenu.add(new ActionEntry(ICON_XML,
+                    "Export results in current page to .xml", new Action() {
 
-                @Override
-                public void execute() {
-                    _resultBrowser.exportCurrentPageToXML();
-                }
-            }));
+                        @Override
+                        public void execute() {
+                            _resultBrowser.exportCurrentPageToXML();
+                        }
+                    }));
 
-            exportMenu.add(new ActionEntry(ICON_XML, "Export all results to .xml", new Action() {
+            exportMenu.add(new ActionEntry(ICON_XML,
+                    "Export all results to .xml", new Action() {
 
-                @Override
-                public void execute() {
-                    _resultBrowser.exportAllToXML();
-                }
-            }));
+                        @Override
+                        public void execute() {
+                            _resultBrowser.exportAllToXML();
+                        }
+                    }));
 
-            exportMenu.add(new ActionEntry(ICON_DICOM_SEND, "Send all the contained DICOM datasets", new Action() {
+            exportMenu.add(new ActionEntry(ICON_DICOM_SEND,
+                    "Send all the contained DICOM datasets", new Action() {
 
-                @Override
-                public void execute() {
-                    _resultBrowser.dicomSendAll();
-                }
-            }));
+                        @Override
+                        public void execute() {
+                            _resultBrowser.dicomSendAll();
+                        }
+                    }));
 
-            arc.gui.gwt.widget.image.Image i = new arc.gui.gwt.widget.image.Image(ICON_SHOW);
+            arc.gui.gwt.widget.image.Image i = new arc.gui.gwt.widget.image.Image(
+                    ICON_SHOW);
             i.setDisabledImage(ICON_HIDE);
             _resultDetailButton = new Button(i, "Show Detail", false);
             _resultDetailButton.addClickHandler(new ClickHandler() {
 
                 @Override
                 public void onClick(ClickEvent event) {
-                    _resultBrowser.setShowDetailedView(!_resultBrowser.showDetailedView());
-                    _resultDetailButton.setText((_resultBrowser.showDetailedView() ? "Hide" : "Show") + " Detail");
+                    _resultBrowser.setShowDetailedView(!_resultBrowser
+                            .showDetailedView());
+                    _resultDetailButton.setText((_resultBrowser
+                            .showDetailedView() ? "Hide" : "Show") + " Detail");
                 }
             });
             _resultDetailButton.setEnabled(_resultBrowser != null);
@@ -324,7 +360,8 @@ public class SearchForm extends ValidatedInterfaceComponent implements Asynchron
         if (_filterTabId <= 0) {
             _filterSP = new SimplePanel();
             _filterSP.fitToParent();
-            _filterSP.setBorderTop(1, BorderStyle.SOLID, new RGB(0x88, 0x88, 0x88));
+            _filterSP.setBorderTop(1, BorderStyle.SOLID, new RGB(0x88, 0x88,
+                    0x88));
             _filterTabId = _tp.addTab("Filters", "filters", _filterSP);
         }
         _filterForm = CompositeFilterForm.create(_query.filter(), true);
@@ -337,17 +374,20 @@ public class SearchForm extends ValidatedInterfaceComponent implements Asynchron
                 }
             }
         });
-        if (_filterForm instanceof ObjectCompositeFilterForm && _query.options() instanceof ObjectQueryOptions) {
-            ((ObjectCompositeFilterForm) _filterForm).addProjectChangeListener(new ProjectChangeListener() {
+        if (_filterForm instanceof ObjectCompositeFilterForm
+                && _query.options() instanceof ObjectQueryOptions) {
+            ((ObjectCompositeFilterForm) _filterForm)
+                    .addProjectChangeListener(new ProjectChangeListener() {
 
-                @Override
-                public void projectChanged(DObjectRef project) {
-                    ((ObjectQueryOptions) _query.options()).setProject(project);
-                    if (_optForm != null) {
-                        _optForm.refresh();
-                    }
-                }
-            });
+                        @Override
+                        public void projectChanged(DObjectRef project) {
+                            ((ObjectQueryOptions) _query.options())
+                                    .setProject(project);
+                            if (_optForm != null) {
+                                _optForm.refresh();
+                            }
+                        }
+                    });
         }
         addMustBeValid(_filterForm);
         _filterSP.setContent(_filterForm.gui());
@@ -372,7 +412,8 @@ public class SearchForm extends ValidatedInterfaceComponent implements Asynchron
         if (_resultTabId <= 0) {
             _resultSP = new SimplePanel();
             _resultSP.fitToParent();
-            _resultSP.setBorderTop(1, BorderStyle.SOLID, new RGB(0x88, 0x88, 0x88));
+            _resultSP.setBorderTop(1, BorderStyle.SOLID, new RGB(0x88, 0x88,
+                    0x88));
             _resultTabId = _tp.addTab("Results", null, _resultSP);
         }
         if (cw == null) {
@@ -434,34 +475,39 @@ public class SearchForm extends ValidatedInterfaceComponent implements Asynchron
     @Override
     public void execute(final ActionListener al) {
         if (_query.options().action() == QueryOptions.Action.count) {
-            new QueryCount(_query.filter().toString()).send(new ObjectMessageResponse<Long>() {
+            new QueryCount(_query.filter().toString())
+                    .send(new ObjectMessageResponse<Long>() {
 
-                @Override
-                public void responded(Long n) {
-                    if (n == null) {
-                        n = 0L;
-                    }
-                    HTML msg = new HTML(Long.toString(n) + " " + _query.options().entity() + "s found.");
-                    msg.setFontSize(12);
-                    msg.setColour(RGBA.BLACK);
-                    msg.setMargin(20);
-                    updateResultTab(msg);
-                    activateResultTab();
-                    if (al != null) {
-                        al.executed(true);
-                    }
-                }
-            });
+                        @Override
+                        public void responded(Long n) {
+                            if (n == null) {
+                                n = 0L;
+                            }
+                            HTML msg = new HTML(Long.toString(n) + " "
+                                    + _query.options().entity() + "s found.");
+                            msg.setFontSize(12);
+                            msg.setColour(RGBA.BLACK);
+                            msg.setMargin(20);
+                            updateResultTab(msg);
+                            activateResultTab();
+                            if (al != null) {
+                                al.executed(true);
+                            }
+                        }
+                    });
         } else {
-            final ResultCollectionRef<ObjectRef<?>> _rc = ResultCollectionRef.create(_query);
+            final ResultCollectionRef<ObjectRef<?>> _rc = ResultCollectionRef
+                    .create(_query);
             _rc.resolve(new ActionListener() {
                 @Override
                 public void executed(boolean succeeded) {
                     if (succeeded) {
-                        _resultBrowser = new ResultBrowser<ObjectRef<?>>(_rc, false);
+                        _resultBrowser = new ResultBrowser<ObjectRef<?>>(_rc,
+                                false);
                         updateResultTab(_resultBrowser);
                     } else {
-                        HTML msg = new HTML("No " + _query.options().entity() + "s found.");
+                        HTML msg = new HTML("No " + _query.options().entity()
+                                + "s found.");
                         msg.setFontSize(12);
                         msg.setColour(RGBA.BLACK);
                         msg.setMargin(20);
@@ -488,7 +534,8 @@ public class SearchForm extends ValidatedInterfaceComponent implements Asynchron
         wp.setSize(0.9, 0.9);
         wp.setModal(false);
 
-        final arc.gui.gwt.widget.window.Window win = arc.gui.gwt.widget.window.Window.create(wp);
+        final arc.gui.gwt.widget.window.Window win = arc.gui.gwt.widget.window.Window
+                .create(wp);
 
         VerticalPanel vp = new VerticalPanel();
         vp.fitToParent();

@@ -80,7 +80,7 @@ public class CTypeFilterItem extends FilterItem<CTypeFilter> {
 
         _form.setNumberOfColumns(1);
 
-        _ctypeField = new Field<String>(new FieldDefinition("type", new EnumerationType<String>(new TypeStringEnum()),
+        _ctypeField = new Field<String>(new FieldDefinition("asset.mime.type", new EnumerationType<String>(new TypeStringEnum()),
                 "The asset MIME type.", null, 1, 1));
         _ctypeField.setInitialValue(filter().ctype(), false);
         _ctypeField.addListener(new FormItemListener<String>() {

@@ -29,165 +29,165 @@ import daris.client.ui.transform.TransformBrowser;
  */
 public class DaRIS implements EntryPoint {
 
-	public static final String PACKAGE = "daris-portal";
+    public static final String PACKAGE = "daris-portal";
 
-	public DaRIS() {
-	}
+    public DaRIS() {
+    }
 
-	/**
-	 * This is the entry point method.
-	 */
-	public void onModuleLoad() {
+    /**
+     * This is the entry point method.
+     */
+    public void onModuleLoad() {
 
-		// Session.setAutoLogonCredentials("system", "manager", "change_me");
-		try {
-			if (Plugin.isPluginEnvironment()) {
-				/*
-				 * Arcitecta Desktop Plug-in Application
-				 */
-				PluginApplication.register(DaRISPluginApplication.get());
-			} else {
-				/*
-				 * Stand-alone Application
-				 */
-				BrowserCheck.check();
-				Session.setLoginDialog(DaRISLoginDialog.get());
-				Session.initialize(new SessionHandler() {
+        // Session.setAutoLogonCredentials("system", "manager", "change_me");
+        try {
+            if (Plugin.isPluginEnvironment()) {
+                /*
+                 * Arcitecta Desktop Plug-in Application
+                 */
+                PluginApplication.register(DaRISPluginApplication.get());
+            } else {
+                /*
+                 * Stand-alone Application
+                 */
+                BrowserCheck.check();
+                Session.setLoginDialog(DaRISLoginDialog.get());
+                Session.initialize(new SessionHandler() {
 
-					@Override
-					public void sessionCreated(boolean initial) {
+                    @Override
+                    public void sessionCreated(boolean initial) {
 
-						DaRIS.initialise();
-						DaRISStandAloneApplication.start();
-					}
+                        DaRIS.initialise();
+                        DaRISStandAloneApplication.start();
+                    }
 
-					@Override
-					public void sessionExpired() {
+                    @Override
+                    public void sessionExpired() {
 
-						DaRIS.finalise();
-						DaRISStandAloneApplication.stop();
-					}
+                        DaRIS.finalise();
+                        DaRISStandAloneApplication.stop();
+                    }
 
-					@Override
-					public void sessionTerminated() {
+                    @Override
+                    public void sessionTerminated() {
 
-						DaRIS.finalise();
-						DaRISStandAloneApplication.stop();
-					}
-				});
-			}
-		} catch (Throwable t) {
-			String st = ThrowableUtil.stackTrack(t);
-			com.google.gwt.user.client.Window.alert("Error: "
-					+ t.getClass().getName() + ": " + t.getMessage() + ": "
-					+ st);
-		}
+                        DaRIS.finalise();
+                        DaRISStandAloneApplication.stop();
+                    }
+                });
+            }
+        } catch (Throwable t) {
+            String st = ThrowableUtil.stackTrack(t);
+            com.google.gwt.user.client.Window.alert("Error: "
+                    + t.getClass().getName() + ": " + t.getMessage() + ": "
+                    + st);
+        }
 
-	}
+    }
 
-	public static void initialise() {
-		
-		/*
-		 * Declare asset tasks
-		 */
-		AssetTasks.declare();
+    public static void initialise() {
 
-		/*
-		 * Enable pssd events
-		 */
-		PSSDObjectEvents.initialize();
+        /*
+         * Declare asset tasks
+         */
+        AssetTasks.declare();
 
-		/*
-		 * Enable transform events
-		 */
-		TransformEvents.initialize();
+        /*
+         * Enable pssd events
+         */
+        PSSDObjectEvents.initialize();
 
-		/*
-		 * Enable pssd announcement events
-		 */
-		AnnouncementEvents.initialize();
+        /*
+         * Enable transform events
+         */
+        TransformEvents.initialize();
 
-		/*
-		 * Enable shopping cart events
-		 */
-		ShoppingEvents.initialize();
+        /*
+         * Enable pssd announcement events
+         */
+        AnnouncementEvents.initialize();
 
-		/*
-		 * Enable drag and drop
-		 */
-		DragAndDrop.initialize();
+        /*
+         * Enable shopping cart events
+         */
+        ShoppingEvents.initialize();
 
-		/*
-		 * Subscribes to system event channel
-		 */
-		SystemEventChannel.subscribe();
+        /*
+         * Enable drag and drop
+         */
+        DragAndDrop.initialize();
 
-		/*
-		 * Initialize ActiveShoppingCart (clear the cached cart, it causes
-		 * problem when switching users).
-		 */
-		ActiveShoppingCart.initialize();
+        /*
+         * Subscribes to system event channel
+         */
+        SystemEventChannel.subscribe();
 
-		/*
-		 * Listening to shopping cart (update) event, if the cart is in
-		 * "data ready" state and the delivery method is "download", start
-		 * browser downloading.
-		 */
-		ShoppingCartDownloadManager.subscribe();
+        /*
+         * Initialize ActiveShoppingCart (clear the cached cart, it causes
+         * problem when switching users).
+         */
+        ActiveShoppingCart.initialize();
 
-		/*
-		 * Starts announcement monitor
-		 */
-		AnnouncementMonitor.start();
+        /*
+         * Listening to shopping cart (update) event, if the cart is in
+         * "data ready" state and the delivery method is "download", start
+         * browser downloading.
+         */
+        ShoppingCartDownloadManager.subscribe();
 
-		if (Plugin.isStandaloneApplication()) {
-			/*
-			 * Install/Initialize DTI java applet if it is running as a
-			 * stand-alone application. (If running as ADesktop plugin, it is
-			 * not required because the ADesktop app will load the DTI applet.)
-			 */
-			if (!ObjectUtil.equals(Window.Location.getParameter("dti"), "no")) {
-				DTI.install();
-			}
-			/*
-			 * Override some theme settings.
-			 */
-			Theme.initialize();
-		}
+        /*
+         * Starts announcement monitor
+         */
+        AnnouncementMonitor.start();
 
-	}
+        if (Plugin.isStandaloneApplication()) {
+            /*
+             * Install/Initialize DTI java applet if it is running as a
+             * stand-alone application. (If running as ADesktop plugin, it is
+             * not required because the ADesktop app will load the DTI applet.)
+             */
+            if (!ObjectUtil.equals(Window.Location.getParameter("dti"), "no")) {
+                DTI.install();
+            }
+            /*
+             * Override some theme settings.
+             */
+            Theme.initialize();
+        }
 
-	public static void finalise() {
+    }
 
-		if (Plugin.isStandaloneApplication()) {
+    public static void finalise() {
 
-			/*
-			 * stop listening to system events
-			 */
-			SystemEventChannel.unsubscribe(Session.created());
-		}
+        if (Plugin.isStandaloneApplication()) {
 
-		/*
-		 * Unsubscribe the shopping cart download manager
-		 */
-		ShoppingCartDownloadManager.unsubscribe();
+            /*
+             * stop listening to system events
+             */
+            SystemEventChannel.unsubscribe(Session.created());
+        }
 
-		/*
-		 * Unsubscribe the shopping cart dialog
-		 */
-		ShoppingCartDialog.reset();
+        /*
+         * Unsubscribe the shopping cart download manager
+         */
+        ShoppingCartDownloadManager.unsubscribe();
 
-		/*
-		 * Reset TransformMonitor
-		 */
-		// TransformMonitor.reset();
-		TransformBrowser.reset();
+        /*
+         * Unsubscribe the shopping cart dialog
+         */
+        ShoppingCartDialog.reset();
 
-		/*
-		 * Reset AnnouncementMonitor
-		 */
-		AnnouncementMonitor.stop();
+        /*
+         * Reset TransformMonitor
+         */
+        // TransformMonitor.reset();
+        TransformBrowser.reset();
 
-	}
+        /*
+         * Reset AnnouncementMonitor
+         */
+        AnnouncementMonitor.stop();
+
+    }
 
 }

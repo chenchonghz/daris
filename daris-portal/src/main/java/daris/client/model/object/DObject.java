@@ -29,8 +29,21 @@ public abstract class DObject {
         project, subject, ex_method, study, dataset, data_object, method, r_subject, repository;
 
         @Override
-        public String toString() {
+        public final String toString() {
             return super.toString().replace('_', '-');
+        }
+
+        public String model() {
+            switch (this) {
+            case project:
+            case subject:
+            case ex_method:
+            case study:
+            case dataset:
+                return "om.pssd." + toString();
+            default:
+                return null;
+            }
         }
 
         public static Type parse(String s) {
@@ -78,6 +91,7 @@ public abstract class DObject {
     private String _assetId;
     private String _name;
     private String _description;
+    private String _namespace;
     private boolean _editable;
     private int _version;
     private boolean _isleaf;
@@ -121,6 +135,7 @@ public abstract class DObject {
             }
             _name = xe.value("name");
             _description = xe.value("description");
+            _namespace = xe.value("namespace");
             _fileName = xe.value("filename");
             try {
                 _isleaf = xe.booleanValue("isleaf", false);
@@ -164,6 +179,7 @@ public abstract class DObject {
             }
             _name = xe.value("name");
             _description = xe.value("description");
+            _namespace = xe.value("namespace");
             _isleaf = true;
             _nbChildren = 0;
             // _filename is null - methods have no content
@@ -192,8 +208,8 @@ public abstract class DObject {
      * @param version
      * @param isleaf
      */
-    protected DObject(String id, String proute, String name, String description, boolean editable, int version,
-            boolean isleaf) {
+    protected DObject(String id, String proute, String name,
+            String description, boolean editable, int version, boolean isleaf) {
 
         _id = id;
         _proute = proute;
@@ -206,8 +222,8 @@ public abstract class DObject {
 
     }
 
-    public DObject(String id, String proute, String name, String description, boolean editable, int version,
-            int nbChildren) {
+    public DObject(String id, String proute, String name, String description,
+            boolean editable, int version, int nbChildren) {
         _id = id;
         _proute = proute;
         _name = name;
@@ -353,6 +369,14 @@ public abstract class DObject {
 
     }
 
+    public String namespace() {
+        return _namespace;
+    }
+
+    protected void setNamespace(String namespace) {
+        _namespace = namespace;
+    }
+
     public void setDescription(String description) {
 
         _description = description;
@@ -417,7 +441,8 @@ public abstract class DObject {
     public static DObject create(XmlElement oe) throws Throwable {
         DObject.Type type = DObject.Type.parse(oe.value("@type"));
         if (type == null) {
-            throw new IllegalArgumentException("Failed to parse object type from: " + oe);
+            throw new IllegalArgumentException(
+                    "Failed to parse object type from: " + oe);
         }
         switch (type) {
         case project:
@@ -439,7 +464,8 @@ public abstract class DObject {
         default:
             break;
         }
-        throw new IllegalArgumentException("Failed to instantiate " + type + " from " + oe);
+        throw new IllegalArgumentException("Failed to instantiate " + type
+                + " from " + oe);
     }
 
     public abstract Type type();

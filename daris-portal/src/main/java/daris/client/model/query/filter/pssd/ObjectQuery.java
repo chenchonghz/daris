@@ -8,11 +8,20 @@ import daris.client.model.query.options.ObjectQueryOptions;
 public class ObjectQuery extends Query {
 
     public ObjectQuery(DObjectRef project) {
-        super(new ObjectCompositeFilter(project), new ObjectQueryOptions(project));
+        super(new ObjectCompositeFilter(project), new ObjectQueryOptions(
+                project));
     }
-    
-    public ObjectQuery(QueryAsset qa){
+
+    public ObjectQuery(QueryAsset qa) {
         super(qa);
+    }
+
+    public DObjectRef project() {
+        ObjectQueryOptions opts = (ObjectQueryOptions) options();
+        if (opts != null) {
+            return opts.project();
+        }
+        return null;
     }
 
 }

@@ -23,7 +23,8 @@ import daris.client.ui.object.action.DicomSendAction;
 import daris.client.ui.query.action.ResultExportAction;
 import daris.client.ui.widget.MessageBox;
 
-public class ResultBrowser<T extends ObjectRef<?>> extends ContainerWidget implements InterfaceComponent {
+public class ResultBrowser<T extends ObjectRef<?>> extends ContainerWidget
+        implements InterfaceComponent {
 
     private ResultCollectionRef<T> _rc;
 
@@ -120,8 +121,11 @@ public class ResultBrowser<T extends ObjectRef<?>> extends ContainerWidget imple
 
             @Override
             public void execute() {
-                MessageBox.info("Add to shopping-cart", _nav.selected().referentTypeName() + " "
-                        + _nav.selected().idToString() + " has been added to shopping-cart", 2);
+                MessageBox.info("Add to shopping-cart", _nav.selected()
+                        .referentTypeName()
+                        + " "
+                        + _nav.selected().idToString()
+                        + " has been added to shopping-cart", 2);
             }
         });
     }
@@ -135,24 +139,30 @@ public class ResultBrowser<T extends ObjectRef<?>> extends ContainerWidget imple
 
             @Override
             public void execute() {
-                MessageBox.info("Add to shopping-cart", "Results in the current page have been added to shopping-cart",
-                        2);
+                MessageBox
+                        .info("Add to shopping-cart",
+                                "Results in the current page have been added to shopping-cart",
+                                2);
             }
         });
     }
 
-    public void downloadAll() {
+    public void downloadAll(boolean includeContainingDataSets) {
         if (_rc.totalNumberOfMembers() <= 0) {
             return;
         }
         try {
-            QueryResult.addToShoppingCart(_rc, new Action() {
+            QueryResult.addToShoppingCart(_rc, includeContainingDataSets,
+                    new Action() {
 
-                @Override
-                public void execute() {
-                    MessageBox.info("Add to shopping-cart", "All results have been added to shopping-cart", 2);
-                }
-            });
+                        @Override
+                        public void execute() {
+                            MessageBox
+                                    .info("Add to shopping-cart",
+                                            "All results have been added to shopping-cart",
+                                            2);
+                        }
+                    });
         } catch (Throwable e) {
             Dialog.warn("Error", e.getMessage());
             e.printStackTrace();
@@ -160,21 +170,23 @@ public class ResultBrowser<T extends ObjectRef<?>> extends ContainerWidget imple
     }
 
     public void exportCurrentPageToXML() {
-        new ResultExportAction(new QueryResultExport(_rc, _nav.offset(), _nav.pageSize(), Format.xml, null), window())
-                .execute();
+        new ResultExportAction(new QueryResultExport(_rc, _nav.offset(),
+                _nav.pageSize(), Format.xml, null), window()).execute();
     }
 
     public void exportAllToXML() {
-        new ResultExportAction(new QueryResultExport(_rc, Format.xml, null), window()).execute();
+        new ResultExportAction(new QueryResultExport(_rc, Format.xml, null),
+                window()).execute();
     }
 
     public void exportCurrentPageToCSV() {
-        new ResultExportAction(new QueryResultExport(_rc, _nav.offset(), _nav.pageSize(), Format.csv, null), window())
-                .execute();
+        new ResultExportAction(new QueryResultExport(_rc, _nav.offset(),
+                _nav.pageSize(), Format.csv, null), window()).execute();
     }
 
     public void exportAllToCSV() {
-        new ResultExportAction(new QueryResultExport(_rc, Format.csv, null), window()).execute();
+        new ResultExportAction(new QueryResultExport(_rc, Format.csv, null),
+                window()).execute();
     }
 
     public void dicomSendAll() {

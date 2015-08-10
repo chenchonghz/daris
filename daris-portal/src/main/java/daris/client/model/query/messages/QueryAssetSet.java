@@ -1,13 +1,11 @@
 package daris.client.model.query.messages;
 
-import arc.mf.client.RemoteServer;
 import arc.mf.client.xml.XmlElement;
 import arc.mf.client.xml.XmlWriter;
 import arc.mf.object.Null;
 import arc.mf.object.ObjectMessage;
 import daris.client.model.query.QueryAsset;
 import daris.client.model.query.filter.Filter;
-import daris.client.model.query.messages.QueryAssetCreate.Access;
 import daris.client.model.query.options.QueryOptions;
 import daris.client.model.query.options.QueryOptions.Purpose;
 
@@ -18,9 +16,9 @@ public class QueryAssetSet extends ObjectMessage<Null> {
     private String _description;
     private Filter _filter;
     private QueryOptions _opts;
-    private Access _access;
 
-    private QueryAssetSet(String id, String name, String description, Filter filter, QueryOptions opts, Access access) {
+    private QueryAssetSet(String id, String name, String description,
+            Filter filter, QueryOptions opts) {
         _id = id;
         _name = name;
         _description = description;
@@ -29,7 +27,8 @@ public class QueryAssetSet extends ObjectMessage<Null> {
     }
 
     public QueryAssetSet(QueryAssetCreate qac) {
-        this("path=" + qac.path(), qac.name(), qac.description(), qac.filter(), qac.options(), qac.access());
+        this("path=" + qac.path(), qac.name(), qac.description(), qac.filter(),
+                qac.options());
     }
 
     @Override
@@ -54,20 +53,6 @@ public class QueryAssetSet extends ObjectMessage<Null> {
         }
         w.pop();
         w.pop();
-
-        /*
-         * access/acl
-         */
-        w.push("acl");
-        w.add("actor", new String[] { "type", "user" }, RemoteServer.domain() + ":" + RemoteServer.user());
-        w.add("access", "read-write");
-        w.pop();
-        if (_access == Access.Public_Read_Write || _access == Access.Public_Read_Only) {
-            w.push("acl");
-            w.add("actor", new String[] { "type", "role" }, "user");
-            w.add("access", _access == Access.Public_Read_Write ? "read-write" : "read");
-            w.pop();
-        }
     }
 
     @Override
