@@ -66,8 +66,7 @@ proc get_daris_method_namespace { } {
     return [get_daris_sub_namespace "methods"]
 }
 
-proc create_daris_namespaces { store } {
-    set daris_namespace [create_daris_namespace ${store}]
+proc create_daris_sub_namespaces { daris_namespace } {
     if { ${daris_namespace} == "pssd" || [string_ends_with ${daris_namespace} "pssd"] == 1 } {
         create_namespace_if_not_exist "${daris_namespace}/methods"
         create_namespace_if_not_exist "${daris_namespace}/fcp"
@@ -79,17 +78,30 @@ proc create_daris_namespaces { store } {
     }
 }
 
-set daris_store ""
-if { [xvalue exists [asset.store.exists :name "pssd"]] } {
-    set daris_store "pssd"
-} elseif { [xvalue exists [asset.store.exists :name "daris"]] } {
-    set daris_store "daris"
-} else {
-    error "The DaRIS asset store(Defaults to 'daris') must pre-exist before install this package."
+proc create_daris_all_namespaces { store } {
+    set daris_namespace [create_daris_namespace ${store}]
+    create_daris_sub_namespaces ${daris_namespace} 
 }
 
-create_daris_namespaces ${daris_store}
 
-
-
-
+if { [xvalue exists [application.property.exists :property -app daris  daris.namespace.default]]=="true" } {
+    # property daris.namespace.default has been set, which indicates the 
+    # namespaces have been created by the previous installation.
+} else {
+    if { [xvalue exists [asset.namespace.exists :namespace "pssd"]]=="true" } {
+        # namespace /pssd pre-exists, just set it as default
+        application.property.create :property -app daris -name daris.namespace.default < :value "pssd" >
+        create_daris_sub_namespaces "pssd"
+    } else {
+        # now we try to create the namespace, but first check if the store 'daris' or 'pssd' has been created:
+        set daris_store ""
+        if { [xvalue exists [asset.store.exists :name "daris"]]=="true" } {
+            set daris_store "daris"
+        } elseif { [xvalue exists [asset.store.exists :name "pssd"]]=="true" } {
+            set daris_store "pssd"
+        } else {
+            error "The DaRIS asset store (Defaults to 'daris') must pre-exist before install this package."
+        }
+        create_daris_all_namespaces ${daris_store}
+    }
+}
