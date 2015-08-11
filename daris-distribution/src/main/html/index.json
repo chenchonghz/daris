@@ -16,5 +16,6 @@
     "daris_client-server-config":           ["@SERVER_CONFIG_FILE@", "@SERVER_CONFIG_VERSION@", "@MFLUX_VERSION@"],
     "daris-commons":                        ["@COMMONS_FILE@", "@COMMONS_VERSION@"],
     "daris-dcmtools":                       ["@DCMTOOLS_FILE@", "@DCMTOOLS_VERSION@"]
+    "daris-installer":                      ["@INSTALLERFILE@", "@INSTALLER_VERSION@"]
   }
 }
