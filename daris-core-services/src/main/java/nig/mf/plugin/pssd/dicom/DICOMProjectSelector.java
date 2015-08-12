@@ -1,6 +1,7 @@
 package nig.mf.plugin.pssd.dicom;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import nig.mf.pssd.CiteableIdUtil;
 

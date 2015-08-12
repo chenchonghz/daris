@@ -107,7 +107,7 @@ public class SvcDataSetPrimaryCreate extends PluginService {
         Interface.Element transform = new Interface.Element("transform", XmlDocType.DEFAULT,
                 "If transformed, then details of the transform, if known.", 0, 1);
         transform.add(new Interface.Element("tuid", LongType.POSITIVE_ONE,
-                "The unique id of the transform if it is executed via Transform Framework.", 0, 1));
+                "The unique id of the transform if it is executed via daris-transform(Transform Framework).", 0, 1));
         transform.add(new Interface.Element("mid", CiteableIdType.DEFAULT,
                 "The identity of an agreed method of transformation.", 0, 1));
         Interface.Element software = new Interface.Element("software", XmlDocType.DEFAULT,

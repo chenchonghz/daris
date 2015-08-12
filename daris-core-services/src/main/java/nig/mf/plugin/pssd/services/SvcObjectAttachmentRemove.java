@@ -2,8 +2,6 @@ package nig.mf.plugin.pssd.services;
 
 import java.util.Collection;
 
-import nig.mf.plugin.pssd.Asset;
-import nig.mf.plugin.pssd.object.Attachment;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.dtype.AssetType;
 import arc.mf.plugin.dtype.CiteableIdType;

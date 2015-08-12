@@ -2,9 +2,9 @@ package nig.mf.plugin.pssd.services;
 
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.dtype.StringType;
+import arc.xml.XmlDoc.Element;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
-import arc.xml.XmlDoc.Element;
 
 public class SvcDICOMUserCreate extends PluginService {
 

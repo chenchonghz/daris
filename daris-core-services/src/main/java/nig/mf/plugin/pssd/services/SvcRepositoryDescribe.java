@@ -1,10 +1,10 @@
 package nig.mf.plugin.pssd.services;
 
-import arc.mf.plugin.*;
+import nig.mf.plugin.pssd.RepositoryDescription;
+import arc.mf.plugin.PluginService;
 import arc.mf.plugin.dtype.EnumType;
-import arc.xml.*;
-
-import nig.mf.plugin.pssd.*;
+import arc.xml.XmlDoc;
+import arc.xml.XmlWriter;
 
 public class SvcRepositoryDescribe extends PluginService {
 

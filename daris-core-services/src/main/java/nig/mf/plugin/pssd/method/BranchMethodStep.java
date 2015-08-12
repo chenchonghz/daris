@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Vector;
 
 import arc.xml.XmlDoc;
-import arc.xml.XmlWriter;
 import arc.xml.XmlDoc.Element;
+import arc.xml.XmlWriter;
 
 /**
  * A branching step that contains methods by value.

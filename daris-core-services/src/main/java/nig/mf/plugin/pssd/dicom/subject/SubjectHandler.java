@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
-import arc.mf.plugin.ServiceExecutor;
-import arc.mf.plugin.dicom.*;
 import nig.mf.dicom.plugin.util.DICOMPatient;
 import nig.mf.plugin.pssd.dicom.DicomIngestControls;
 import nig.mf.plugin.pssd.dicom.study.CIDAndMethodStep;
@@ -15,8 +13,11 @@ import nig.mf.plugin.util.AssetUtil;
 import nig.mf.pssd.CiteableIdUtil;
 import nig.mf.pssd.plugin.util.PSSDUtil;
 import nig.util.DateUtil;
+import arc.mf.plugin.ServiceExecutor;
+import arc.mf.plugin.dicom.DicomPersonName;
 import arc.utils.StringUtil;
-import arc.xml.*;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
 
 
 /**

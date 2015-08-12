@@ -34,8 +34,9 @@ public class SvcDataSetDerivationCreate extends PluginService {
     public SvcDataSetDerivationCreate() throws Throwable {
         _defn = new Interface();
 
-        Interface.Element pid = new Interface.Element("pid", CiteableIdType.DEFAULT,
-                "The identity of the parent study.", 1, 1);
+        Interface.Element pid = new Interface.Element("pid",
+                CiteableIdType.DEFAULT, "The identity of the parent study.", 1,
+                1);
         pid.add(new Interface.Attribute(
                 "proute",
                 CiteableIdType.DEFAULT,
@@ -53,11 +54,13 @@ public class SvcDataSetDerivationCreate extends PluginService {
                 BooleanType.DEFAULT,
                 "If the dataset-number is not given, fill in the DataSet allocator space (re-use allocated CIDs with no assets), otherwise create the next available CID at the end of the CID pool. Defaults to false; use with extreme care in federated envionment. Concurrency issues mean that this argument may be ignored if many DataSets are being created simultaneously.",
                 0, 1));
-        _defn.add(new Interface.Element("name", StringType.DEFAULT, "The name of this data set.", 0, 1));
+        _defn.add(new Interface.Element("name", StringType.DEFAULT,
+                "The name of this data set.", 0, 1));
         _defn.add(new Interface.Element("description", StringType.DEFAULT,
                 "An arbitrary description for the data set.", 0, 1));
         //
-        Interface.Element fn = new Interface.Element("filename", StringType.DEFAULT,
+        Interface.Element fn = new Interface.Element("filename",
+                StringType.DEFAULT,
                 "The original file name to be preserved on download", 0, 1);
         fn.add(new Interface.Attribute(
                 "private",
@@ -67,7 +70,8 @@ public class SvcDataSetDerivationCreate extends PluginService {
         _defn.add(fn);
 
         _defn.add(new Interface.Element("type", StringType.DEFAULT,
-                "MIME type of the data set if different from the content.", 0, 1));
+                "MIME type of the data set if different from the content.", 0,
+                1));
         _defn.add(new Interface.Element(
                 "ctype",
                 StringType.DEFAULT,
@@ -79,41 +83,66 @@ public class SvcDataSetDerivationCreate extends PluginService {
                 "ogical MIME type of the content, if there is content. If not specified, then auto-typed from the content extension/analyzers. The logical can be different from the encapulation type, and determines how the content is interpretted. For instance, a logical 'application/abc' type may be encapsulated in an 'application/zip' format.",
                 0, 1));
 
-        Interface.Element input = new Interface.Element("input", CiteableIdType.DEFAULT,
-                "Input data set(s) from which the derivation was made, if available.", 0, Integer.MAX_VALUE);
-        input.add(new Interface.Attribute("vid", StringType.DEFAULT, "The value identifier for the data set.", 1));
+        Interface.Element input = new Interface.Element(
+                "input",
+                CiteableIdType.DEFAULT,
+                "Input data set(s) from which the derivation was made, if available.",
+                0, Integer.MAX_VALUE);
+        input.add(new Interface.Attribute("vid", StringType.DEFAULT,
+                "The value identifier for the data set.", 1));
         _defn.add(input);
 
-        Interface.Element method = new Interface.Element("method", XmlDocType.DEFAULT,
-                "Details about the ex-method for which this acquisition was made.", 0, 1);
-        method.add(new Interface.Element("id", CiteableIdType.DEFAULT,
+        Interface.Element method = new Interface.Element(
+                "method",
+                XmlDocType.DEFAULT,
+                "Details about the ex-method for which this acquisition was made.",
+                0, 1);
+        method.add(new Interface.Element(
+                "id",
+                CiteableIdType.DEFAULT,
                 "The identity of the ex-method. If not specified, defaults to the identity of the parent ex-method.",
                 0, 1));
-        method.add(new Interface.Element("step", CiteableIdType.DEFAULT, "The execution step within the ex-method", 1,
-                1));
+        method.add(new Interface.Element("step", CiteableIdType.DEFAULT,
+                "The execution step within the ex-method", 1, 1));
         _defn.add(method);
 
-        _defn.add(new Interface.Element("processed", BooleanType.DEFAULT,
-                "Set to true to indicate the dataset is processed data rather than raw data. Defaults to false.", 0, 1));
+        _defn.add(new Interface.Element(
+                "processed",
+                BooleanType.DEFAULT,
+                "Set to true to indicate the dataset is processed data rather than raw data. Defaults to false.",
+                0, 1));
 
-        Interface.Element transform = new Interface.Element("transform", XmlDocType.DEFAULT,
-                "If transformed, then details of the transform, if known.", 0, 1);
-        transform.add(new Interface.Element("tuid", LongType.POSITIVE_ONE,
-                "The unique id of the transform if it is executed via Transform Framework.", 0, 1));
+        Interface.Element transform = new Interface.Element("transform",
+                XmlDocType.DEFAULT,
+                "If transformed, then details of the transform, if known.", 0,
+                1);
+        transform
+                .add(new Interface.Element(
+                        "tuid",
+                        LongType.POSITIVE_ONE,
+                        "The unique id of the transform if it is executed via daris-transform(Transform Framework).",
+                        0, 1));
         transform.add(new Interface.Element("mid", CiteableIdType.DEFAULT,
                 "The identity of an agreed method of transformation.", 0, 1));
-        Interface.Element software = new Interface.Element("software", XmlDocType.DEFAULT,
+        Interface.Element software = new Interface.Element("software",
+                XmlDocType.DEFAULT,
                 "The software application used to perform the transform.", 0, 1);
-        software.add(new Interface.Element("name", XmlDocType.DEFAULT, "The name of the software application.", 1, 1));
-        software.add(new Interface.Element("version", StringType.DEFAULT, "The version of the software application", 0,
-                1));
-        Interface.Element command = new Interface.Element("command", XmlDocType.DEFAULT,
+        software.add(new Interface.Element("name", XmlDocType.DEFAULT,
+                "The name of the software application.", 1, 1));
+        software.add(new Interface.Element("version", StringType.DEFAULT,
+                "The version of the software application", 0, 1));
+        Interface.Element command = new Interface.Element("command",
+                XmlDocType.DEFAULT,
                 "The command used to perform the transform.", 0, 1);
-        command.add(new Interface.Element("name", StringType.DEFAULT, "The name of the command.", 1, 1));
-        Interface.Element argument = new Interface.Element("argument", XmlDocType.DEFAULT,
-                "The argument for the command.", 0, Integer.MAX_VALUE);
-        argument.add(new Interface.Element("name", StringType.DEFAULT, "The name of the argument.", 1, 1));
-        argument.add(new Interface.Element("value", StringType.DEFAULT, "The name of the argument.", 0, 1));
+        command.add(new Interface.Element("name", StringType.DEFAULT,
+                "The name of the command.", 1, 1));
+        Interface.Element argument = new Interface.Element("argument",
+                XmlDocType.DEFAULT, "The argument for the command.", 0,
+                Integer.MAX_VALUE);
+        argument.add(new Interface.Element("name", StringType.DEFAULT,
+                "The name of the argument.", 1, 1));
+        argument.add(new Interface.Element("value", StringType.DEFAULT,
+                "The name of the argument.", 0, 1));
         command.add(argument);
         software.add(command);
         transform.add(software);
@@ -121,10 +150,14 @@ public class SvcDataSetDerivationCreate extends PluginService {
                 "Arbitrary description of the transformation.", 0, 1));
         _defn.add(transform);
 
-        _defn.add(new Interface.Element("allow-incomplete-meta", BooleanType.DEFAULT,
-                "Should the metadata be accepted if incomplete? Defaults to false.", 0, 1));
+        _defn.add(new Interface.Element(
+                "allow-incomplete-meta",
+                BooleanType.DEFAULT,
+                "Should the metadata be accepted if incomplete? Defaults to false.",
+                0, 1));
 
-        Interface.Element meta = new Interface.Element("meta", XmlDocType.DEFAULT,
+        Interface.Element meta = new Interface.Element("meta",
+                XmlDocType.DEFAULT,
                 "Optional metadata - a list of asset documents.", 0, 1);
         meta.setIgnoreDescendants(true);
         _defn.add(meta);
@@ -167,7 +200,8 @@ public class SvcDataSetDerivationCreate extends PluginService {
         return 1;
     }
 
-    public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w) throws Throwable {
+    public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w)
+            throws Throwable {
 
         // Distributed ID for parent Study or DataSet. It must be a primary or
         // we are not allowed
@@ -175,12 +209,16 @@ public class SvcDataSetDerivationCreate extends PluginService {
         DistributedAsset dPID = new DistributedAsset(args.element("pid"));
 
         // Validate
-        PSSDObject.Type type = PSSDObject.Type.parse(nig.mf.pssd.plugin.util.PSSDUtil.typeOf(executor(), dPID));
+        PSSDObject.Type type = PSSDObject.Type
+                .parse(nig.mf.pssd.plugin.util.PSSDUtil
+                        .typeOf(executor(), dPID));
         if (type == null) {
-            throw new Exception("The asset associated with " + dPID.toString() + " does not exist");
+            throw new Exception("The asset associated with " + dPID.toString()
+                    + " does not exist");
         }
         if (!type.equals(Study.TYPE)) {
-            throw new Exception("Object " + dPID.getCiteableID() + " [type=" + type + "] is not a " + Study.TYPE);
+            throw new Exception("Object " + dPID.getCiteableID() + " [type="
+                    + type + "] is not a " + Study.TYPE);
         }
         if (dPID.isReplica()) {
             throw new Exception(
@@ -190,7 +228,8 @@ public class SvcDataSetDerivationCreate extends PluginService {
         // Make sure parent Study is not for Processed data. If not specified,
         // cannot test.
         XmlDoc.Element studyMeta = dPID.getAsset();
-        XmlDoc.Element studyIsProcessed = studyMeta.element("asset/meta/daris:pssd-study/processed");
+        XmlDoc.Element studyIsProcessed = studyMeta
+                .element("asset/meta/daris:pssd-study/processed");
         if (studyIsProcessed != null) {
             Boolean processed = args.booleanValue("processed", false);
             if (processed && !studyIsProcessed.booleanValue()) {
@@ -227,12 +266,14 @@ public class SvcDataSetDerivationCreate extends PluginService {
         }
 
         try {
-            String cid = nig.mf.pssd.plugin.util.CiteableIdUtil.generateCiteableID(executor(), dPID.getCiteableID(),
-                    pdist, datasetNumber, fillIn);
+            String cid = nig.mf.pssd.plugin.util.CiteableIdUtil
+                    .generateCiteableID(executor(), dPID.getCiteableID(),
+                            pdist, datasetNumber, fillIn);
             createDataSetAsset(args, dPID, cid, in);
 
             // Generate system event
-            SystemEventChannel.generate(new PSSDObjectEvent(Action.CREATE, cid, 0));
+            SystemEventChannel.generate(new PSSDObjectEvent(Action.CREATE, cid,
+                    0));
             w.add("id", cid);
         } finally {
             if (fillIn) {
@@ -241,31 +282,36 @@ public class SvcDataSetDerivationCreate extends PluginService {
         }
     }
 
-    private void createDataSetAsset(XmlDoc.Element args, DistributedAsset dPID, String cid, Inputs in) throws Throwable {
-    	
-    	// Create meta-data
-        XmlDocMaker dm = createDataSetMetaData (executor(), args.booleanValue("allow-incomplete-meta", false), 
-        		PSSDUtils.namespace(executor(), dPID), args.value("type"), 
-        		args.value("ctype"), args.value("lctype"), args.value("name"), args.value("description"), 
-        		args.element("meta"), args.element("filename"), args.booleanValue("processed", false), 
-        		args.elements("input"), args.element("method"), args.element("transform"), args.element("url"),
-        		dPID, cid);
-        
-  
+    private void createDataSetAsset(XmlDoc.Element args, DistributedAsset dPID,
+            String cid, Inputs in) throws Throwable {
+
+        // Create meta-data
+        XmlDocMaker dm = createDataSetMetaData(executor(),
+                args.booleanValue("allow-incomplete-meta", false),
+                PSSDUtils.namespace(executor(), dPID), args.value("type"),
+                args.value("ctype"), args.value("lctype"), args.value("name"),
+                args.value("description"), args.element("meta"),
+                args.element("filename"),
+                args.booleanValue("processed", false), args.elements("input"),
+                args.element("method"), args.element("transform"),
+                args.element("url"), dPID, cid);
+
         // Create asset on the local server
         executor().execute("asset.create", dm.root(), in, null);
     }
-    
-    
-    public static XmlDocMaker createDataSetMetaData (ServiceExecutor executor, Boolean allowIncompleteMeta, String namespace, String type, String ctype, String lctype,
-                                              String name, String description, XmlDoc.Element meta, XmlDoc.Element fileName,
-                                              Boolean processed, Collection<XmlDoc.Element> inputs, 
-                                              XmlDoc.Element method, XmlDoc.Element transform, XmlDoc.Element url,
-                                              DistributedAsset dPID, String cid) throws Throwable {
+
+    public static XmlDocMaker createDataSetMetaData(ServiceExecutor executor,
+            Boolean allowIncompleteMeta, String namespace, String type,
+            String ctype, String lctype, String name, String description,
+            XmlDoc.Element meta, XmlDoc.Element fileName, Boolean processed,
+            Collection<XmlDoc.Element> inputs, XmlDoc.Element method,
+            XmlDoc.Element transform, XmlDoc.Element url,
+            DistributedAsset dPID, String cid) throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("allow-incomplete-meta", allowIncompleteMeta);
         dm.add("cid", cid);
-        if (namespace!=null) dm.add("namespace", namespace);
+        if (namespace != null)
+            dm.add("namespace", namespace);
         dm.add("model", DataSet.MODEL);
         if (type != null) {
             dm.add("type", type);
@@ -278,7 +324,7 @@ public class SvcDataSetDerivationCreate extends PluginService {
         }
 
         dm.push("meta");
-        PSSDUtils.setObjectMeta(dm, DataSet.TYPE, name, description,  true);
+        PSSDUtils.setObjectMeta(dm, DataSet.TYPE, name, description, true);
         PSSDUtils.setObjectOptionalMeta(dm, meta, "om.pssd.dataset");
 
         // Data set..
@@ -301,7 +347,8 @@ public class SvcDataSetDerivationCreate extends PluginService {
         // Inputs ..
         if (inputs != null) {
             for (XmlDoc.Element input : inputs) {
-                dm.add("input", new String[] { "vid", input.value("@vid") }, input.value());
+                dm.add("input", new String[] { "vid", input.value("@vid") },
+                        input.value());
             }
         }
 
@@ -325,7 +372,7 @@ public class SvcDataSetDerivationCreate extends PluginService {
 
         // Get the project identifier..this is required for ACLs on the DataSet
         PSSDUtils.addDataSetACLs(dm, dPID.getParentProjectCID());
-        
+
         //
         return dm;
 

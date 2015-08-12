@@ -4,8 +4,6 @@ package nig.mf.plugin.pssd.dicom.series;
 import java.util.Date;
 
 import nig.mf.plugin.pssd.dicom.DicomElements;
-
-
 import arc.mf.plugin.dicom.DataElementMap;
 import arc.mf.plugin.dicom.DicomDateTime;
 

@@ -3,9 +3,13 @@ package nig.mf.plugin.pssd.services;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.*;
-import arc.xml.*;
+import arc.mf.plugin.Exec;
+import arc.mf.plugin.PluginService;
+import arc.mf.plugin.dtype.BooleanType;
+import arc.mf.plugin.dtype.CiteableIdType;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
+import arc.xml.XmlWriter;
 
 public class SvcObjectDMFPut extends PluginService {
 	private Interface _defn;

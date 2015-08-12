@@ -1,7 +1,6 @@
 package nig.mf.plugin.pssd.services;
 
 import java.io.File;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;

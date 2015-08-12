@@ -4,16 +4,15 @@ package nig.mf.plugin.pssd.services;
 import java.util.Collection;
 
 import nig.mf.pssd.Role;
-
 import arc.mf.plugin.PluginService;
+import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.EnumType;
 import arc.mf.plugin.dtype.IntegerType;
 import arc.mf.plugin.dtype.StringType;
-import arc.mf.plugin.dtype.BooleanType;
 import arc.xml.XmlDoc;
+import arc.xml.XmlDoc.Element;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
-import arc.xml.XmlDoc.Element;
 
 public class SvcUserCreate extends PluginService {
 

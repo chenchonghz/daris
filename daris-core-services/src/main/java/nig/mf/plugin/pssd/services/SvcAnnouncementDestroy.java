@@ -1,8 +1,6 @@
 package nig.mf.plugin.pssd.services;
 
 import nig.mf.plugin.pssd.announcement.Announcement;
-import nig.mf.plugin.pssd.user.Self;
-import nig.mf.pssd.plugin.util.PSSDUtil;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.dtype.LongType;
 import arc.xml.XmlDoc.Element;

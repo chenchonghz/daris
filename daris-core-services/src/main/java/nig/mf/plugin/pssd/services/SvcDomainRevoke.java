@@ -5,8 +5,8 @@ package nig.mf.plugin.pssd.services;
 
 import arc.mf.plugin.PluginService;
 import arc.xml.XmlDoc;
-import arc.xml.XmlWriter;
 import arc.xml.XmlDoc.Element;
+import arc.xml.XmlWriter;
 
 public class SvcDomainRevoke extends PluginService {
 

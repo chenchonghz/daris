@@ -2,11 +2,9 @@ package nig.mf.plugin.pssd.services;
 
 import java.util.Collection;
 
-import nig.mf.plugin.pssd.object.Attachment;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.dtype.CiteableIdType;
 import arc.xml.XmlDoc;
-import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
 
 public class SvcObjectAttachmentList extends PluginService {

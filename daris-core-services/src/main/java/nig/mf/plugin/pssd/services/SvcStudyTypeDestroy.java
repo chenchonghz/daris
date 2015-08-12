@@ -1,9 +1,11 @@
 package nig.mf.plugin.pssd.services;
 
-import nig.mf.plugin.pssd.*;
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.*;
-import arc.xml.*;
+import nig.mf.plugin.pssd.Study;
+import arc.mf.plugin.PluginService;
+import arc.mf.plugin.dtype.StringType;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
+import arc.xml.XmlWriter;
 
 public class SvcStudyTypeDestroy extends PluginService {
 	private Interface _defn;

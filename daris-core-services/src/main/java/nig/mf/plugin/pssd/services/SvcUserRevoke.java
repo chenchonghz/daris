@@ -1,21 +1,20 @@
 package nig.mf.plugin.pssd.services;
 
+import java.util.Collection;
+
 import nig.mf.plugin.pssd.ModelUser;
 import nig.mf.plugin.pssd.Project;
 import nig.mf.plugin.pssd.ProjectMember;
 import nig.mf.plugin.pssd.user.Authority;
 import nig.mf.plugin.pssd.user.UserCredential;
 import nig.mf.pssd.Role;
-
-import java.util.Collection;
-
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.ServiceExecutor;
 import arc.mf.plugin.dtype.StringType;
 import arc.xml.XmlDoc;
+import arc.xml.XmlDoc.Element;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
-import arc.xml.XmlDoc.Element;
 
 public class SvcUserRevoke extends PluginService {
 

@@ -1,11 +1,13 @@
 package nig.mf.plugin.pssd.method;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Vector;
 
 import nig.mf.pssd.plugin.util.DistributedAsset;
-
 import arc.mf.plugin.ServiceExecutor;
-import arc.xml.*;
+import arc.xml.XmlDoc;
+import arc.xml.XmlWriter;
 
 /**
  * Branch using method references.

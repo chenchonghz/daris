@@ -2,8 +2,8 @@ package nig.mf.plugin.pssd.method;
 
 import nig.mf.pssd.plugin.util.DistributedAsset;
 import arc.mf.plugin.ServiceExecutor;
-import arc.xml.XmlWriter;
 import arc.xml.XmlDoc.Element;
+import arc.xml.XmlWriter;
 
 public class MethodReferenceStep extends Step {
 	private String _mid;

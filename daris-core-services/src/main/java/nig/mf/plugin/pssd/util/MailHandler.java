@@ -1,15 +1,15 @@
 package nig.mf.plugin.pssd.util;
 
-import nig.mf.plugin.pssd.Project;
-import nig.mf.plugin.pssd.user.Authority;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Vector;
 
+import nig.mf.plugin.pssd.Project;
+import nig.mf.plugin.pssd.user.Authority;
 import arc.mf.plugin.PluginThread;
 import arc.mf.plugin.ServiceExecutor;
-import arc.xml.*;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
 
 /**
  * Class to enable message to be sent to project members when new data arrived

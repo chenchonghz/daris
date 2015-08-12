@@ -2,6 +2,10 @@ package nig.mf.plugin.pssd.services;
 
 import java.util.Collection;
 
+import nig.mf.plugin.pssd.PSSDObject;
+import nig.mf.plugin.pssd.Subject;
+import nig.mf.plugin.pssd.method.Method;
+import nig.mf.pssd.plugin.util.DistributedAsset;
 /**
  * Specialised service to replace the :template meta-data (specified by a Method) on a Subject 
  * This is an Admin task when the Subject specification part of a Method changes 
@@ -11,13 +15,12 @@ import java.util.Collection;
  * TBD: This service should be complemented by the om.pssd.study.method.template.replace
  * 
  */
+import arc.mf.plugin.dtype.CiteableIdType;
+import arc.mf.plugin.PluginService;
 
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.*;
-import arc.xml.*;
-import nig.mf.plugin.pssd.*;
-import nig.mf.plugin.pssd.method.Method;
-import nig.mf.pssd.plugin.util.DistributedAsset;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
+import arc.xml.XmlWriter;
 
 
 public class SvcSubjectMethodTemplateReplace extends PluginService {

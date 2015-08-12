@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.StringTokenizer;
 
-import arc.mf.plugin.ServiceExecutor;
-import arc.mf.plugin.dicom.*;
 import nig.mf.plugin.pssd.ModelUser;
 import nig.mf.plugin.pssd.dicom.DICOMProjectSelector;
 import nig.mf.plugin.pssd.dicom.DicomElements;
@@ -13,7 +11,14 @@ import nig.mf.plugin.pssd.dicom.DicomIngestControls;
 import nig.mf.plugin.pssd.dicom.subject.SubjectHandler;
 import nig.mf.plugin.pssd.util.MailHandler;
 import nig.mf.pssd.CiteableIdUtil;
-import arc.xml.*;
+import arc.mf.plugin.ServiceExecutor;
+import arc.mf.plugin.dicom.DataElementMap;
+import arc.mf.plugin.dicom.DicomAssetEngine;
+import arc.mf.plugin.dicom.DicomEngineContext;
+import arc.mf.plugin.dicom.DicomPersonName;
+import arc.mf.plugin.dicom.StudyProxy;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
 
 
 public class StudyProxyFactory {

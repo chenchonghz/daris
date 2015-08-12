@@ -3,8 +3,8 @@ package nig.mf.plugin.pssd.project;
 import java.util.ArrayList;
 import java.util.List;
 
-import arc.xml.XmlWriter;
 import nig.mf.pssd.ProjectRole.Type;
+import arc.xml.XmlWriter;
 
 public class RoleMember extends ProjectMember {
 

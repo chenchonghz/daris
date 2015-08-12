@@ -1,5 +1,10 @@
 package nig.mf.plugin.pssd.services;
 
+import java.util.Collection;
+
+import nig.mf.plugin.pssd.user.Self;
+import nig.mf.plugin.util.AssetUtil;
+import nig.mf.pssd.plugin.util.PSSDUtil;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.PluginService.Interface.Element;
 import arc.mf.plugin.dtype.AssetType;
@@ -8,11 +13,6 @@ import arc.mf.plugin.dtype.CiteableIdType;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
-import java.util.Collection;
-
-import nig.mf.plugin.pssd.user.Self;
-import nig.mf.plugin.util.AssetUtil;
-import nig.mf.pssd.plugin.util.PSSDUtil;
 
 public class SvcProjectDestroy extends PluginService {
 

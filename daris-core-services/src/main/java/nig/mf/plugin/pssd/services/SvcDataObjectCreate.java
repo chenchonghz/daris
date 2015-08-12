@@ -1,14 +1,21 @@
 package nig.mf.plugin.pssd.services;
 
-import nig.mf.plugin.pssd.*;
+import nig.mf.plugin.pssd.DataObject;
+import nig.mf.plugin.pssd.DataSet;
+import nig.mf.plugin.pssd.PSSDObject;
+import nig.mf.plugin.pssd.PSSDObjectEvent;
 import nig.mf.plugin.pssd.PSSDObjectEvent.Action;
-import nig.mf.plugin.pssd.util.*;
+import nig.mf.plugin.pssd.util.PSSDUtils;
 import nig.mf.pssd.plugin.util.DistributedAsset;
-import arc.mf.plugin.*;
+import arc.mf.plugin.PluginService;
 import arc.mf.plugin.PluginService.Interface.Element;
-import arc.mf.plugin.dtype.*;
+import arc.mf.plugin.dtype.CiteableIdType;
+import arc.mf.plugin.dtype.StringType;
+import arc.mf.plugin.dtype.XmlDocType;
 import arc.mf.plugin.event.SystemEventChannel;
-import arc.xml.*;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
+import arc.xml.XmlWriter;
 
 public class SvcDataObjectCreate extends PluginService {
     private Interface _defn;

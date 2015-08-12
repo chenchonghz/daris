@@ -17,10 +17,8 @@ import java.util.Collection;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
-
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
 
 import nig.mf.plugin.util.AssetUtil;
 import arc.mf.plugin.Exec;

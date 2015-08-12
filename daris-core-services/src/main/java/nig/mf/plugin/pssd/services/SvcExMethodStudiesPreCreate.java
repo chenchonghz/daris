@@ -3,15 +3,19 @@ package nig.mf.plugin.pssd.services;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.*;
-import arc.xml.*;
 import nig.iio.metadata.StudyMethodMetadata;
 import nig.mf.Executor;
 import nig.mf.plugin.pssd.PSSDObject;
 import nig.mf.plugin.pssd.method.ExMethod;
 import nig.mf.plugin.util.PluginExecutor;
 import nig.mf.pssd.plugin.util.DistributedAsset;
+import arc.mf.plugin.PluginService;
+import arc.mf.plugin.dtype.BooleanType;
+import arc.mf.plugin.dtype.CiteableIdType;
+import arc.mf.plugin.dtype.StringType;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
+import arc.xml.XmlWriter;
 
 /**
  * Service to pre-create a Study container, setting all Method specified

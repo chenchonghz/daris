@@ -2,18 +2,24 @@ package nig.mf.plugin.pssd.services;
 
 import java.util.Collection;
 
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.*;
-import arc.xml.*;
 import nig.mf.plugin.pssd.ModelUser;
 import nig.mf.plugin.pssd.PSSDObject;
 import nig.mf.plugin.pssd.Project;
-import nig.mf.plugin.pssd.method.*;
+import nig.mf.plugin.pssd.method.ExMethod;
+import nig.mf.plugin.pssd.method.Method;
 import nig.mf.plugin.pssd.util.PSSDUtils;
 import nig.mf.plugin.util.AssetUtil;
 import nig.mf.pssd.Role;
 import nig.mf.pssd.plugin.util.DistributedAsset;
 import nig.mf.pssd.plugin.util.DistributedQuery;
+import arc.mf.plugin.PluginService;
+import arc.mf.plugin.ServiceExecutor;
+import arc.mf.plugin.dtype.BooleanType;
+import arc.mf.plugin.dtype.CiteableIdType;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
+import arc.xml.XmlDocWriter;
+import arc.xml.XmlWriter;
 
 public class SvcExMethodMethodReplace extends PluginService {
     private Interface _defn;

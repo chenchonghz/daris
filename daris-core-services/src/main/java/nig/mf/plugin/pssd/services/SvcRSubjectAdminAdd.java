@@ -1,10 +1,13 @@
 package nig.mf.plugin.pssd.services;
 
-import nig.mf.plugin.pssd.*;
-
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.*;
-import arc.xml.*;
+import nig.mf.plugin.pssd.Project;
+import nig.mf.plugin.pssd.RSubject;
+import arc.mf.plugin.PluginService;
+import arc.mf.plugin.ServiceExecutor;
+import arc.mf.plugin.dtype.CiteableIdType;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
+import arc.xml.XmlWriter;
 
 public class SvcRSubjectAdminAdd extends PluginService {
 	

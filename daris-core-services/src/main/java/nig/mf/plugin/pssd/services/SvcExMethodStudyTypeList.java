@@ -1,12 +1,15 @@
 package nig.mf.plugin.pssd.services;
 
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.*;
-import arc.xml.*;
-import nig.mf.plugin.pssd.method.*;
-import nig.mf.pssd.plugin.util.DistributedAsset;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.util.*;
+import nig.mf.plugin.pssd.method.ExMethod;
+import nig.mf.plugin.pssd.method.Method;
+import nig.mf.pssd.plugin.util.DistributedAsset;
+import arc.mf.plugin.PluginService;
+import arc.mf.plugin.dtype.CiteableIdType;
+import arc.xml.XmlDoc;
+import arc.xml.XmlWriter;
 
 public class SvcExMethodStudyTypeList extends PluginService {
     private Interface _defn;

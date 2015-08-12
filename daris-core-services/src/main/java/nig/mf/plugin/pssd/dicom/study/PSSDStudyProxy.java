@@ -5,15 +5,16 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import arc.mf.plugin.ServiceExecutor;
-import arc.mf.plugin.Session;
-import arc.mf.plugin.dicom.*;
-import arc.xml.*;
 import nig.iio.metadata.StudyMethodMetadata;
 import nig.mf.Executor;
 import nig.mf.plugin.pssd.util.MailHandler;
 import nig.mf.plugin.util.PluginExecutor;
 import nig.util.DateUtil;
+import arc.mf.plugin.ServiceExecutor;
+import arc.mf.plugin.Session;
+import arc.mf.plugin.dicom.StudyProxy;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
 
 
 /**

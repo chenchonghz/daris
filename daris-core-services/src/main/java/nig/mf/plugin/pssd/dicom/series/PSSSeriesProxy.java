@@ -2,9 +2,9 @@ package nig.mf.plugin.pssd.dicom.series;
 
 import java.io.File;
 
-import arc.mf.plugin.ServiceExecutor;
-import arc.mf.plugin.dicom.*;
 import nig.mf.plugin.pssd.dicom.study.PSSStudyProxy;
+import arc.mf.plugin.ServiceExecutor;
+import arc.mf.plugin.dicom.SeriesProxy;
 
 public class PSSSeriesProxy extends SeriesProxy {
 

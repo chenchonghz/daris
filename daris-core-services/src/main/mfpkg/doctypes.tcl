@@ -190,7 +190,7 @@ asset.doc.type.update :create true :type daris:pssd-transform \
         :generated-by application \
 	:definition < \
 		:element -name tuid -type long -min-occurs 0 -max-occurs 1 < \
-	        :description "The unique id of the transform, if it is through the Transform Framework." \
+	        :description "The unique id of the transform, if it is through the daris-transform(Transform Framework)." \
 	    > \
 		:element -name mid -type citeable-id -min-occurs 0 -max-occurs 1 < \
                 :description "The identity of a common transformation method/protocol." \

@@ -3,8 +3,9 @@ package nig.mf.plugin.pssd.services;
 
 import java.util.Collection;
 
-import arc.mf.plugin.*;
-import arc.xml.*;
+import arc.mf.plugin.PluginService;
+import arc.xml.XmlDoc;
+import arc.xml.XmlWriter;
 
 public class SvcUserRoleRevoke extends PluginService {
 	private Interface _defn;

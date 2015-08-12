@@ -5,7 +5,6 @@ import java.util.Collection;
 import nig.mf.pssd.plugin.util.DistributedQuery;
 import nig.mf.pssd.plugin.util.DistributedQuery.ResultAssetType;
 import arc.mf.plugin.PluginService;
-import arc.mf.plugin.PluginService.Interface;
 import arc.mf.plugin.PluginService.Interface.Element;
 import arc.mf.plugin.dtype.CiteableIdType;
 import arc.mf.plugin.dtype.EnumType;

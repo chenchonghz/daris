@@ -1,10 +1,14 @@
 package nig.mf.plugin.pssd.dicom.series;
 
 
-import arc.mf.plugin.ServiceExecutor;
-import arc.mf.plugin.dicom.*;
 import nig.mf.plugin.pssd.dicom.DicomIngestControls;
 import nig.mf.plugin.pssd.dicom.study.PSSDStudyProxy;
+import arc.mf.plugin.ServiceExecutor;
+import arc.mf.plugin.dicom.DataElementMap;
+import arc.mf.plugin.dicom.DicomAssetEngine;
+import arc.mf.plugin.dicom.DicomEngineContext;
+import arc.mf.plugin.dicom.SeriesProxy;
+import arc.mf.plugin.dicom.StudyProxy;
 
 public class SeriesProxyFactory {
 	

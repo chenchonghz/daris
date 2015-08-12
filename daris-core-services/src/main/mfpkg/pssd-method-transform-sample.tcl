@@ -1,5 +1,5 @@
 set server_uuid [xvalue uuid [server.uuid]]
-if { ( $server_uuid == "687" || $server_uuid == "755" )  && [xvalue exists [package.exists :package "Transform Framework"]] == "true" } {
+if { ( $server_uuid == "687" || $server_uuid == "755" )  && [xvalue exists [package.exists :package "daris-transform"]] == "true" } {
     set name "Transform - Clinical Pain"
     set description "Transform - Clinical Pain"
     set namespace "/pssd/methods"

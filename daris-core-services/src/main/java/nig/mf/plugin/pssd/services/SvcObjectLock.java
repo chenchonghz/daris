@@ -8,8 +8,8 @@ import arc.mf.plugin.dtype.CiteableIdType;
 import arc.mf.plugin.dtype.IntegerType;
 import arc.mf.plugin.dtype.StringType;
 import arc.xml.XmlDoc;
-import arc.xml.XmlDocMaker;
 import arc.xml.XmlDoc.Element;
+import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
 
 public class SvcObjectLock extends PluginService {

@@ -14,12 +14,13 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
-
 import nig.dicom.util.DicomFileCheck;
 import nig.mf.dicom.plugin.util.DICOMPatient;
 import nig.mf.plugin.util.AssetUtil;
 import nig.mf.pssd.plugin.util.DistributedQuery;
+
+import org.apache.commons.io.FileUtils;
+
 import arc.archive.ArchiveExtractor;
 import arc.archive.ArchiveInput;
 import arc.archive.ArchiveRegistry;

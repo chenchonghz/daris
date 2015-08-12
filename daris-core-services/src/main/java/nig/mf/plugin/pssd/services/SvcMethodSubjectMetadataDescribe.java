@@ -1,14 +1,15 @@
 package nig.mf.plugin.pssd.services;
 
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.*;
-import arc.xml.*;
-import nig.mf.plugin.pssd.method.*;
+import java.util.Vector;
 
-import nig.mf.plugin.pssd.*;
+import nig.mf.plugin.pssd.Metadata;
+import nig.mf.plugin.pssd.method.Method;
+import nig.mf.plugin.pssd.method.SubjectMetadataDefinition;
 import nig.mf.pssd.plugin.util.DistributedAsset;
-
-import java.util.*;
+import arc.mf.plugin.PluginService;
+import arc.mf.plugin.dtype.CiteableIdType;
+import arc.xml.XmlDoc;
+import arc.xml.XmlWriter;
 
 public class SvcMethodSubjectMetadataDescribe extends PluginService {
 	private Interface _defn;

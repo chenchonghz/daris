@@ -1,14 +1,22 @@
 package nig.mf.plugin.pssd.services;
 
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.*;
-import arc.xml.*;
-import nig.mf.plugin.pssd.*;
+import java.util.Collection;
+
+import nig.mf.plugin.pssd.ModelUser;
+import nig.mf.plugin.pssd.PSSDObject;
+import nig.mf.plugin.pssd.Project;
+import nig.mf.plugin.pssd.ProjectMember;
 import nig.mf.plugin.pssd.user.UserCredential;
 import nig.mf.pssd.Role;
 import nig.mf.pssd.plugin.util.DistributedAsset;
-
-import java.util.*;
+import arc.mf.plugin.PluginService;
+import arc.mf.plugin.ServerRoute;
+import arc.mf.plugin.ServiceExecutor;
+import arc.mf.plugin.dtype.CiteableIdType;
+import arc.mf.plugin.dtype.StringType;
+import arc.mf.plugin.dtype.XmlDocType;
+import arc.xml.XmlDoc;
+import arc.xml.XmlWriter;
 
 public class SvcProjectMembersRemove extends PluginService {
     private Interface _defn;

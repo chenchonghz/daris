@@ -2,11 +2,14 @@ package nig.mf.plugin.pssd.services;
 
 import java.util.List;
 
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.*;
-import arc.xml.*;
-
-import nig.mf.plugin.pssd.*;
+import nig.mf.plugin.pssd.RepositoryDescription;
+import arc.mf.plugin.PluginService;
+import arc.mf.plugin.dtype.DateType;
+import arc.mf.plugin.dtype.StringType;
+import arc.mf.plugin.dtype.UrlType;
+import arc.mf.plugin.dtype.XmlDocType;
+import arc.xml.XmlDoc;
+import arc.xml.XmlWriter;
 
 public class SvcRepositoryDescriptionSet extends PluginService {
 	

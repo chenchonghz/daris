@@ -1,10 +1,11 @@
 package nig.mf.plugin.pssd.services;
 
 
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.EnumType;
-import arc.xml.*;
 import nig.mf.plugin.util.AssetRegistry;
+import arc.mf.plugin.PluginService;
+import arc.mf.plugin.dtype.EnumType;
+import arc.xml.XmlDoc;
+import arc.xml.XmlWriter;
 
 public class SvcDICOMAERemove extends PluginService {
 

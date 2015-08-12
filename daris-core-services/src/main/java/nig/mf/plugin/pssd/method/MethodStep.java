@@ -2,8 +2,8 @@ package nig.mf.plugin.pssd.method;
 
 import arc.mf.plugin.ServiceExecutor;
 import arc.xml.XmlDoc;
-import arc.xml.XmlWriter;
 import arc.xml.XmlDoc.Element;
+import arc.xml.XmlWriter;
 
 /**
  * A step that contains the fully populated method.

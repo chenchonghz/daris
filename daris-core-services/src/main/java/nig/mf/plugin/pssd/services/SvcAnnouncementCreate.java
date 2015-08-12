@@ -3,7 +3,6 @@ package nig.mf.plugin.pssd.services;
 import java.util.Date;
 
 import nig.mf.plugin.pssd.announcement.Announcement;
-
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.DateType;

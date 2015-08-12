@@ -2,11 +2,15 @@ package nig.mf.plugin.pssd.services;
 
 import java.util.Collection;
 
-import nig.mf.plugin.pssd.*;
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.*;
-import arc.xml.*;
+import nig.mf.plugin.pssd.PSSDObject;
+import nig.mf.plugin.pssd.Subject;
 import nig.mf.pssd.plugin.util.DistributedAsset;
+import arc.mf.plugin.PluginService;
+import arc.mf.plugin.dtype.CiteableIdType;
+import arc.mf.plugin.dtype.IntegerType;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
+import arc.xml.XmlWriter;
 
 public class SvcSubjectMethodFind extends PluginService {
 	private Interface _defn;

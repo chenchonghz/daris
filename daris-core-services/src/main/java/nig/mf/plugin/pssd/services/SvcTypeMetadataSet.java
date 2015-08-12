@@ -1,12 +1,22 @@
 package nig.mf.plugin.pssd.services;
 
-import nig.mf.plugin.pssd.*;
+import java.util.Collection;
 
-import java.util.*;
-
-import arc.mf.plugin.*;
-import arc.mf.plugin.dtype.*;
-import arc.xml.*;
+import nig.mf.plugin.pssd.DataObject;
+import nig.mf.plugin.pssd.DataSet;
+import nig.mf.plugin.pssd.Metadata;
+import nig.mf.plugin.pssd.PSSDObject;
+import nig.mf.plugin.pssd.Project;
+import nig.mf.plugin.pssd.RSubject;
+import nig.mf.plugin.pssd.Study;
+import nig.mf.plugin.pssd.Subject;
+import arc.mf.plugin.PluginService;
+import arc.mf.plugin.dtype.BooleanType;
+import arc.mf.plugin.dtype.EnumType;
+import arc.mf.plugin.dtype.StringType;
+import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
+import arc.xml.XmlWriter;
 
 public class SvcTypeMetadataSet extends PluginService {
 	private Interface _defn;

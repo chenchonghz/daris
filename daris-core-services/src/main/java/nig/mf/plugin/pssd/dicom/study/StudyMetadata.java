@@ -2,12 +2,12 @@ package nig.mf.plugin.pssd.dicom.study;
 
 import java.util.Date;
 
+import nig.mf.plugin.pssd.dicom.DicomElements;
 import arc.mf.plugin.dicom.DataElementMap;
 import arc.mf.plugin.dicom.DicomDateTime;
 import arc.mf.plugin.dicom.DicomPersonName;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDocMaker;
-import nig.mf.plugin.pssd.dicom.DicomElements;
 
 public class StudyMetadata {
 

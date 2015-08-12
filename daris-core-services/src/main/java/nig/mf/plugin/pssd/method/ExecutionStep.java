@@ -1,6 +1,6 @@
 package nig.mf.plugin.pssd.method;
 
-import java.util.*;
+import java.util.Vector;
 
 
 /**

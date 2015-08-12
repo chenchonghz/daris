@@ -1,7 +1,7 @@
 package nig.mf.plugin.pssd.dicom.study;
 
 import arc.mf.plugin.ServiceExecutor;
-import arc.mf.plugin.dicom.*;
+import arc.mf.plugin.dicom.StudyProxy;
 
 /**
  * The PSSD study occurs under an ex-method. The incoming configuration
