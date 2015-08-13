@@ -281,7 +281,7 @@
                                 </replacement>
                                 <replacement>
                                     <token>@INSTALLER_FILE@</token>
-                                    <value>daris-installer-${project.version}.zip</value>
+                                    <value>daris-installer-${project.version}.jar</value>
                                 </replacement>
 							</replacements>
 						</configuration>
