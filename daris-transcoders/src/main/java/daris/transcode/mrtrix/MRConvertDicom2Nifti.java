@@ -36,7 +36,7 @@ public class MRConvertDicom2Nifti extends DarisTranscodeImpl {
 
     @Override
     public DarisTranscodeProvider provider() {
-        return MRTrixTranscodeProvider.INSTANCE;
+        return MRConvertTranscodeProvider.INSTANCE;
     }
 
 }

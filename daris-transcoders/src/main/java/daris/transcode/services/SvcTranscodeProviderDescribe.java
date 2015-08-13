@@ -1,5 +1,6 @@
 package daris.transcode.services;
 
+import java.io.File;
 import java.util.Collection;
 
 import arc.mf.plugin.PluginService;
@@ -44,13 +45,16 @@ public class SvcTranscodeProviderDescribe extends PluginService {
     @Override
     public void execute(Element args, Inputs arg1, Outputs arg2, XmlWriter w)
             throws Throwable {
+        String mfHome = executor().execute("server.java.environment").value(
+                "property[@key='mf.home']");
+        String pluginBinDir = mfHome + "/plugin/bin";
         String name = args.value("provider");
         Collection<DarisTranscodeProvider> providers = DarisTranscodeRegistry
                 .providers();
         if (providers != null) {
             for (DarisTranscodeProvider provider : providers) {
                 if (name == null || name.equals(provider.name())) {
-                    describe(provider, w);
+                    describe(provider, pluginBinDir, w);
                     if (name != null) {
                         break;
                     }
@@ -59,10 +63,18 @@ public class SvcTranscodeProviderDescribe extends PluginService {
         }
     }
 
-    private static void describe(DarisTranscodeProvider provider, XmlWriter w)
-            throws Throwable {
+    private static void describe(DarisTranscodeProvider provider,
+            String pluginBinDir, XmlWriter w) throws Throwable {
         w.push("provider", new String[] { "name", provider.name() });
         w.add("description", provider.description());
+        if (provider.executableFileName() != null) {
+            String executableFilePath = pluginBinDir + "/"
+                    + provider.executableFileName();
+            boolean exists = new File(executableFilePath).exists();
+            w.add("executable",
+                    new String[] { "exists", Boolean.toString(exists) },
+                    executableFilePath);
+        }
         Collection<DarisTranscodeImpl> impls = provider.transcodeImpls();
         if (impls != null) {
             for (DarisTranscodeImpl impl : impls) {

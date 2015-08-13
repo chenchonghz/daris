@@ -7,9 +7,9 @@ import arc.mime.MimeType;
 import daris.transcode.DarisTranscodeImpl;
 import daris.transcode.DarisTranscodeProvider;
 
-public class DCM2MNCTranscoderImpl extends DarisTranscodeImpl {
+public class DCM2MNCTranscodeImpl extends DarisTranscodeImpl {
 
-    DCM2MNCTranscoderImpl() {
+    DCM2MNCTranscodeImpl() {
 
     }
 
@@ -36,7 +36,7 @@ public class DCM2MNCTranscoderImpl extends DarisTranscodeImpl {
 
     @Override
     public DarisTranscodeProvider provider() {
-        return MincToolsTranscodeProvider.INSTANCE;
+        return DCM2MNCTranscodeProvider.INSTANCE;
     }
 
 }

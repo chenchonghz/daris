@@ -34,4 +34,9 @@ public class DCMToolsTranscodeProvider implements DarisTranscodeProvider {
     public Collection<DarisTranscodeImpl> transcodeImpls() {
         return _impls;
     }
+
+    @Override
+    public String executableFileName() {
+        return null;
+    }
 }

@@ -37,4 +37,9 @@ public class PVCONVTranscodeProvider implements DarisTranscodeProvider {
         return _impls;
     }
 
+    @Override
+    public String executableFileName() {
+        return PVCONV.CMD;
+    }
+
 }

@@ -6,7 +6,7 @@ import arc.mf.plugin.Exec;
 
 public class PVCONV {
 
-    public static final String SCRIPT = "pvconv.pl";
+    public static final String CMD = "pvconv.pl";
 
     public enum Target {
         ANALYZE_NL, ANALYZE_RL, MINC
@@ -36,7 +36,7 @@ public class PVCONV {
         }
         sb.append(" -outdir ");
         sb.append(outDir);
-        return Exec.exec(SCRIPT, sb.toString());
+        return Exec.exec(CMD, sb.toString());
     }
 
     public static String execute(File dir, Target target) throws Throwable {

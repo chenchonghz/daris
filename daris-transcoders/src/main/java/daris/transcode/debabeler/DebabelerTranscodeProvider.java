@@ -8,16 +8,16 @@ import java.util.Vector;
 import daris.transcode.DarisTranscodeImpl;
 import daris.transcode.DarisTranscodeProvider;
 
-public class DebabelerTranscoderProvider implements DarisTranscodeProvider {
+public class DebabelerTranscodeProvider implements DarisTranscodeProvider {
 
     public static final String NAME = "debabeler";
     public static final String DESC = "LONI Debabeler";
 
-    public static final DebabelerTranscoderProvider INSTANCE = new DebabelerTranscoderProvider();
+    public static final DebabelerTranscodeProvider INSTANCE = new DebabelerTranscodeProvider();
 
     private List<DarisTranscodeImpl> _impls;
 
-    private DebabelerTranscoderProvider() {
+    private DebabelerTranscodeProvider() {
         _impls = new Vector<DarisTranscodeImpl>();
         _impls.add(new DebabelerDicom2AnalyzeNL());
         _impls.add(new DebabelerDicom2AnalyzeRL());
@@ -37,6 +37,11 @@ public class DebabelerTranscoderProvider implements DarisTranscodeProvider {
     @Override
     public Collection<DarisTranscodeImpl> transcodeImpls() {
         return Collections.unmodifiableList(_impls);
+    }
+
+    @Override
+    public String executableFileName() {
+        return Debabeler.JAR;
     }
 
 }

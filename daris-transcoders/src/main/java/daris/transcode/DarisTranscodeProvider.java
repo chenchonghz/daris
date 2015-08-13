@@ -9,4 +9,6 @@ public interface DarisTranscodeProvider {
     String description();
 
     Collection<DarisTranscodeImpl> transcodeImpls();
+    
+    String executableFileName();
 }

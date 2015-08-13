@@ -7,17 +7,17 @@ import java.util.Vector;
 import daris.transcode.DarisTranscodeImpl;
 import daris.transcode.DarisTranscodeProvider;
 
-public class MincToolsTranscodeProvider implements DarisTranscodeProvider {
+public class DCM2MNCTranscodeProvider implements DarisTranscodeProvider {
 
-    public static final String NAME = "minc-tools";
-    public static final String DESC = "minc-tools dicom to minc trancoder.";
-    public static final MincToolsTranscodeProvider INSTANCE = new MincToolsTranscodeProvider();
+    public static final String NAME = "dcm2mnc";
+    public static final String DESC = "minc-tools dcm2mnc dicom to minc trancoder.";
+    public static final DCM2MNCTranscodeProvider INSTANCE = new DCM2MNCTranscodeProvider();
 
     private List<DarisTranscodeImpl> _impls;
 
-    private MincToolsTranscodeProvider() {
+    private DCM2MNCTranscodeProvider() {
         _impls = new Vector<DarisTranscodeImpl>();
-        _impls.add(new DCM2MNCTranscoderImpl());
+        _impls.add(new DCM2MNCTranscodeImpl());
     }
 
     @Override
@@ -33,6 +33,11 @@ public class MincToolsTranscodeProvider implements DarisTranscodeProvider {
     @Override
     public Collection<DarisTranscodeImpl> transcodeImpls() {
         return _impls;
+    }
+
+    @Override
+    public String executableFileName() {
+        return DCM2MNC.CMD;
     }
 
 }

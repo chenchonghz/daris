@@ -10,9 +10,9 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import daris.transcode.dcmtools.DCMToolsTranscodeProvider;
-import daris.transcode.debabeler.DebabelerTranscoderProvider;
-import daris.transcode.minctools.MincToolsTranscodeProvider;
-import daris.transcode.mrtrix.MRTrixTranscodeProvider;
+import daris.transcode.debabeler.DebabelerTranscodeProvider;
+import daris.transcode.minctools.DCM2MNCTranscodeProvider;
+import daris.transcode.mrtrix.MRConvertTranscodeProvider;
 import daris.transcode.pvconv.PVCONVTranscodeProvider;
 import arc.mf.plugin.transcode.Transcoder;
 import arc.mf.plugin.transcode.TranscoderImpl;
@@ -81,13 +81,13 @@ public class DarisTranscodeRegistry {
     public static void initialize() {
         if (!_initialized) {
             DarisTranscodeRegistry.addProvider(
-                    DebabelerTranscoderProvider.INSTANCE, false);
+                    DebabelerTranscodeProvider.INSTANCE, false);
             DarisTranscodeRegistry.addProvider(
                     PVCONVTranscodeProvider.INSTANCE, false);
             DarisTranscodeRegistry.addProvider(
-                    MRTrixTranscodeProvider.INSTANCE, false);
+                    MRConvertTranscodeProvider.INSTANCE, false);
             DarisTranscodeRegistry.addProvider(
-                    MincToolsTranscodeProvider.INSTANCE, true);
+                    DCM2MNCTranscodeProvider.INSTANCE, true);
             DarisTranscodeRegistry.addProvider(
                     DCMToolsTranscodeProvider.INSTANCE, true);
             _initialized = true;

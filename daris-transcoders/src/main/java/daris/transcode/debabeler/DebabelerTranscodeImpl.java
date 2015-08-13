@@ -16,7 +16,7 @@ public abstract class DebabelerTranscodeImpl extends DarisTranscodeImpl {
 
     @Override
     public final DarisTranscodeProvider provider() {
-        return DebabelerTranscoderProvider.INSTANCE;
+        return DebabelerTranscodeProvider.INSTANCE;
     }
 
     protected abstract String target();
