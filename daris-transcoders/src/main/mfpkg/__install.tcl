@@ -1,65 +1,78 @@
-#
-# args:
-#  - java.xmx <memory in MB> for debabeler
-#  - dicom.trans <debabeler, mrtrix>
-#
+# ============================================================================
+# 
+# Args:                                                                       
+#     debabelerJavaXmx    - maximum java heap size for debabeler process.
+#                            defaults to 512M (512MB)
+#     dicomNifti          - dicom to nifti transcode provider.
+#     dicomAnalyzeNL      - dicom to analyze(NL) transcode provider.
+#     dicomAnalyzeRL      - dicom to analyze(RL) transcode provider.
+#     dicomMinc           - dicom to minc transcode provider.
+#     dicomRda            - dicom to siemens rda transcode provider.
+#     brukerAnalyzeNL     - bruker to analyze(NL) transcode provider.
+#     brukerAnalyzeRL     - bruker to analyze(RL) transcode provider.
+#     brukerMinc          - bruker to minc transcode provider.
+# ============================================================================
 
-# remove the nig-transcode package if it exists.
+
+# remove the old 'nig-transcode' package if it exists.
 source old-release-cleanup.tcl
 
-# 
-source utils.tcl
 
-# ============================================================================
-# Create MIME Types; these are primarily made in the essentials package.
-# but in case you use this package without it, they are made here too.
-# ============================================================================
-createMimeType dicom/series      "DICOM series"
-createMimeType analyze/series/nl "Analyze(Neurological)"
-createMimeType analyze/series/rl "Analyze(Radiological)"
-createMimeType nifti/series      "NIFTI series"
-createMimeType siemens/rda       "RDA(Siemens Spectrum)"
-createMimeType bruker/series     "Bruker/Paravision image series"
-createMimeType bruker/fid        "Bruker Free-Induction Decay data"
+# register mime types. 
+source mime-types.tcl
 
-# ============================================================================
-# Install Plugins
-# ============================================================================
+# install plugins
 set plugin_label      [string toupper PACKAGE_$package]
 set plugin_namespace  mflux/plugins
 set plugin_zip        daris-transcoders-plugin.zip
 set plugin_jar        daris-transcoders-plugin.jar
 set plugin_path       $plugin_namespace/$plugin_jar
-set module_class      nig.mf.plugin.transcode.TranscodePluginModule
-set plugin_libs       { daris-commons.jar daris-dcmtools.jar loni-debabeler.jar }
+set module_class      daris.transcode.DarisTranscodePluginModule
+set plugin_libs       { libs/daris-commons.jar libs/daris-dcmtools.jar libs/loni-debabeler.jar }
 
-
-# Import the archive
+# import the archive
 asset.import :url archive:///$plugin_zip \
     :namespace -create yes $plugin_namespace \
     :label -create yes $plugin_label :label PUBLISHED \
     :update true
 
-# Add plugin module
-if { ![info exists java.xmx] } {
+# add plugin module
+set config ""
+if { [info exists debabelerJavaXmx] } {
+    set config "${config} :config -name debabelerJavaXmx ${debabelerJavaXmx}"
+} else {
     if { [xvalue uuid [server.uuid]] == "1004" } {
-	# daris-1: 6GB
-	set java.xmx "6144"
-    } elseif { [xvalue uuid [server.uuid]] == "1035" } {
-	# vera059: 4GB
-	set java.xmx "4096"
+        # daris-1: 6GB
+        set config "${config} :config -name debabelerJavaXmx 6000M"
     } else {
-	# default: 2GB
-	set java.xmx "2048"
+        # default: 2GB
+        set config "${config} :config -name debabelerJavaXmx 2000M"
     }
 }
-
-# Default dicom to nifti transcoder
-if { ![info exists dicom.trans] } {
-    set dicom.trans "debabeler"
-} 
-
-set JavaXmxOption "-Xmx${java.xmx}m"
+if { [info exists dicomNifti] } {
+    set config "${config} :config -name dicomNifti ${dicomNifti}"
+}
+if { [info exists dicomAnalyzeNL] } {
+    set config "${config} :config -name dicomAnalyzeNL ${dicomAnalyzeNL}"
+}
+if { [info exists dicomAnalyzeRL] } {
+    set config "${config} :config -name dicomAnalyzeRL ${dicomAnalyzeRL}"
+}
+if { [info exists dicomMinc] } {
+    set config "${config} :config -name dicomMinc ${dicomMinc}"
+}
+if { [info exists dicomRda] } {
+    set config "${config} :config -name dicomRda ${dicomRda}"
+}
+if { [info exists brukerAnalyzeNL] } {
+    set config "${config} :config -name brukerAnalyzeNL ${brukerAnalyzeNL}"
+}
+if { [info exists brukerAnalyzeRL] } {
+    set config "${config} :config -name brukerAnalyzeRL ${brukerAnalyzeRL}"
+}
+if { [info exists brukerMinc] } {
+    set config "${config} :config -name brukerMinc ${brukerMinc}"
+}
 
 # remove the plugin module if it pre-exists
 if { [xvalue exists [plugin.module.exists :path $plugin_path :class $module_class]] == "true" } {
@@ -67,23 +80,24 @@ if { [xvalue exists [plugin.module.exists :path $plugin_path :class $module_clas
 }
 
 # add plugin module
-plugin.module.add :path $plugin_path \
-                  :class $module_class \
-                  :config -name DICOMTranscoder "\"${dicom.trans}\"" \
-                  :config -name JavaXmxOption "\"${JavaXmxOption}\"" \
-                  :lib libs/daris-commons.jar \
-                  :lib libs/daris-dcmtools.jar \
-                  :lib libs/loni-debabeler.jar
+set args ":path ${plugin_path} :class ${module_class} ${config}"
+foreach lib ${plugin_libs} {
+    set args "${args} :lib ${lib}"
+}
+plugin.module.add ${args}
 
-# Because the MF class loader does not work for loni-debabler.jar (the jar file contains SPI files, MF class loader 
-# does not handle it properly), we have to put the loni-debabler.jar file into ${MF_HOME}/plugin/bin directory.
+# Because the MF class loader does not work for loni-debabler.jar (as the jar file contains SPI files, 
+# MF class loader does not handle it properly), we have to put the loni-debabler.jar file into 
+# ${MFLUX_HOME}/plugin/bin directory.
 # Note: the server need to be restarted to load the jar files in ${MF_HOME}/plugin/bin/ directory.
 asset.get :id path=/mflux/plugins/libs/loni-debabeler.jar \
           :url file:[xvalue property\[@key='mf.home'\] [server.java.environment] ]/plugin/bin/loni-debabeler.jar
 
+# reload service list
 system.service.reload
 
-# ============================================================================
-# Define roles and service permissions
-# ============================================================================
-source roleperms.tcl
+# set role permssions
+source role-permissions.tcl
+
+# set service permissions
+source service-permissions.tcl
