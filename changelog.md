@@ -14,5 +14,10 @@
 
 ### daris-transcoders
 1. Bug fix: unclosed file streams when checking for Siemens Microspectroscopy Dicom file in the (DICOM->Siemens RDA) transcoder.
-2. version increase to 1.0.1
+2. Version 2.0.1: refactored package to
+  * be able to activate specific transcoder if there are more than one transcoders avaiable.
+  * have new services to help configure the transcoders:
+    * **daris.transcode.activate**: activate the specified transcoder
+    * **daris.transcode.list**: list the active (or all) transcoders provided by this package
+    * **daris.transcode.provider**.describe: describe the details of the transcode provider.
 
