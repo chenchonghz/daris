@@ -530,6 +530,52 @@ class Session(object):
         if not self.__transport:
             raise Exception('Server transport is not set.')
 
+
+class CID(object):
+    @classmethod
+    def get_parent_cid(cls, cid, level=1):
+        pid = cid
+        while level >= 1:
+            idx = pid.rfind('.')
+            if idx == -1:
+                return None
+            else:
+                pid = pid[:idx]
+            level -= 1
+        return pid
+
+    @classmethod
+    def get_cid_depth(cls, cid):
+        if cid is None or len(cid) == 0:
+            return 0
+        depth = 1
+        idx = cid.find('.')
+        while idx != -1:
+            depth += 1
+            idx = cid.find('.', idx + 1)
+        return depth
+
+    @classmethod
+    def is_project_cid(cls, cid):
+        return cls.get_cid_depth(cid) == 3
+
+    @classmethod
+    def is_subject_cid(cls, cid):
+        return cls.get_cid_depth(cid) == 4
+
+    @classmethod
+    def is_ex_method_cid(cls, cid):
+        return cls.get_cid_depth(cid) == 5
+
+    @classmethod
+    def is_study_cid(cls, cid):
+        return cls.get_cid_depth(cid) == 6
+
+    @classmethod
+    def is_dataset_cid(cls, cid):
+        return cls.get_cid_depth(cid) == 7
+
+
 def main(argv):
     """ The main method wraps daris-client.jar. It checks availability of Java and daris-client.jar, executes daris-client.jar by passing the command arguments to it.
     """
