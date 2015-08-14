@@ -7,7 +7,9 @@
 3. om.pssd.object.attachment.remove/clear services now call asset.hard.destroy instead of asset.destroy.
 
 ### daris-portal:
-1. Upgrade mfclientgwt.jar, mfclientguigwt.jar and adesktopplugingwt.jar to 4.2.043. 
+1. Upgrade mfclientgwt.jar, mfclientguigwt.jar and adesktopplugingwt.jar to 4.2.043.
+2. Re-enabled public saved queries. Public access allows read for project members while private access allows only the owner read and write.
+3. Added an action to the query result actions to add all results including their containing datasets to shopping-cart. 
 
 ### daris-client-pvupload (Bruker client)
 1. Enhanced to a) allow auto-subject creation under a parent Project and b) find pre-existing (for NIG meta-data)
