@@ -50,6 +50,7 @@ public class TransformBrowser {
     private Button _resumeButton;
     private Button _terminateButton;
     private Button _deleteButton;
+    private Button _deleteAllButton;
     private Button _refreshButton;
     private Button _refreshAllButton;
 
@@ -122,7 +123,8 @@ public class TransformBrowser {
     private void startMonitor() {
         _checkStatusMessage.send();
         if (!_checkStatusTimer.isRunning()) {
-            _checkStatusTimer.scheduleRepeating(CHECK_STATUS_INTERVAL_MILLISECS);
+            _checkStatusTimer
+                    .scheduleRepeating(CHECK_STATUS_INTERVAL_MILLISECS);
         }
     }
 
@@ -135,7 +137,8 @@ public class TransformBrowser {
     private void updateButtons(final TransformRef t) {
         _bbSP.clear();
         if (t == null) {
-            ButtonBar bb = ButtonUtil.createButtonBar(ButtonBar.Position.BOTTOM, ButtonBar.Alignment.CENTER, 30);
+            ButtonBar bb = ButtonUtil.createButtonBar(
+                    ButtonBar.Position.BOTTOM, ButtonBar.Alignment.CENTER, 30);
             _bbSP.setContent(bb);
             return;
         }
@@ -143,7 +146,9 @@ public class TransformBrowser {
         t.resolve(new ObjectResolveHandler<Transform>() {
             @Override
             public void resolved(Transform o) {
-                ButtonBar bb = ButtonUtil.createButtonBar(ButtonBar.Position.BOTTOM, ButtonBar.Alignment.CENTER, 30);
+                ButtonBar bb = ButtonUtil.createButtonBar(
+                        ButtonBar.Position.BOTTOM, ButtonBar.Alignment.CENTER,
+                        30);
                 Transform.Status.State state = o.status().state();
                 if (state == State.running) {
                     _suspendButton = bb.addButton("Suspend");
@@ -153,19 +158,23 @@ public class TransformBrowser {
                         public void onClick(ClickEvent event) {
                             _suspendButton.disable();
                             Dialog.confirm("Suspend transform " + t.uid(),
-                                    "Are you sure you want to suspend transform " + t.uid() + "?",
+                                    "Are you sure you want to suspend transform "
+                                            + t.uid() + "?",
                                     new ActionListener() {
 
                                         @Override
                                         public void executed(boolean succeeded) {
                                             if (succeeded) {
-                                                new TransformSuspend(t).send(new ObjectMessageResponse<Null>() {
+                                                new TransformSuspend(t)
+                                                        .send(new ObjectMessageResponse<Null>() {
 
-                                                    @Override
-                                                    public void responded(Null r) {
-                                                        _suspendButton.enable();
-                                                    }
-                                                });
+                                                            @Override
+                                                            public void responded(
+                                                                    Null r) {
+                                                                _suspendButton
+                                                                        .enable();
+                                                            }
+                                                        });
                                             } else {
                                                 _suspendButton.enable();
                                             }
@@ -181,17 +190,19 @@ public class TransformBrowser {
                         @Override
                         public void onClick(ClickEvent event) {
                             _resumeButton.disable();
-                            new TransformResume(t).send(new ObjectMessageResponse<Null>() {
+                            new TransformResume(t)
+                                    .send(new ObjectMessageResponse<Null>() {
 
-                                @Override
-                                public void responded(Null r) {
-                                    _resumeButton.enable();
-                                }
-                            });
+                                        @Override
+                                        public void responded(Null r) {
+                                            _resumeButton.enable();
+                                        }
+                                    });
                         }
                     });
                 }
-                if (state == State.pending || state == State.running || state == State.suspended) {
+                if (state == State.pending || state == State.running
+                        || state == State.suspended) {
                     _terminateButton = bb.addButton("Terminate");
                     _terminateButton.addClickHandler(new ClickHandler() {
 
@@ -199,18 +210,22 @@ public class TransformBrowser {
                         public void onClick(ClickEvent event) {
                             _terminateButton.disable();
                             Dialog.confirm("Terminate transform " + t.uid(),
-                                    "Are you sure you want to terminate transform " + t.uid() + "?",
+                                    "Are you sure you want to terminate transform "
+                                            + t.uid() + "?",
                                     new ActionListener() {
                                         @Override
                                         public void executed(boolean succeeded) {
                                             if (succeeded) {
-                                                new TransformTerminate(t).send(new ObjectMessageResponse<Null>() {
+                                                new TransformTerminate(t)
+                                                        .send(new ObjectMessageResponse<Null>() {
 
-                                                    @Override
-                                                    public void responded(Null r) {
-                                                        _terminateButton.enable();
-                                                    }
-                                                });
+                                                            @Override
+                                                            public void responded(
+                                                                    Null r) {
+                                                                _terminateButton
+                                                                        .enable();
+                                                            }
+                                                        });
                                             } else {
                                                 _terminateButton.enable();
                                             }
@@ -225,58 +240,74 @@ public class TransformBrowser {
                         @Override
                         public void onClick(ClickEvent event) {
                             _deleteButton.disable();
-                            Dialog.confirm("Delete transform " + t.uid(), "Are you sure you want to delete transform "
-                                    + t.uid() + "?", new ActionListener() {
+                            Dialog.confirm("Delete transform " + t.uid(),
+                                    "Are you sure you want to delete transform "
+                                            + t.uid() + "?",
+                                    new ActionListener() {
 
-                                @Override
-                                public void executed(boolean succeeded) {
-                                    if (succeeded) {
-                                        new TransformDestroy(t).send(new ObjectMessageResponse<Null>() {
+                                        @Override
+                                        public void executed(boolean succeeded) {
+                                            if (succeeded) {
+                                                new TransformDestroy(t)
+                                                        .send(new ObjectMessageResponse<Null>() {
 
-                                            @Override
-                                            public void responded(Null r) {
+                                                            @Override
+                                                            public void responded(
+                                                                    Null r) {
+                                                                _deleteButton
+                                                                        .enable();
+                                                            }
+                                                        });
+                                            } else {
                                                 _deleteButton.enable();
                                             }
-                                        });
-                                    } else {
-                                        _deleteButton.enable();
-                                    }
-                                }
-                            });
+                                        }
+                                    });
                         }
                     });
                 }
-                if (state != State.terminated && state != State.failed && state != State.unknown) {
+                if (state != State.terminated && state != State.failed
+                        && state != State.unknown) {
                     _refreshButton = bb.addButton("Refresh");
                     _refreshButton.addClickHandler(new ClickHandler() {
 
                         @Override
                         public void onClick(ClickEvent event) {
                             _refreshButton.disable();
-                            new TransformStatusGet(t).send(new ObjectMessageResponse<Null>() {
+                            new TransformStatusGet(t)
+                                    .send(new ObjectMessageResponse<Null>() {
 
-                                @Override
-                                public void responded(Null r) {
-                                    _refreshButton.enable();
-                                }
-                            });
+                                        @Override
+                                        public void responded(Null r) {
+                                            _refreshButton.enable();
+                                        }
+                                    });
                         }
                     });
                 }
                 if (_nav.hasTransformsInCurrentPage()) {
+                    _deleteAllButton = bb.addButton("Detele all...");
+                    _deleteAllButton.addClickHandler(new ClickHandler() {
+
+                        @Override
+                        public void onClick(ClickEvent event) {
+                            new TransformDestroyAllDialog().show(_win);
+                        }
+                    });
                     _refreshAllButton = bb.addButton("Refresh all");
                     _refreshAllButton.addClickHandler(new ClickHandler() {
 
                         @Override
                         public void onClick(ClickEvent event) {
                             _refreshAllButton.disable();
-                            new TransformStatusGet().send(new ObjectMessageResponse<Null>() {
+                            new TransformStatusGet()
+                                    .send(new ObjectMessageResponse<Null>() {
 
-                                @Override
-                                public void responded(Null r) {
-                                    _refreshAllButton.enable();
-                                }
-                            });
+                                        @Override
+                                        public void responded(Null r) {
+                                            _refreshAllButton.enable();
+                                        }
+                                    });
                         }
                     });
                 }
