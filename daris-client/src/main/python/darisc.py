@@ -575,6 +575,54 @@ class CID(object):
     def is_dataset_cid(cls, cid):
         return cls.get_cid_depth(cid) == 7
 
+    @classmethod
+    def get_project_cid(cls, cid):
+        depth = cls.get_cid_depth(cid)
+        if depth < 3:
+            return None
+        elif depth == 3:
+            return cid
+        else:
+            return cls.get_parent_cid(cid, depth - 3)
+
+    @classmethod
+    def get_subject_cid(cls, cid):
+        depth = cls.get_cid_depth(cid)
+        if depth < 4:
+            return None
+        elif depth == 4:
+            return cid
+        else:
+            return cls.get_parent_cid(cid, depth - 4)
+
+    @classmethod
+    def get_ex_method_cid(cls, cid):
+        depth = cls.get_cid_depth(cid)
+        if depth < 5:
+            return None
+        elif depth == 5:
+            return cid
+        else:
+            return cls.get_parent_cid(cid, depth - 5)
+
+    @classmethod
+    def get_study_cid(cls, cid):
+        depth = cls.get_cid_depth(cid)
+        if depth < 6:
+            return None
+        elif depth == 6:
+            return cid
+        else:
+            return cls.get_parent_cid(cid, depth - 6)
+
+    @classmethod
+    def get_ordinal(cls, cid):
+        idx = cid.rfind('.');
+        if idx==-1:
+            return cid
+        else:
+            return cid[idx+1:]
+
 
 def main(argv):
     """ The main method wraps daris-client.jar. It checks availability of Java and daris-client.jar, executes daris-client.jar by passing the command arguments to it.
