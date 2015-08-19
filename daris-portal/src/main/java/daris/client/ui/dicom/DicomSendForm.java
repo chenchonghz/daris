@@ -96,6 +96,7 @@ public class DicomSendForm extends ValidatedInterfaceComponent implements
         final Field<String> localAETField = new Field<String>(
                 new FieldDefinition("AE Title", new EnumerationType<String>(
                         new LocalAETitleEnumDataSource()), null, null, 1, 1));
+        localAETField.setRenderOptions(new FieldRenderOptions().setWidth(0.6));
         localAETField.addListener(new FormItemListener<String>() {
             @Override
             public void itemValueChanged(FormItem<String> f) {
