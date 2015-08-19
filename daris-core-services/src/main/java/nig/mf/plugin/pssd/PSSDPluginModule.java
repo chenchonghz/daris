@@ -189,7 +189,6 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcObjectSessionLock());
         _services.add(new SvcObjectSessionLocked());
         _services.add(new SvcObjectSessionUnlock());
-        
 
         _services.add(new SvcObjectsDestroyHard());
 
@@ -284,6 +283,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcDICOMAERegList());
         _services.add(new SvcDICOMAERegDestroy());
         _services.add(new SvcDICOMAEAccess());
+        _services.add(new SvcDicomLocalAETitleList());
         //
         _services.add(new SvcDICOMDataSetCount());
         _services.add(new SvcDICOMUploadNotify());
@@ -305,7 +305,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcTempAssetCreate());
 
         _services.add(new SvcTransformFind());
-        
+
         _services.add(new SvcNamespaceDefaultGet());
         _services.add(new SvcNamespaceDefaultSet());
         _services.add(new SvcProjectNamespaceDefaultGet());
@@ -328,7 +328,8 @@ public class PSSDPluginModule implements HttpServletPluginModule {
     protected void registerSystemEvents() throws Throwable {
 
         FilterRegistry.remove(PSSDObjectEvent.EVENT_TYPE);
-        FilterRegistry.add(PSSDObjectEvent.EVENT_TYPE, PSSDObjectEventFilterFactory.INSTANCE);
+        FilterRegistry.add(PSSDObjectEvent.EVENT_TYPE,
+                PSSDObjectEventFilterFactory.INSTANCE);
         FilterRegistry.remove(PSSDAnnouncementEvent.EVENT_TYPE);
         FilterRegistry.add(PSSDAnnouncementEvent.EVENT_TYPE,
                 PSSDAnnouncementEventFilterFactory.INSTANCE);

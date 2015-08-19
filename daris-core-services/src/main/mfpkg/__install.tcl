@@ -8,13 +8,6 @@
 #       Otherwise, pssd is the default asset namespace in which assets are created.
 #
 #
-
-# arg:           bypassPerms
-#   type:        boolean
-#   default:     false
-#   description: set to true to bypass the settings of the roles and permissions. Defaults
-#                to false.
-
 # arg:           domain
 #   type:        boolean
 #   default:     false
@@ -165,15 +158,8 @@ source doctypes-harvest.tcl
 # ============================================================================
 # Setup Roles and Permissions
 # ============================================================================
-if { [info exists bypassPerms] } {
-    if { $bypassPerms == "true" } {
-# Do nothing
-    } else {
-        source roleperms.tcl
-    }
-} else {
-    source roleperms.tcl
-}
+source role-permissions.tcl
+source service-permissions.tcl
 
 # ============================================================================
 # Declare the "standard" object models
