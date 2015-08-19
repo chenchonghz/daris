@@ -25,13 +25,13 @@ public class TextFilter extends Filter {
         public static final TextOperator CONTAINS = new TextOperator("contains", "contains", 1);
         public static final TextOperator CONTAINS_ANY = new TextOperator("contains-any", "contains any", 1);
         public static final TextOperator CONTAINS_ALL = new TextOperator("contains-all", "contains all", 1);
+        public static final TextOperator CONTAINS_NO = new TextOperator("contains-no", "contains no", 1);
         public static final TextOperator CONTAINS_LITERAL = new TextOperator("contains literal", "contains literal", 1);
         public static final TextOperator CONTAINS_PATTERN = new TextOperator("contains pattern", "contains pattern", 1);
-        public static final TextOperator CONTAINS_NO = new TextOperator("contains-no", "contains no", 1);
         public static final TextOperator CONTAINS_NO_LITERAL = new TextOperator("contains-no literal",
-                "contains no literal", 1);
+                "contains-no literal", 1);
         public static final TextOperator CONTAINS_NO_PATTERN = new TextOperator("contains-no pattern",
-                "contains no pattern", 1);
+                "contains-no pattern", 1);
 
         public static final TextOperator[] VALUES = new TextOperator[] { CONTAINS, CONTAINS_ANY, CONTAINS_ALL,
                 CONTAINS_LITERAL, CONTAINS_PATTERN, CONTAINS_NO, CONTAINS_NO_LITERAL, CONTAINS_NO_PATTERN, LIKE };

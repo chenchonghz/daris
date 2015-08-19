@@ -18,7 +18,7 @@ public class DicomSendAction extends ActionInterface<DObject> {
 
     public DicomSendAction(DObjectRef root, Window owner) {
 
-        this(root, owner, ActionIntefaceUtil.windowWidth(owner, 0.7), ActionIntefaceUtil.windowHeight(owner, 0.7));
+        this(root, owner, ActionIntefaceUtil.windowWidth(owner, 0.5), ActionIntefaceUtil.windowHeight(owner, 0.7));
     }
 
     public DicomSendAction(DObjectRef root, Window owner, int width, int height) {
