@@ -1,10 +1,15 @@
-# create role namespace if needed
-authorization.role.namespace.create :namespace daris :ifexists ignore :description "Namespace for daris framework roles"
+# ============================================================================
+# role namespace: daris
+#    The role namespace for daris.
+# ============================================================================
+authorization.role.namespace.create :namespace daris :ifexists ignore \
+                                    :description "Namespace for daris roles"
 
 # ============================================================================
-# Role: basic-user
-# This role enables some basic access to Mediaflux functionality such as an account,
-# access to DICOM doc types and some functions,  and simple asset access.
+# role: daris:basic-user
+#     This role enables some basic access to Mediaflux functionality such as
+#     an account, access to DICOM doc types and some functions,  and simple 
+#     asset access.
 # ============================================================================
 createRole daris:basic-user
 grantRoleReadWriteAccessDocTypes daris:basic-user \

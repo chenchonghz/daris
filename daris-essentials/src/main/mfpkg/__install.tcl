@@ -46,3 +46,4 @@ source doctypes-dicom.tcl
 # Define roles and service permissions
 # ============================================================================
 source roleperms.tcl
+source service-permissions.tcl
