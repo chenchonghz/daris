@@ -1,46 +1,46 @@
+
 # ============================================================================
-# Create MIME Types for asset types
+# function to create/register a mime type in Mediaflux.
 # ============================================================================
-proc createAssetMimeType { type description } {
-    
+proc create_mime_type { type { description "" } { extension "" } { compressable "" } } {
     if { [xvalue exists [type.exists :type $type]] == "false" } {
-       type.create :type $type :description $description
+        set cmd "type.create :type ${type}"
+        if { $description != "" } {
+            set cmd "${cmd} :description ${description}"
+        }
+        if { $extension != "" } {
+            set cmd "${cmd} :extension ${extension}"
+        }
+        if { $compressable != "" } {
+            set cmd "${cmd} :compressable ${compressable}"
+        }
+        $cmd
     }
 }
 
-proc createContentMimeType { type description extension compressable } {
-    
-    if { [xvalue exists [type.exists :type $type]] == "false" } {
-	   type.create :type $type :description $description :extension $extension :compressable $compressable
-    }
-}
-
-
-#########################################################
-# Asset TYpes. Asset types may also be added in Java code.
-#########################################################
-
-createAssetMimeType dicom/series      "DICOM series"
-createAssetMimeType analyze/series/nl "Analyze(Neurological)"
-createAssetMimeType analyze/series/rl "Analyze(Radiological)"
-createAssetMimeType nifti/series      "NIFTI series"
-createAssetMimeType minc/series       "MINC series"
-createAssetMimeType bruker/series     "Bruker/Paravision image series"
-createAssetMimeType bruker/fid        "Bruker Free-Induction Decay data"
-
+# ============================================================================
+# asset mime types
+# ============================================================================
+create_mime_type "dicom/series"      "DICOM series"
+create_mime_type "analyze/series/nl" "Analyze(Neurological)"
+create_mime_type "analyze/series/rl" "Analyze(Radiological)"
+create_mime_type "nifti/series"      "NIFTI series"
+create_mime_type "minc/series"       "MINC series"
+create_mime_type "bruker/series"     "Bruker/Paravision image series"
+create_mime_type "bruker/fid"        "Bruker Free-Induction Decay data"
 # Siemens RDA spectrum type
-createAssetMimeType siemens/rda       "RDA(Siemens Spectrum)"
-# Siemens RAW PET/CT format.  The Doc Types are created in the PSSD package
+create_mime_type "siemens/rda"       "RDA(Siemens Spectrum)"
+# Siemens RAW PET/CT format. The Doc Types are created in the PSSD package
 # and used by the Siemens raw PET/CT client to upload data.
-createAssetMimeType  siemens-raw-petct/study "Siemens RAW PET/CT Study data"
+create_mime_type "siemens-raw-petct/study" "Siemens RAW PET/CT Study data"
 # DataSets (Series) are either PET or CT
-createAssetMimeType  siemens-raw-pet/series "Siemens RAW PET data"
-createAssetMimeType  siemens-raw-ct/series "Siemens RAW CT data"
+create_mime_type "siemens-raw-pet/series" "Siemens RAW PET data"
+create_mime_type  siemens-raw-ct/series "Siemens RAW CT data"
 
-
-
-# Content types. These parallel those found already
-# in Mediaflux like application/dicom, application/dcm
-createContentMimeType "application/minc" "MINC image" "mnc" yes
-createContentMimeType "application/siemens-raw-pet" "Siemens RAW PET format" "ptd" no
-createContentMimeType "application/siemens-raw-ct" "Siemens RAW CT format" "ptr" no
+# ============================================================================
+# asset content mime types. These parallel those found already in Mediaflux 
+# like application/dicom, application/dcm
+# ============================================================================
+create_mime_type "application/minc"            "MINC image"             "mnc" "yes"
+create_mime_type "application/siemens-raw-pet" "Siemens RAW PET format" "ptd" "no"
+create_mime_type "application/siemens-raw-ct"  "Siemens RAW CT format"  "ptr" "no"

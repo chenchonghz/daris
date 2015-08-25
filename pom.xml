@@ -19,7 +19,7 @@
 		<require.mflux.version>4.2.033</require.mflux.version>
 		<daris-commons.version>1.0.0</daris-commons.version>
 		<daris-dcmtools.version>1.0.0</daris-dcmtools.version>
-		<daris-essentials.version>1.0.1</daris-essentials.version>
+		<daris-essentials.version>1.0.2</daris-essentials.version>
 		<daris-core-services.version>3.0.6</daris-core-services.version>
 		<daris-portal.version>1.0.5</daris-portal.version>
 		<daris-sinks.version>1.0.0</daris-sinks.version>

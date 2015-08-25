@@ -1,23 +1,24 @@
-
 # ============================================================================
-# Include the util functions
+# NOTE:
+#     DaRIS underwent a namespaces migration (stable-2-27). Document types, 
+# dictionaries and role namespaces were all migrated out of the global namespace.
+# The migration must have been executed before installing this version unless 
+# it's a fresh install - no PSSD objects exist in the system.
 # ============================================================================
-source utils.tcl
-
-# DaRIS underwent a namespaces migration (stable-2-27).   Document, dictionary and role namespaces
-# were all migrated out of the global namespace.   The migration must have been executed
-# before installing this version (unless it's a fresh install - no PSSD objects).
-if { [isDaRISInstalled] == "true" } {
-   checkAppProperty daris daris-namespaces-migrate-1 "DaRIS namespaces migration has not been done. You must undertake this migration first by installing stable-2-27 and undertaking the migration."
+if { [xvalue exists [authorization.role.exists :role pssd.model.user]] == "true" || [xvalue exists [authorization.role.exists :role daris:pssd.model.user]] == "true" } {
+    # daris has been installed before as the daris role exists
+    if { [xvalue exists [application.property.exists :property -app daris daris-namespaces-migrate-1]] == "false" || [xvalue property [application.property.get :property -app daris daris-namespaces-migrate-1]] == "false" } {
+        error "DaRIS namespaces migration has not been done. You must undertake this migration first by installing stable-2-27 and undertaking the migration."
+    }
 } else {
-# Set the property now  in the case it was a fresh install (nothing to migrate)
-   application.property.create :ifexists ignore  :property -app daris -name daris-namespaces-migrate-1 < :value "true" >
+    # daris does not pre-exist. It is a fresh install so just set the application property.
+    application.property.create :ifexists ignore \
+        :property -app daris -name daris-namespaces-migrate-1 < :value "true" >
 }
 
-
-##
-## Remove the predeccessor: nig-essentials
-##
+# ============================================================================
+# Clean up old release (nig-essentials)
+# ============================================================================
 source old-release-cleanup.tcl
 
 # ============================================================================
@@ -30,20 +31,27 @@ source plugin-module-add.tcl
 # ============================================================================
 source mime-types.tcl
 
-# The DaRIS namespace is used by the essentials package also
-set exists [xvalue exists [asset.doc.namespace.exists :namespace "daris"]]
-if { $exists == "false" } {
-   asset.doc.namespace.create :description "Namespace for DaRIS framework document types" :namespace daris
+# ============================================================================
+# Create document namespace: daris
+# ============================================================================
+if { [xvalue exists [asset.doc.namespace.exists :namespace "daris"]] == "false" } {
+   asset.doc.namespace.create :namespace daris \
+       :description "Namespace for DaRIS document types"
 }
 
-# These doc types are very generic and match their types definitions
-# above
-source doctypes-bruker.tcl
-source doctypes-siemens-raw.tcl
-source doctypes-dicom.tcl
+# ============================================================================
+# Create document types
+# ============================================================================
+source doc-types-bruker.tcl
+source doc-types-siemens-raw.tcl
+source doc-types-dicom.tcl
 
 # ============================================================================
-# Define roles and service permissions
+# Set roles and their permissions
 # ============================================================================
-source roleperms.tcl
+source role-permissions.tcl
+
+# ============================================================================
+# Set service permissions
+# ============================================================================
 source service-permissions.tcl
