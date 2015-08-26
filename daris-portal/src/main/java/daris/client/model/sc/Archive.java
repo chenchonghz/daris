@@ -40,7 +40,8 @@ public class Archive {
         private boolean _compressible = false;
         private String _extension = null;
 
-        Type(String typeName, Collection<String> params, boolean compressible, String extension) {
+        Type(String typeName, Collection<String> params, boolean compressible,
+                String extension) {
             _typeName = typeName;
             _compressible = compressible;
             _extension = extension;
@@ -87,6 +88,10 @@ public class Archive {
             return none;
         }
 
+        public static Type[] archiveTypes() {
+            return new Type[] { zip, aar, jar, tar, compressed_tar, iso9660 };
+        }
+
     }
 
     public static enum IsoType {
@@ -127,7 +132,8 @@ public class Archive {
             return false;
         }
         Archive ao = (Archive) o;
-        return _type == ao.type() && CollectionUtil.mapEquals(_params, ao.params());
+        return _type == ao.type()
+                && CollectionUtil.mapEquals(_params, ao.params());
     }
 
     public void setParam(String name, Object value) {
@@ -217,7 +223,8 @@ public class Archive {
         if (hasParams()) {
             Set<String> names = _params.keySet();
             for (String name : names) {
-                w.add("parameter", new String[] { "name", name }, _params.get(name));
+                w.add("parameter", new String[] { "name", name },
+                        _params.get(name));
             }
         }
         w.pop();
@@ -245,7 +252,8 @@ public class Archive {
             List<XmlElement> paramElems = pe.elements("parameter");
             if (paramElems != null) {
                 for (XmlElement paramElem : paramElems) {
-                    archive.setParam(paramElem.value("@name"), paramElem.value());
+                    archive.setParam(paramElem.value("@name"),
+                            paramElem.value());
                 }
             }
             return archive;

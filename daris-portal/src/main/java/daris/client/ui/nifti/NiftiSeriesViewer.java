@@ -107,9 +107,6 @@ public class NiftiSeriesViewer extends ImageSeriesViewer {
 
         if (_usePapaya) {
 
-            // TODO: remove
-            System.out.println("Papaya viewer: " +_data.contentDownloadUrl());
-
             final PapayaViewer pv = new PapayaViewer(new Params().addImage(_data.contentDownloadUrl()).setExpandable(
                     true));
             _imageSP.setContent(pv.widget());

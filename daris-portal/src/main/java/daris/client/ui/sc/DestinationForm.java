@@ -94,7 +94,7 @@ public class DestinationForm extends ValidatedInterfaceComponent {
         FieldGroup arcFieldGroup = new FieldGroup(new FieldDefinition("archive", ConstantType.DEFAULT,
                 "the archive specification.", null, 1, 1));
         Field<Archive.Type> arcTypeField = new Field<Archive.Type>(new FieldDefinition("type",
-                new EnumerationType<Archive.Type>(Archive.Type.values()), "the archive type.", null, 1, 1));
+                new EnumerationType<Archive.Type>(Archive.Type.archiveTypes()), "the archive type.", null, 1, 1));
         arcTypeField.addListener(new FormItemListener<Archive.Type>() {
 
             @Override

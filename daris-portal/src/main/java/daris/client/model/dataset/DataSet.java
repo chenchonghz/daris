@@ -185,7 +185,8 @@ public abstract class DataSet extends DObject {
 
         super(de);
         try {
-            _sourceType = SourceType.parse(de.stringValue("source/type", SourceType.derivation.toString()));
+            _sourceType = SourceType.parse(de.stringValue("source/type",
+                    SourceType.derivation.toString()));
         } catch (Throwable e) {
             _sourceType = SourceType.derivation;
         }
@@ -201,8 +202,8 @@ public abstract class DataSet extends DObject {
         }
     }
 
-    protected DataSet(String id, String proute, String name, String description, boolean editable, int version,
-            boolean isleaf) {
+    protected DataSet(String id, String proute, String name,
+            String description, boolean editable, int version, boolean isleaf) {
         super(id, proute, name, description, editable, version, isleaf);
     }
 
@@ -249,14 +250,15 @@ public abstract class DataSet extends DObject {
         } else if (sourceType.equals("primary")) {
             return new PrimaryDataSet(oe);
         }
-        throw new IllegalArgumentException("Failed to instantiate data set from XML: " + oe);
+        throw new IllegalArgumentException(
+                "Failed to instantiate data set from XML: " + oe);
     }
 
     public String contentDownloadUrl() {
         if (data() == null && !RemoteServer.haveSession()) {
             return null;
         }
-        
+
         StringBuilder sb = new StringBuilder();
         sb.append(com.google.gwt.user.client.Window.Location.getProtocol());
         sb.append("//");
@@ -265,12 +267,16 @@ public abstract class DataSet extends DObject {
         sb.append(RemoteServer.sessionId());
         sb.append("&disposition=attachment&id=");
         sb.append(assetId());
-        sb.append("&filename=" + id());
-        if (MimeTypes.NIFTI_SERIES.equals(mimeType())) {
-            sb.append(".nii");
-        }
-        if (data().extension() != null) {
-            sb.append("." + data().extension());
+        if (fileName() != null) {
+            sb.append("&filename=" + fileName());
+        } else {
+            sb.append("&filename=" + id());
+            if (MimeTypes.NIFTI_SERIES.equals(mimeType())) {
+                sb.append(".nii");
+            }
+            if (data().extension() != null) {
+                sb.append("." + data().extension());
+            }
         }
         return sb.toString();
     }
