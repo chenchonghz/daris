@@ -4,17 +4,21 @@
 # ============================================================================
 proc create_mime_type { type { description "" } { extension "" } { compressable "" } } {
     if { [xvalue exists [type.exists :type $type]] == "false" } {
-        set cmd "type.create :type ${type}"
+        set args ""
         if { $description != "" } {
-            set cmd "${cmd} :description ${description}"
+            set cmd "${args} :description ${description}"
         }
         if { $extension != "" } {
-            set cmd "${cmd} :extension ${extension}"
+            set cmd "${args} :extension ${extension}"
         }
         if { $compressable != "" } {
-            set cmd "${cmd} :compressable ${compressable}"
+            set cmd "${args} :compressable ${compressable}"
         }
-        $cmd
+        if { $args !="" } {
+            type.create :type $type "${args}"
+        } else {
+            type.create :type $type
+        }
     }
 }
 
