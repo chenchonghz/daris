@@ -262,7 +262,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcRepositoryDescriptionSet());
         _services.add(new SvcRepositoryDescribe());
         _services.add(new SvcRepositoryDescriptionDestroy());
-        _services.add(new SvcRepositoryDescriptionID());
+        _services.add(new SvcRepositoryDescriptionGet());
 
         _services.add(new SvcReplicate());
         _services.add(new SvcReplicateCheck());

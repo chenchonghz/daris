@@ -184,7 +184,7 @@ public abstract class DObject {
             _nbChildren = 0;
             // _filename is null - methods have no content
         } else if (xe.name().equals("repository")) {
-            // xe is the result of om.pssd.repository.describe
+            // xe is the result of daris.repository.describe
             _id = xe.value("id");
             _name = xe.value("name");
             _description = xe.value("description");

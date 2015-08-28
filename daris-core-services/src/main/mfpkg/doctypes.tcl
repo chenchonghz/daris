@@ -582,7 +582,7 @@ asset.doc.type.update :create yes :type daris:pssd-repository-description \
   :label "pssd-repository-description" \
   :description "Metadata to describe the repository in the research context." \
   :definition < \
-    :element -name "name" -type "string" -index "true" -max-occurs "1" \
+    :element -name "name" -type "string" -index "true" -min-occurs "1" -max-occurs "1" \
     < \
       :description "The name of the repository" \
       :attribute -name "acronym" -type "string" -min-occurs "0" \
@@ -590,7 +590,7 @@ asset.doc.type.update :create yes :type daris:pssd-repository-description \
         :description "Acronym for the repository name." \
       > \
     > \
-    :element -name "custodian" -type "document" -index "true" -max-occurs "1" \
+    :element -name "custodian" -type "document" -index "true" -min-occurs "0" -max-occurs "1" \
     < \
       :description "The person responsible for the management of the repository." \
       :element -name "email" -type "string" -index "true" -min-occurs "0" -max-occurs "1" \
@@ -626,7 +626,7 @@ asset.doc.type.update :create yes :type daris:pssd-repository-description \
           :max-length "40" \
         > \
       > \
-      :element -name "address" -type "document" -max-occurs "1" \
+      :element -name "address" -type "document" -min-occurs "0" -max-occurs "1" \
       < \
         :element -name "department" -type "string" -max-occurs "1" \
         :element -name "institution" -type "string" -min-occurs "0" -max-occurs "1" \
@@ -637,7 +637,7 @@ asset.doc.type.update :create yes :type daris:pssd-repository-description \
         :description "Globally unique National Library of Australia Identifier" \
       > \
     > \
-    :element -name "location" -type "document" -index "true" -max-occurs "1" \
+    :element -name "location" -type "document" -index "true" -min-occurs "0" -max-occurs "1" \
     < \
       :description "The physical location of the repository." \
       :element -name "institution" -type "string" -index "true" -max-occurs "1" \
@@ -645,7 +645,7 @@ asset.doc.type.update :create yes :type daris:pssd-repository-description \
       :element -name "building" -type "string" -index "true" -min-occurs "0" -max-occurs "1" \
       :element -name "precinct" -type "string" -index "true" -min-occurs "0" -max-occurs "1" \
     > \
-    :element -name "rights" -type "document" -index "true" -max-occurs "1" \
+    :element -name "rights" -type "document" -index "true" -min-occurs "0" -max-occurs "1" \
     < \
       :description "A description of the rights process to gain access to collections in the repository." \
       :element -name "description" -type "string" -index "true" -max-occurs "1" \

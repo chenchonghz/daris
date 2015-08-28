@@ -27,7 +27,7 @@ public class RepositoryRef extends DObjectRef {
 	@Override
 	protected String resolveServiceName() {
 
-		return "om.pssd.repository.describe";
+		return "daris.repository.describe";
 	}
 
 	@Override

@@ -1,3 +1,12 @@
+# service: daris.repository.description.set
+actor.grant :role -type role service-user :type plugin:service :name daris.repository.description.set
+
+# service: daris.repository.description.get
+actor.grant :role -type role service-user :type plugin:service :name daris.repository.description.get
+
+# service: daris.repository.describe
+actor.grant :role -type role service-user :type plugin:service :name daris.repository.describe
+
 # service: om.pssd.project.create
 actor.grant :type plugin:service :name om.pssd.project.create :perm < :access ADMINISTER :resource -type service actor.self.grant >
 actor.grant :type plugin:service :name om.pssd.project.create :perm < :access ADMINISTER :resource -type service actor.grant >

@@ -12,21 +12,16 @@ public class Repository extends DObject {
 
     public static class Server {
         private String _uuid;
-        private String _proute;
+        private String _version;
         private String _name;
         private String _organization;
 
         public Server(XmlElement se) {
 
-            _proute = se.value("@proute");
             _uuid = se.value("uuid");
+            _version = se.value("version");
             _name = se.value("name");
             _organization = se.value("organization");
-        }
-
-        public String proute() {
-
-            return _proute;
         }
 
         public String uuid() {
@@ -39,66 +34,14 @@ public class Repository extends DObject {
             return _name;
         }
 
+        public String version() {
+            return _version;
+        }
+
         public String organization() {
 
             return _organization;
         }
-    }
-
-    public static class Database {
-
-        private String _type;
-        private String _version;
-        private String _vendor;
-        private String _description;
-        private Date _ctime;
-        private long _time;
-
-        public Database(XmlElement de) {
-
-            _type = de.value("@type");
-            _version = de.value("version");
-            _vendor = de.value("vendor");
-            _description = de.value("description");
-            try {
-                _ctime = de.dateValue("ctime");
-                _time = de.longValue("ctime/@time");
-            } catch (Throwable e) {
-                e.printStackTrace(System.out);
-            }
-
-        }
-
-        public String type() {
-
-            return _type;
-        }
-
-        public String version() {
-
-            return _version;
-        }
-
-        public String vendor() {
-
-            return _vendor;
-        }
-
-        public String description() {
-
-            return _description;
-        }
-
-        public Date ctime() {
-
-            return _ctime;
-        }
-
-        public long time() {
-
-            return _time;
-        }
-
     }
 
     public static class Custodian {
@@ -109,8 +52,8 @@ public class Repository extends DObject {
         private String _middleName;
         private String _lastName;
 
-        public Custodian(String prefix, String firstName, String middleName, String lastName, String address,
-                String email) {
+        public Custodian(String prefix, String firstName, String middleName,
+                String lastName, String address, String email) {
 
             _prefix = prefix;
             _firstName = firstName;
@@ -168,7 +111,8 @@ public class Repository extends DObject {
         private String _institution;
         private String _precinct;
 
-        public Location(String building, String department, String institution, String precinct) {
+        public Location(String building, String department, String institution,
+                String precinct) {
 
             _building = building;
             _department = department;
@@ -238,28 +182,18 @@ public class Repository extends DObject {
     }
 
     private Server _server;
-    private Database _database;
     private Location _location;
     private DataHoldings _dataHoldings;
     private Custodian _custodian;
     private String _rights;
-    private String _projectIdRoot;
-    private String _methodIdRoot;
 
     protected Repository(XmlElement re) throws Throwable {
 
         super(re);
 
-        _projectIdRoot = re.value("id/@project-id-root");
-        _methodIdRoot = re.value("id/@method-id-root");
-
         XmlElement e = re.element("server");
         if (e != null) {
             _server = new Server(e);
-        }
-        e = re.element("database");
-        if (e != null) {
-            _database = new Database(e);
         }
         e = re.element("custodian");
         if (e != null) {
@@ -276,24 +210,9 @@ public class Repository extends DObject {
         _rights = re.value("rights/description");
     }
 
-    public String projectIdRoot() {
-
-        return _projectIdRoot;
-    }
-
-    public String methodIdRoot() {
-
-        return _methodIdRoot;
-    }
-
     public Server server() {
 
         return _server;
-    }
-
-    public Database database() {
-
-        return _database;
     }
 
     public Location location() {
@@ -301,9 +220,11 @@ public class Repository extends DObject {
         return _location;
     }
 
-    public void setLocation(String building, String department, String institution, String precinct) {
+    public void setLocation(String building, String department,
+            String institution, String precinct) {
 
-        Location location = new Location(building, department, institution, precinct);
+        Location location = new Location(building, department, institution,
+                precinct);
         _location = location;
     }
 
@@ -323,10 +244,11 @@ public class Repository extends DObject {
         return _custodian;
     }
 
-    public void setCustodian(String prefix, String firstName, String middleName, String lastName, String address,
-            String email) {
+    public void setCustodian(String prefix, String firstName,
+            String middleName, String lastName, String address, String email) {
 
-        Custodian custodian = new Custodian(prefix, firstName, middleName, lastName, address, email);
+        Custodian custodian = new Custodian(prefix, firstName, middleName,
+                lastName, address, email);
         _custodian = custodian;
     }
 
