@@ -11,13 +11,15 @@ public class BrowserCheck {
 
     public static final String INSTALL_JAVA = ROOT + "install-java.html";
 
-    public static final String INSTALL_CHROMEFRAME = ROOT + "install-chromeframe.html";
+    public static final String INSTALL_CHROMEFRAME = ROOT
+            + "install-chromeframe.html";
 
     public static final String INSTALL_DTI = ROOT + "install-dti.html";
 
     public static void openPage(String url, String name) {
-        com.google.gwt.user.client.Window.open(url, "Troubleshooting DTI", "menubar=no," + "location=false,"
-                + "resizable=yes," + "scrollbars=yes," + "status=no," + "dependent=true");
+        com.google.gwt.user.client.Window.open(url, "Troubleshooting DTI",
+                "menubar=no," + "location=false," + "resizable=yes,"
+                        + "scrollbars=yes," + "status=no," + "dependent=true");
     }
 
     public static void openInstallJavaPage() {
@@ -44,13 +46,17 @@ public class BrowserCheck {
     public static void checkJava() throws Throwable {
         if (!Navigator.isJavaEnabled()) {
             BrowserCheck.openInstallJavaPage();
-            throw new Exception("This application requires Java but it is not installed. Please <a href=\""
-                    + BrowserCheck.INSTALL_JAVA + "\">install Java</a>. ");
+            throw new Exception(
+                    "This application requires Java but it is not installed. Please <a href=\""
+                            + BrowserCheck.INSTALL_JAVA
+                            + "\">install Java</a>. ");
         }
     }
 
-    public static void check() throws Throwable {
+    public static void check(boolean noDTI) throws Throwable {
         checkIE();
-        checkJava();
+        if (!noDTI) {
+            checkJava();
+        }
     }
 }

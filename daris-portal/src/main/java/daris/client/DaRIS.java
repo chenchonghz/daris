@@ -50,7 +50,8 @@ public class DaRIS implements EntryPoint {
                 /*
                  * Stand-alone Application
                  */
-                BrowserCheck.check();
+                final boolean noDTI = ObjectUtil.equals(Window.Location.getParameter("dti"), "no");
+                BrowserCheck.check(noDTI);
                 Session.setLoginDialog(DaRISLoginDialog.get());
                 Session.initialize(new SessionHandler() {
 
