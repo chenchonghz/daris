@@ -105,3 +105,10 @@ if { [xvalue exists [application.property.exists :property -app daris  daris.nam
         create_daris_all_namespaces ${daris_store}
     }
 }
+set default_ns [xvalue property [application.property.get :property -app daris daris.namespace.default]]
+set default_project_ns "${default_ns}/pssd"
+if { [xvalue exists [dictionary.exists :name daris:pssd.project.asset.namespaces]] == "true" } {
+    if { [xvalue exists [dictionary.entry.exists :dictionary daris:pssd.project.asset.namespaces :term ${default_project_ns}]] == "false" } {
+        dictionary.entry.add :dictionary daris:pssd.project.asset.namespaces :term ${default_project_ns}
+    }
+}

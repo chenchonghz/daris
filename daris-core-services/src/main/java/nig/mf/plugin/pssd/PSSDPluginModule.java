@@ -273,10 +273,6 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcObjectThumbnailUnset());
 
         _services.add(new SvcDICOMSend());
-        // This methodology retired from MF 3.8.029. Services
-        // granting roles now need system-admin role
-        // _services.add(new SvcDomainGrant());
-        _services.add(new SvcDomainRevoke()); // Remove later
         _services.add(new SvcDICOMAERegID());
         _services.add(new SvcDICOMAEAdd());
         _services.add(new SvcDICOMAERemove());
@@ -309,12 +305,10 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcNamespaceDefaultGet());
         _services.add(new SvcNamespaceDefaultSet());
         _services.add(new SvcProjectNamespaceDefaultGet());
+        _services.add(new SvcProjectCitableRootCreate());
 
         // Register a DICOM handler specific to NIG.
         DicomAssetEngineRegistry.register(new DicomAssetHandlerFactory());
-
-        // Tests
-        _services.add(new SvcTesting());
 
         // register system events
         registerSystemEvents();

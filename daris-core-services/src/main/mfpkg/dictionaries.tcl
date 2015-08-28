@@ -9,7 +9,13 @@ proc createDict_pssd_project_asset_namespaces {} {
 	if { [xvalue exists [dictionary.exists :name daris:pssd.project.asset.namespaces]] == "false" } {
 		dictionary.create :name daris:pssd.project.asset.namespaces :description "Asset namespaces for PSSD projects (used by the portal)." :case-sensitive true
 	}
-    addDictionaryEntry daris:pssd.project.asset.namespaces "pssd" "Standard asset namespace for PSSD Projects"
+    set default_ns [xvalue property [application.property.get :property -app daris -ifexists true  daris.namespace.default]]
+    if { ${default_ns} != "" } {
+        set default_project_ns "${default_ns}/pssd"
+        if { [xvalue exists [asset.namespace.exists :namespace ${default_project_ns}]] == "true" && [xvalue exists [dictionary.entry.exists :dictionary daris:pssd.project.asset.namespaces :term ${default_project_ns}]] == "false" } {
+            dictionary.entry.add :dictionary daris:pssd.project.asset.namespaces :term ${default_project_ns}
+        }
+    }
 }
 
 
