@@ -37,6 +37,11 @@ public class SvcRepositoryDescribe extends PluginService {
     public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w)
             throws Throwable {
 
+        int nbProjects = executor()
+                .execute(
+                        "asset.query",
+                        "<args><where>model='om.pssd.project'</where><pdist>0</pdist><action>count</action></args>",
+                        null, null).intValue("value", 0);
         // Repository description
         XmlDoc.Element ae = RepositoryDescription.getAssetMeta(executor());
         if (ae == null) {
@@ -46,6 +51,7 @@ public class SvcRepositoryDescribe extends PluginService {
             w.push("repository", new String[] { "id", assetId });
             w.add(ae.element("meta/" + RepositoryDescription.DOC_TYPE), false);
         }
+        w.add("number-of-projects", nbProjects);
         // Mediaflux server information
         w.push("server");
         XmlDoc.Element se = executor().execute("server.identity").element(

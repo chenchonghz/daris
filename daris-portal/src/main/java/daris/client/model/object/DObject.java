@@ -185,9 +185,9 @@ public abstract class DObject {
             // _filename is null - methods have no content
         } else if (xe.name().equals("repository")) {
             // xe is the result of daris.repository.describe
-            _id = xe.value("id");
+            _id = null;
             _name = xe.value("name");
-            _description = xe.value("description");
+            _description = null;
             _isleaf = false;
             try {
                 _nbChildren = xe.intValue("number-of-projects", -1);

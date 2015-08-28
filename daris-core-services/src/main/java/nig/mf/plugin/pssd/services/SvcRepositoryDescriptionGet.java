@@ -41,7 +41,7 @@ public class SvcRepositoryDescriptionGet extends PluginService {
         XmlDoc.Element ae = RepositoryDescription.getAssetMeta(executor());
         if (ae != null) {
             w.push("repository", new String[] { "id", ae.value("@id") });
-            w.add(ae, false);
+            w.add(ae.element("meta/" + RepositoryDescription.DOC_TYPE), false);
             w.pop();
         }
     }

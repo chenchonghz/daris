@@ -182,6 +182,7 @@ public class Repository extends DObject {
     }
 
     private Server _server;
+    private String _acronym;
     private Location _location;
     private DataHoldings _dataHoldings;
     private Custodian _custodian;
@@ -190,7 +191,7 @@ public class Repository extends DObject {
     protected Repository(XmlElement re) throws Throwable {
 
         super(re);
-
+        _acronym = re.value("name/@acronym");
         XmlElement e = re.element("server");
         if (e != null) {
             _server = new Server(e);
@@ -213,6 +214,10 @@ public class Repository extends DObject {
     public Server server() {
 
         return _server;
+    }
+
+    public String acronym() {
+        return _acronym;
     }
 
     public Location location() {
@@ -279,6 +284,10 @@ public class Repository extends DObject {
 
         // TODO:
         return null;
+    }
+
+    public void setAcronym(String acronym) {
+        _acronym = acronym;
     }
 
 }
