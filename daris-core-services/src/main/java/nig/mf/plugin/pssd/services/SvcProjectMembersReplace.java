@@ -8,7 +8,7 @@ import nig.mf.plugin.pssd.PSSDObject;
 import nig.mf.plugin.pssd.Project;
 import nig.mf.plugin.pssd.ProjectMember;
 import nig.mf.plugin.pssd.user.UserCredential;
-import nig.mf.plugin.util.AssetRegistry;
+import nig.mf.plugin.pssd.util.AssetRegistry;
 import nig.mf.pssd.Role;
 import nig.mf.pssd.plugin.util.DistributedAsset;
 import arc.mf.plugin.PluginService;

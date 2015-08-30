@@ -1,7 +1,7 @@
 package nig.mf.plugin.pssd.services;
 
 
-import nig.mf.plugin.util.AssetRegistry;
+import nig.mf.plugin.pssd.util.AssetRegistry;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.dtype.EnumType;
 import arc.xml.XmlDoc;
