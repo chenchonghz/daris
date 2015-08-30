@@ -182,7 +182,7 @@ public class ExMethod extends PSSDObject {
         String cid = nig.mf.pssd.plugin.util.CiteableIdUtil.generateCiteableID(executor, dSID.getCiteableID(), pdist,
                 exMethodNumber, reUse);
         dm.add("cid", cid);
-
+        dm.add("name", "ex-method " + cid);
         dm.add("model", MODEL);
 
         dm.push("meta");

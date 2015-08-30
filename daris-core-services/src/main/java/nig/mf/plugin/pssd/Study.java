@@ -45,7 +45,8 @@ public class Study {
      * @param sname
      *            Name of STep in ExMethod
      */
-    public Study(String type, String mid, String mname, String step, String sname) {
+    public Study(String type, String mid, String mname, String step,
+            String sname) {
         _type = type;
         _mid = mid;
         _mname = mname;
@@ -90,9 +91,11 @@ public class Study {
      * @return
      * @throws Throwable
      */
-    public static String create(ServiceExecutor executor, DistributedAsset dExMethod, long studyNumber, String type,
-            String name, String description, Boolean processed, String step, boolean allowIncompleteMeta,
-            XmlDoc.Element meta, DistributedAsset dProject, boolean fillIn) throws Throwable {
+    public static String create(ServiceExecutor executor,
+            DistributedAsset dExMethod, long studyNumber, String type,
+            String name, String description, Boolean processed, String step,
+            boolean allowIncompleteMeta, XmlDoc.Element meta,
+            DistributedAsset dProject, boolean fillIn) throws Throwable {
 
         XmlDocMaker dm = new XmlDocMaker("args");
 
@@ -102,15 +105,18 @@ public class Study {
         // distation to infinity
         // Ignores servers it can't reach.
         String pdist = "infinity";
-        String cid = nig.mf.pssd.plugin.util.CiteableIdUtil.generateCiteableID(executor, dExMethod.getCiteableID(),
-                pdist, studyNumber, fillIn);
+        String cid = nig.mf.pssd.plugin.util.CiteableIdUtil
+                .generateCiteableID(executor, dExMethod.getCiteableID(), pdist,
+                        studyNumber, fillIn);
         dm.add("cid", cid);
-
-        dm.add("namespace", PSSDUtils.namespace(executor, dProject));
+        dm.add("name", "study " + cid);
+        String studyNS = PSSDUtils.namespace(executor, dExMethod) + "/" + cid;
+        dm.add("namespace", new String[]{"create", "true"}, studyNS);
         dm.add("model", Study.MODEL);
 
         if (dExMethod != null && step != null) {
-            String etype = addMethodStudyTemplates(executor, dm, dExMethod, step);
+            String etype = addMethodStudyTemplates(executor, dm, dExMethod,
+                    step);
             if (type == null) {
                 type = etype;
             }
@@ -128,7 +134,8 @@ public class Study {
         // always
         // created from a Method and step.
         if (dExMethod != null && step != null) {
-            dm.add("method", new String[] { "step", step }, dExMethod.getCiteableID());
+            dm.add("method", new String[] { "step", step },
+                    dExMethod.getCiteableID());
         }
         if (processed != null) {
             dm.add("processed", processed);
@@ -151,15 +158,17 @@ public class Study {
         return cid;
     }
 
-    private static void setMethodAndOptionalMeta(XmlDoc.Element meta, DistributedAsset dExMethod, String step,
-            XmlDocMaker dm) throws Throwable {
+    private static void setMethodAndOptionalMeta(XmlDoc.Element meta,
+            DistributedAsset dExMethod, String step, XmlDocMaker dm)
+            throws Throwable {
         if (meta == null)
             return;
 
         List<XmlDoc.Element> mes = meta.elements();
         if (mes != null) {
             // Filter out method specific metadata.
-            String mns = ExMethod.metaNamespace(dExMethod.getCiteableID(), step);
+            String mns = ExMethod
+                    .metaNamespace(dExMethod.getCiteableID(), step);
 
             XmlDoc.Element om = new XmlDoc.Element("meta");
             for (XmlDoc.Element me : mes) {
@@ -193,7 +202,8 @@ public class Study {
     /**
      * Returns true if the CID is for a Study object
      */
-    public static boolean isObjectStudy(ServiceExecutor executor, String cid) throws Throwable {
+    public static boolean isObjectStudy(ServiceExecutor executor, String cid)
+            throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("id", cid);
         XmlDoc.Element r = executor.execute("om.pssd.object.type", dm.root());
@@ -217,8 +227,9 @@ public class Study {
      * @return
      * @throws Throwable
      */
-    public static String addMethodStudyTemplates(ServiceExecutor executor, XmlDocMaker dm, DistributedAsset dEID,
-            String stepPath) throws Throwable {
+    public static String addMethodStudyTemplates(ServiceExecutor executor,
+            XmlDocMaker dm, DistributedAsset dEID, String stepPath)
+            throws Throwable {
 
         // Reinstantiate ExMethod from its asset
         ExMethod em = ExMethod.lookup(executor, dEID);
@@ -231,7 +242,8 @@ public class Study {
         // one study action per step. So this code is more general.
         List<XmlDoc.Element> sas = as.studyActions();
         if (sas == null) {
-            throw new Exception("Not a study step: method=" + dEID.getCiteableID() + ", step=" + stepPath);
+            throw new Exception("Not a study step: method="
+                    + dEID.getCiteableID() + ", step=" + stepPath);
         }
 
         String mns = ExMethod.metaNamespace(dEID.getCiteableID(), stepPath);
@@ -330,9 +342,10 @@ public class Study {
      * @return
      * @throws Throwable
      */
-    public static String update(ServiceExecutor executor, String id, String type, String name, String description,
-            Boolean processed, String exMethod, String step, boolean allowIncompleteMeta, XmlDoc.Element meta)
-            throws Throwable {
+    public static String update(ServiceExecutor executor, String id,
+            String type, String name, String description, Boolean processed,
+            String exMethod, String step, boolean allowIncompleteMeta,
+            XmlDoc.Element meta) throws Throwable {
 
         // See if we can safely update the exmethod/step (only if no template
         // information). The template info has name space
@@ -378,7 +391,8 @@ public class Study {
         // have to think hard about namespaces (-ns) of documents. Probably
         // if we change method/step we should insist on the :meta being replaced
         // with correct namespaces refelcting the new ex method/step
-        if (exMethod != null || step != null || type != null || processed != null) {
+        if (exMethod != null || step != null || type != null
+                || processed != null) {
 
             // Remove old (only way to update the step)
             dm.push("meta", new String[] { "action", "remove" });
@@ -442,8 +456,8 @@ public class Study {
         executor.execute("asset.set", dm.root());
 
         // Generate system event
-        SystemEventChannel.generate(new PSSDObjectEvent(Action.MODIFY, id, SvcCollectionMemberCount.countMembers(
-                executor, id)));
+        SystemEventChannel.generate(new PSSDObjectEvent(Action.MODIFY, id,
+                SvcCollectionMemberCount.countMembers(executor, id)));
         return id;
 
     }

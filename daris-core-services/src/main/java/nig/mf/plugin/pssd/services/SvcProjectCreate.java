@@ -29,6 +29,7 @@ import arc.mf.plugin.dtype.XmlDocType;
 import arc.mf.plugin.event.SystemEventChannel;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDocMaker;
+import arc.xml.XmlDocMaker.ExNoRootNode;
 import arc.xml.XmlWriter;
 
 public class SvcProjectCreate extends PluginService {
@@ -404,11 +405,13 @@ public class SvcProjectCreate extends PluginService {
                             + "' does not exist.  Please contact the DaRIS administrator to create and associate with a Mediaflux store");
         }
 
+        String projectNS = parentNS + "/" + cid;
+
         XmlDocMaker dm = new XmlDocMaker("args");
         if (cid != null) {
             dm.add("cid", cid);
-            dm.add("namespace", new String[] { "create", "true" }, parentNS
-                    + "/" + cid);
+            dm.add("name", "project " + cid);
+            dm.add("namespace", new String[] { "create", "true" }, projectNS);
         } else {
             dm.add("namespace", parentNS);
         }
@@ -538,8 +541,74 @@ public class SvcProjectCreate extends PluginService {
 
         // Finally create the Project
         executor.execute("asset.create", dm.root());
+
+        setProjectNamespaceACLs(executor, projectNS, cid);
         //
         return selfMemberRole;
+    }
+
+    private static void setProjectNamespaceACLs(ServiceExecutor executor,
+            String projectNS, String projectCid) throws Throwable {
+
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("namespace", projectNS);
+
+        // pssd.object.admin
+        addProjectNamespaceACL(dm, Role.objectAdminRoleName(), new String[] {
+                "administer", "access", "create", "execute", "destroy" },
+                new String[] { "access", "create", "modify", "destroy",
+                        "licence" }, new String[] { "access", "modify" });
+
+        // pssd.object.guest
+        addProjectNamespaceACL(dm, Role.objectGuestRoleName(),
+                new String[] { "access" }, new String[] { "none" },
+                new String[] { "none" });
+
+        // pssd.project.admin
+        addProjectNamespaceACL(dm,
+                Project.projectAdministratorRoleName(projectCid),
+                new String[] { "administer", "access", "create", "execute",
+                        "destroy" }, new String[] { "access", "create",
+                        "modify", "destroy", "licence" }, new String[] {
+                        "access", "modify" });
+
+        // pssd.project.subject.admin
+        addProjectNamespaceACL(dm,
+                Project.subjectAdministratorRoleName(projectCid), new String[] {
+                        "access", "create", "execute", "destroy" },
+                new String[] { "access", "create", "modify", "destroy",
+                        "licence" }, new String[] { "access", "modify" });
+
+        // pssd.project.member
+        addProjectNamespaceACL(dm, Project.memberRoleName(projectCid),
+                new String[] { "access", "create", "execute", "destroy" },
+                new String[] { "access", "create", "modify", "destroy",
+                        "licence" }, new String[] { "access", "modify" });
+
+        // pssd.project.guest
+        addProjectNamespaceACL(dm, Project.guestRoleName(projectCid),
+                new String[] { "access" }, new String[] { "access" },
+                new String[] { "access" });
+        executor.execute("asset.namespace.acl.set", dm.root());
+    }
+
+    private static void addProjectNamespaceACL(XmlDocMaker dm, String role,
+            String[] namespaceAccesses, String[] assetAccesses,
+            String[] assetContentAccesses) throws Throwable {
+        dm.push("acl");
+        dm.add("actor", new String[] { "type", "role" }, role);
+        dm.push("access");
+        for (String namespaceAccess : namespaceAccesses) {
+            dm.add("namespace", namespaceAccess);
+        }
+        for (String assetAccess : assetAccesses) {
+            dm.add("asset", assetAccess);
+        }
+        for (String assetContentAccess : assetContentAccesses) {
+            dm.add("asset-content", assetContentAccess);
+        }
+        dm.pop();
+        dm.pop();
     }
 
     /**

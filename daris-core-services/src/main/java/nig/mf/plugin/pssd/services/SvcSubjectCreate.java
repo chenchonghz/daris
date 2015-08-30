@@ -369,6 +369,7 @@ public class SvcSubjectCreate extends PluginService {
 		// If ID is null we will make a new Subject, else update the existing
 		// one. Any existing Subject must be on the local server.
 		String cid = null;
+		
 		if (id == null) {
 			if (dPID == null) {
 				throw new Exception(
@@ -386,9 +387,11 @@ public class SvcSubjectCreate extends PluginService {
 			cid = nig.mf.pssd.plugin.util.CiteableIdUtil.generateCiteableID(
 					executor, dPID.getCiteableID(), pdist, subjectNumber,
 					fillIn);
+			
 			dm.add("cid", cid);
-			//
-			dm.add("namespace", PSSDUtils.namespace(executor, dPID));
+			dm.add("name", "subject " + cid);
+			String subjectNS = PSSDUtils.namespace(executor, dPID) + "/" + cid;
+			dm.add("namespace", new String[]{"create", "true"}, subjectNS);
 			dm.add("model", Subject.MODEL);
 			dm.push("meta");
 		} else {
