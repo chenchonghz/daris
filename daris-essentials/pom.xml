@@ -35,14 +35,14 @@
 		<dependency>
 			<groupId>au.edu.unimelb.daris</groupId>
 			<artifactId>daris-commons</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 			<!-- provided so that we do not deploy -->
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>au.edu.unimelb.daris</groupId>
 			<artifactId>daris-dcmtools</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 			<!-- provided so that we do not deploy -->
 			<scope>provided</scope>
 		</dependency>
