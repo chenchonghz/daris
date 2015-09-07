@@ -102,7 +102,7 @@ public class SvcStudyMove extends PluginService {
                     + dstExMethodCid);
         }
 
-        moveStudy(executor(), srcStudyCid, dstExMethodCid);
+        moveStudy(executor(), srcStudyCid, dstExMethodCid, w);
     }
 
     private static String findDstExMethod(ServiceExecutor executor,
@@ -152,8 +152,8 @@ public class SvcStudyMove extends PluginService {
     }
 
     private static void moveStudy(ServiceExecutor executor,
-            final String srcStudyCid, final String dstExMethodCid)
-            throws Throwable {
+            final String srcStudyCid, final String dstExMethodCid,
+            final XmlWriter w) throws Throwable {
         XmlDoc.Element srcStudyAE = executor.execute("asset.get",
                 "<args><cid>" + srcStudyCid + "</cid></args>", null, null)
                 .element("asset");
@@ -256,6 +256,8 @@ public class SvcStudyMove extends PluginService {
                                         + "</namespace></args>", null, null);
                     }
                 }
+                w.add("cid", new String[] { "id", srcStudyAssetId },
+                        dstStudyCid);
                 return false;
             }
         }).execute(executor);
@@ -282,7 +284,7 @@ public class SvcStudyMove extends PluginService {
 
     private static void updateDataset(ServiceExecutor executor,
             String datasetAssetId, String dstDatasetCid) throws Throwable {
-        String dstExMethodId = CiteableIdUtil.getParentId(dstDatasetCid,2);
+        String dstExMethodId = CiteableIdUtil.getParentId(dstDatasetCid, 2);
         String dstSubjectId = CiteableIdUtil.getParentId(dstExMethodId);
         XmlDoc.Element ae = executor.execute("asset.get",
                 "<args><id>" + datasetAssetId + "</id></args>", null, null)
@@ -305,7 +307,9 @@ public class SvcStudyMove extends PluginService {
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("id", datasetAssetId);
         dm.push("meta", new String[] { "action", "merge" });
-        dm.push(datasetType.equals("primary")?"daris:pssd-acquisition":"daris:pssd-derivation", new String[] { "id", de.value("@id") });
+        dm.push(datasetType.equals("primary") ? "daris:pssd-acquisition"
+                : "daris:pssd-derivation",
+                new String[] { "id", de.value("@id") });
         dm.add(de, false);
         dm.pop();
         dm.pop();
