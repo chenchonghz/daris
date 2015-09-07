@@ -2,57 +2,42 @@ package nig.mf.plugin.pssd.services;
 
 import java.util.Collection;
 
-import nig.mf.plugin.pssd.PSSDObject;
-import nig.mf.plugin.pssd.Study;
-import nig.mf.plugin.pssd.method.ExMethod;
-import nig.mf.plugin.pssd.util.PSSDUtils;
-import nig.mf.pssd.plugin.util.DistributedAsset;
-import nig.mf.pssd.plugin.util.DistributedQuery.ResultAssetType;
+import nig.mf.pssd.plugin.util.CiteableIdUtil;
+import nig.util.ObjectUtil;
 import arc.mf.plugin.PluginService;
-import arc.mf.plugin.dtype.BooleanType;
+import arc.mf.plugin.ServiceExecutor;
+import arc.mf.plugin.atomic.AtomicOperation;
+import arc.mf.plugin.atomic.AtomicTransaction;
 import arc.mf.plugin.dtype.CiteableIdType;
-import arc.mf.plugin.dtype.IntegerType;
-import arc.mf.plugin.dtype.StringType;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
 
 public class SvcStudyMove extends PluginService {
+
+    public static final String SERVICE_NAME = "daris.study.move";
+    public static final String SERVICE_DESCRIPTION = "Move a study (including its datasets) to another subject/exmethod within the same project. Note: the destination subject/ex-method need to have the same method.";
+
     private Interface _defn;
 
     public SvcStudyMove() throws Throwable {
+
         _defn = new Interface();
-        _defn.add(new Interface.Element("id", CiteableIdType.DEFAULT,
-                "The citeable ID of the study. Must be local to the executing server.", 1, 1));
+        _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT,
+                "The citeable id of the study to be moved.", 1, 1));
         _defn.add(new Interface.Element(
                 "pid",
                 CiteableIdType.DEFAULT,
-                "The citeable ID of the ExMethod/Study object that will be the new parent. If an ExMethod, the Study is moved to it.  If a Study, the DataSets of the input Study will be moved to this Study.",
+                "The citeable id of the destination Subject/ExMethod that will be the new parent. If a subject, the Study is moved to its matching ExMethod; If an ExMethod, the Study is moved to it.",
                 1, 1));
-        _defn.add(new Interface.Element(
-                "step",
-                CiteableIdType.DEFAULT,
-                "If the new parent is an ExMethod, this gives the step within that ExMethod that results in this study.",
-                0, 1));
-        _defn.add(new Interface.Element("preserve", BooleanType.DEFAULT,
-                "Try to preserve child CID numbers (defaults to false).", 0, 1));
-        _defn.add(new Interface.Element("destroy-old-study", BooleanType.DEFAULT,
-                "If true (default), and the new parent is a Study, deletes the old, now empty Study.", 0, 1));
-        _defn.add(new Interface.Element(
-                "pdist",
-                IntegerType.DEFAULT,
-                "Specifies the peer distance when looking for remote children. Defaults to 0 (local only).  Set to infinity for all hosts in federation.",
-                0, 1));
-        _defn.add(new Interface.Element("ptag", StringType.DEFAULT,
-                "When looking for remote children, only query peers with this ptag. If none, query all peers.", 0, 1));
     }
 
     public String name() {
-        return "om.pssd.study.move";
+        return SERVICE_NAME;
     }
 
     public String description() {
-        return "Move a Study (and children) to a new parent ExMethod or Study (discarding input Study).  If the parent is an ExMethod, it is assumed that the Study method-specific meta-data should be updated with this ExMethod (i.e. it is consistent with this new ExMethod).  New CIDs will be allocated as needed.  Can only move objects on the local server; if the object has children on remote peers, an exception will occur.";
+        return SERVICE_DESCRIPTION;
     }
 
     public Interface definition() {
@@ -63,99 +48,268 @@ public class SvcStudyMove extends PluginService {
         return ACCESS_ADMINISTER;
     }
 
-    public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w) throws Throwable {
+    public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w)
+            throws Throwable {
 
-        // Set distributed citeable ID for the local (by definition) Study to
-        // move.
-        DistributedAsset dSID = new DistributedAsset(args.element("id"));
-
-        // Check a few things...
-        PSSDObject.Type type = PSSDObject.Type.parse(nig.mf.pssd.plugin.util.PSSDUtil.typeOf(executor(), dSID));
-        if (type == null) {
-            throw new Exception("The asset associated with " + dSID.toString() + " does not exist");
+        String srcStudyCid = args.value("cid");
+        if (!executor().execute("asset.exists",
+                "<args><cid>" + srcStudyCid + "</cid></args>", null, null)
+                .booleanValue("exists", false)) {
+            throw new Exception("Asset " + srcStudyCid + " does not exist.");
         }
-        if (!type.equals(Study.TYPE)) {
-            throw new Exception("Object " + dSID.getCiteableID() + " [type=" + type + "] is not an " + Study.TYPE);
+        if (!isStudy(executor(), srcStudyCid)) {
+            throw new Exception("Asset " + srcStudyCid + " is not a study.");
         }
-        if (dSID.isReplica()) {
-            throw new Exception("The supplied Study is a replica and this service cannot move it.");
-        }
-
-        // We don't want the Study we are moving to have children on a remote
-        // server. This
-        // restriction could be removed, but for now we take a conservative
-        // approach.
-        // We only look for primaries, because otherwise replicas on other hosts
-        // will get in the way
-        String ptag = args.stringValue("ptag");
-        String pdist = args.stringValue("pdist", "0");
-        if (dSID.hasRemoteChildren(ResultAssetType.primary, ptag, pdist)) {
-            throw new Exception(
-                    "The supplied Study has primary children on remote servers in the federation; cannot move it.");
+        if (!CiteableIdUtil.isStudyId(srcStudyCid)) {
+            throw new Exception("cid " + srcStudyCid
+                    + " is not a valid study cid.");
         }
 
-        // Now the local parent ExMethod/Study
         String pid = args.value("pid");
-        boolean isStudy = Study.isObjectStudy(executor(), pid);
-        boolean isExMethod = ExMethod.isObjectExMethod(executor(), pid);
-        if (!isStudy && !isExMethod) {
-            throw new Exception("Asset(cid=" + pid + ") is neither a valid ExMethod nor a Study.");
+        if (!CiteableIdUtil.isSubjectId(pid)
+                && !CiteableIdUtil.isExMethodId(pid)) {
+            throw new Exception("pid " + pid
+                    + " is not a valid subject cid or ex-method cid.");
         }
-        String step = args.value("step");
-        boolean preserve = args.booleanValue("preserve");
-        boolean destroyOldStudy = args.booleanValue("destroy-old-study", true);
-        //
-        if (isExMethod) {
+        String projectCid = CiteableIdUtil.getProjectId(srcStudyCid);
+        if (!projectCid.equals(CiteableIdUtil.getProjectId(pid))) {
+            throw new Exception(
+                    "The study cid "
+                            + srcStudyCid
+                            + " and destination parent cid: "
+                            + pid
+                            + " does not match. You can only move within the same project.");
+        }
 
-            // We can now update the :template
-            Boolean hasTemplate = PSSDUtils.objectHasTemplate(executor(), dSID.getCiteableID());
+        String srcExMethodCid = CiteableIdUtil.getParentId(srcStudyCid);
 
-            // Move Study to ExMethod
-            String newCid = PSSDObject.move(executor(), dSID.getCiteableID(), pid, preserve);
-            w.add("id", new String[] { "has-template", hasTemplate.toString() }, newCid);
-
-            // The move function will update the ExMethod on the Study meta-data
-            // However, it cannot know the step for the new ExMethod (so leaves
-            // unchanged). Set that here.
-            if (step != null) {
-                Study.update(executor(), newCid, null, null, null, null, null, step, false, null);
-            }
-
-            // Update the :template element on the Study; it is recalculated
-            // from the new
-            // parent ExMethod. You have to know it's good.
-            XmlDocMaker dm = new XmlDocMaker("args");
-            dm.add("id", newCid);
-            executor().execute("om.pssd.study.method.template.replace", dm.root());
+        String dstSubjectCid = null;
+        String dstExMethodCid = null;
+        if (CiteableIdUtil.isSubjectId(pid)) {
+            dstSubjectCid = pid;
+            dstExMethodCid = findDstExMethod(executor(), srcExMethodCid,
+                    dstSubjectCid);
         } else {
-
-            // Find DataSets of Study
-            XmlDocMaker dm = new XmlDocMaker("args");
-            dm.add("id", dSID.getCiteableID());
-            XmlDoc.Element fromDataSets = executor().execute("om.pssd.collection.members", dm.root());
-            if (fromDataSets == null)
-                return;
-            Collection<String> dsIDs = fromDataSets.values("object/id");
-            if (dsIDs == null)
-                return;
-
-            // Iterate and move DataSets to new Study
-            for (String id : dsIDs) {
-                // Move DataSet to new Study and update Method meta-data on
-                // DataSet to reflect new Study
-                PSSDObject.move(executor(), id, pid, preserve);
+            dstExMethodCid = pid;
+            dstSubjectCid = CiteableIdUtil.getParentId(dstExMethodCid);
+            if (!methodsMatch(executor(), srcExMethodCid, dstExMethodCid)) {
+                throw new Exception("The methods do not match.");
             }
-
-            // Delete old (now childless) Study if required
-            if (destroyOldStudy) {
-                dm = new XmlDocMaker("args");
-                dm.add("cid", dSID.getCiteableID());
-                executor().execute("om.pssd.object.destroy", dm.root());
-            }
-
-            //
-            w.add("id", pid);
         }
+
+        if (srcExMethodCid.equals(dstExMethodCid)) {
+            throw new Exception("Cannot move within the same ex-method: "
+                    + dstExMethodCid);
+        }
+
+        moveStudy(executor(), srcStudyCid, dstExMethodCid);
+    }
+
+    private static String findDstExMethod(ServiceExecutor executor,
+            String srcExMethodCid, String dstSubjectCid) throws Throwable {
+        String srcMethodId = executor.execute("asset.get",
+                "<args><cid>" + srcExMethodCid + "</cid></args>", null, null)
+                .value("asset/meta/daris:pssd-ex-method/method/id");
+        if (srcMethodId == null) {
+            throw new Exception(
+                    "Could not find daris:pssd-ex-method/method/id in asset "
+                            + srcExMethodCid);
+        }
+        String dstExMethodCid = executor.execute(
+                "asset.query",
+                "<args><action>get-cid</action><size>1</size><where>cid in '"
+                        + dstSubjectCid
+                        + "' and xpath(daris:pssd-ex-method/method/id)='"
+                        + srcMethodId + "'</where></args>", null, null).value(
+                "cid");
+        if (dstExMethodCid == null) {
+            throw new Exception("Could not find the ex-method in subject "
+                    + dstSubjectCid + ".");
+        }
+        return dstExMethodCid;
+    }
+
+    private static boolean isStudy(ServiceExecutor executor, String studyCid)
+            throws Throwable {
+        String model = executor.execute("asset.get",
+                "<args><cid>" + studyCid + "</cid></args>", null, null).value(
+                "asset/model");
+        if (model != null && model.equals("om.pssd.study")) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean methodsMatch(ServiceExecutor executor,
+            String srcExMethodCid, String dstExMethodCid) throws Throwable {
+        String srcMethodId = executor.execute("asset.get",
+                "<args><cid>" + srcExMethodCid + "</cid></args>", null, null)
+                .value("asset/meta/daris:pssd-ex-method/method/id");
+        String dstMethodId = executor.execute("asset.get",
+                "<args><cid>" + dstExMethodCid + "</cid></args>", null, null)
+                .value("asset/meta/daris:pssd-ex-method/method/id");
+        return ObjectUtil.equals(srcMethodId, dstMethodId);
+    }
+
+    private static void moveStudy(ServiceExecutor executor,
+            final String srcStudyCid, final String dstExMethodCid)
+            throws Throwable {
+        XmlDoc.Element srcStudyAE = executor.execute("asset.get",
+                "<args><cid>" + srcStudyCid + "</cid></args>", null, null)
+                .element("asset");
+        final String srcStudyAssetId = srcStudyAE.value("@id");
+        final String srcStudyAssetNS = srcStudyAE.value("namespace");
+        final String dstExMethodAssetNS = executor.execute("asset.get",
+                "<args><cid>" + dstExMethodCid + "</cid></args>", null, null)
+                .value("asset/namespace");
+        new AtomicTransaction(new AtomicOperation() {
+            @Override
+            public boolean execute(ServiceExecutor executor) throws Throwable {
+                /*
+                 * create study cid
+                 */
+                long dstStudyNumber = Long.parseLong(CiteableIdUtil
+                        .getLastSection(srcStudyCid));
+                String dstStudyCid = nig.mf.pssd.plugin.util.CiteableIdUtil
+                        .generateCiteableID(executor, dstExMethodCid,
+                                "infinity", dstStudyNumber, true);
+                /*
+                 * set study cid
+                 */
+                executor.execute("asset.cid.set", "<args><id>"
+                        + srcStudyAssetId + "</id><cid>" + dstStudyCid
+                        + "</cid></args>", null, null);
+                /*
+                 * update study name & metadata (daris:pssd-study)
+                 */
+                updateStudy(executor, srcStudyAssetId, dstStudyCid);
+                Collection<XmlDoc.Element> datasets = executor.execute(
+                        "asset.query",
+                        "<args><size>infinity</size><action>get-cid</action><where>cid in '"
+                                + srcStudyCid + "'</where></args>", null, null)
+                        .elements("cid");
+                if (datasets != null) {
+                    /*
+                     * change dataset cids
+                     */
+                    for (XmlDoc.Element dataset : datasets) {
+                        String srcDatasetCid = dataset.value();
+                        String datasetAssetId = dataset.value("@id");
+                        long dstDatasetNumber = Long.parseLong(CiteableIdUtil
+                                .getLastSection(srcDatasetCid));
+                        String dstDatasetCid = nig.mf.pssd.plugin.util.CiteableIdUtil
+                                .generateCiteableID(executor, dstStudyCid,
+                                        "infinity", dstDatasetNumber, true);
+                        executor.execute("asset.cid.set", "<args><id>"
+                                + datasetAssetId + "</id><cid>" + dstDatasetCid
+                                + "</cid></args>", null, null);
+                        /*
+                         * update dataset metadata
+                         */
+                        updateDataset(executor, datasetAssetId, dstDatasetCid);
+                    }
+                }
+                if (!srcStudyAssetNS.equals(dstExMethodAssetNS)) {
+                    String dstStudyAssetNS = dstExMethodAssetNS + "/"
+                            + dstStudyCid;
+                    if (!executor.execute(
+                            "asset.namespace.exists",
+                            "<args><namespace>" + dstStudyAssetNS
+                                    + "</namespace></args>", null, null)
+                            .booleanValue("exists", false)) {
+                        /*
+                         * create study namespace
+                         */
+                        executor.execute("asset.namespace.create",
+                                "<args><namespace>" + dstStudyAssetNS
+                                        + "</namespace></args>", null, null);
+                    }
+                    /*
+                     * move study to the new namespace
+                     */
+                    executor.execute("asset.move", "<args><id>"
+                            + srcStudyAssetId + "</id><namespace>"
+                            + dstStudyAssetNS + "</namespace></args>", null,
+                            null);
+                    if (datasets != null) {
+                        for (XmlDoc.Element dataset : datasets) {
+                            /*
+                             * move datasets to the new namespace
+                             */
+                            String assetId = dataset.value("@id");
+                            executor.execute("asset.move", "<args><id>"
+                                    + assetId + "</id><namespace>"
+                                    + dstStudyAssetNS + "</namespace></args>",
+                                    null, null);
+                        }
+                    }
+                    if (executor.execute(
+                            "asset.query",
+                            "<args><action>count</action><where>namespace>='"
+                                    + srcStudyAssetNS + "'</where></args>",
+                            null, null).intValue("value", 0) == 0) {
+                        /*
+                         * destroy the old namespace if it is empty.
+                         */
+                        executor.execute("asset.namespace.destroy",
+                                "<args><namespace>" + srcStudyAssetNS
+                                        + "</namespace></args>", null, null);
+                    }
+                }
+                return false;
+            }
+        }).execute(executor);
+    }
+
+    private static void updateStudy(ServiceExecutor executor,
+            String studyAssetId, String dstStudyCid) throws Throwable {
+        String dstExMethodId = CiteableIdUtil.getParentId(dstStudyCid);
+        XmlDoc.Element ae = executor.execute("asset.get",
+                "<args><id>" + studyAssetId + "</id></args>", null, null)
+                .element("asset");
+        XmlDoc.Element se = ae.element("meta/daris:pssd-study");
+        se.element("method").setValue(dstExMethodId);
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("id", studyAssetId);
+        dm.add("name", "study " + dstStudyCid);
+        dm.push("meta", new String[] { "action", "merge" });
+        dm.push("daris:pssd-study", new String[] { "id", se.value("@id") });
+        dm.add(se, false);
+        dm.pop();
+        dm.pop();
+        executor.execute("asset.set", dm.root());
+    }
+
+    private static void updateDataset(ServiceExecutor executor,
+            String datasetAssetId, String dstDatasetCid) throws Throwable {
+        String dstExMethodId = CiteableIdUtil.getParentId(dstDatasetCid,2);
+        String dstSubjectId = CiteableIdUtil.getParentId(dstExMethodId);
+        XmlDoc.Element ae = executor.execute("asset.get",
+                "<args><id>" + datasetAssetId + "</id></args>", null, null)
+                .element("asset");
+        String datasetType = ae.value("meta/daris:pssd-dataset/type");
+        if (datasetType == null
+                || (!datasetType.equals("primary") && !datasetType
+                        .equals("derivation"))) {
+            throw new Exception("Invalid daris:pssd-dataset/type: "
+                    + datasetType + " in asset " + datasetAssetId);
+        }
+        XmlDoc.Element de = null;
+        if (datasetType.equals("primary")) {
+            de = ae.element("meta/daris:pssd-acquisition");
+            de.element("subject").setValue(dstSubjectId);
+        } else {
+            de = ae.element("meta/daris:pssd-derivation");
+        }
+        de.element("method").setValue(dstExMethodId);
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("id", datasetAssetId);
+        dm.push("meta", new String[] { "action", "merge" });
+        dm.push(datasetType.equals("primary")?"daris:pssd-acquisition":"daris:pssd-derivation", new String[] { "id", de.value("@id") });
+        dm.add(de, false);
+        dm.pop();
+        dm.pop();
+        executor.execute("asset.set", dm.root());
     }
 
 }

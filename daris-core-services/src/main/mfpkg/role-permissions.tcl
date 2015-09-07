@@ -230,7 +230,6 @@ grantRolePerms daris:pssd.administrator  \
     { { service om.pssd.announcement.create ADMINISTER } \
       { service om.pssd.announcement.destroy ADMINISTER } \
       { service om.pssd.dataset.move ADMINISTER } \
-      { service om.pssd.study.move ADMINISTER } \
       { service om.pssd.study.rename ADMINISTER } \
       { service om.pssd.dicom.study.retrofit ADMINISTER } \
       { service om.pssd.user.create ADMINISTER }\
