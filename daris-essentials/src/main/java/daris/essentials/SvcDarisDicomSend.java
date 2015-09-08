@@ -462,7 +462,6 @@ public class SvcDarisDicomSend extends PluginService {
                                     + datasetId + "...");
                     PluginTask.checkIfThreadTaskAborted();
                     editDicomFiles(assetDir, override, fromAET);
-                } else {
                 }
             }
             SetOfDicomFiles dicomFiles = listDicomFilesRecursively(dir);
