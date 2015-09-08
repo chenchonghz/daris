@@ -25,6 +25,7 @@ import arc.mf.plugin.PluginTask;
 import arc.mf.plugin.ServiceExecutor;
 import arc.mf.plugin.dtype.AssetType;
 import arc.mf.plugin.dtype.BooleanType;
+import arc.mf.plugin.dtype.CiteableIdType;
 import arc.mf.plugin.dtype.IntegerType;
 import arc.mf.plugin.dtype.StringType;
 import arc.mf.plugin.dtype.XmlDocType;
@@ -59,7 +60,11 @@ public class SvcDarisDicomSend extends PluginService {
 
         _defn.add(new Interface.Element("id", AssetType.DEFAULT,
                 "The asset id of the dicom patient/study/series to be sent.",
-                1, 1));
+                0, 1));
+
+        _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT,
+                "The citeable id of the dicom patient/study/series to be sent.",
+                0, 1));
 
         Interface.Element from = new Interface.Element("from",
                 XmlDocType.DEFAULT, "Settings of the sender.", 1, 1);
@@ -373,6 +378,13 @@ public class SvcDarisDicomSend extends PluginService {
             throws Throwable {
 
         String id = args.value("id");
+        String cid = args.value("cid");
+        if (id == null && cid == null) {
+            throw new Exception("Either id or cid is required. Found none.");
+        }
+        if (id != null && cid != null) {
+            throw new Exception("Either id or cid is required. Found both.");
+        }
         String fromAET = args.value("from/ae-title");
         String toAET = args.value("to/ae-title");
         String toHost = args.value("to/host");
@@ -381,9 +393,18 @@ public class SvcDarisDicomSend extends PluginService {
         if (args.elementExists("override")) {
             override = parseOverriddenElements(args.element("override"));
         }
-        XmlDoc.Element ae = executor().execute("asset.get",
-                "<args><id>" + id + "</id></args>", null, null)
-                .element("asset");
+        XmlDoc.Element ae = null;
+        if (cid == null) {
+            ae = executor().execute("asset.get",
+                    "<args><id>" + id + "</id></args>", null, null).element(
+                    "asset");
+            cid = ae.value("cid");
+        } else {
+            ae = executor().execute("asset.get",
+                    "<args><cid>" + cid + "</cid></args>", null, null).element(
+                    "asset");
+            id = ae.value("@id");
+        }
         if (!ae.elementExists("meta/mf-dicom-patient")
                 && !ae.elementExists("meta/mf-dicom-study")
                 && !ae.elementExists("meta/mf-dicom-series")
@@ -393,7 +414,6 @@ public class SvcDarisDicomSend extends PluginService {
                             + id
                             + " is not a valid dicom patient/study/series or a daris pssd subject.");
         }
-        String cid = ae.value("cid");
         /*
          * add data sets
          */
