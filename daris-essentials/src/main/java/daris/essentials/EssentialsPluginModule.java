@@ -53,6 +53,7 @@ public class EssentialsPluginModule implements PluginModule {
         _svs.add(new SvcDICOMHeaderEdit());
         _svs.add(new SvcDICOMDestroy());
         _svs.add(new SvcDarisDicomSend());
+        _svs.add(new SvcDicomDownload());
         //
         _svs.add(new SvcSecureWalletKeyEntryGenerate());
     }
