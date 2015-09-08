@@ -455,6 +455,7 @@ public class SvcDarisDicomSend extends PluginService {
                                 + datasetId + "...");
                 PluginTask.checkIfThreadTaskAborted();
                 File assetDir = new File(dir, datasetId);
+                assetDir.mkdir();
                 extractAssetContent(executor(), datasetId, assetDir);
                 if (override != null && !override.isEmpty()) {
                     PluginTask
