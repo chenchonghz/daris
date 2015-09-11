@@ -209,7 +209,7 @@
 								</replacement>
 								<replacement>
 									<token>@DCMTOOLS_FILE@</token>
-									<value>daris-dcmtools-${daris-dcmtools.version}.jar</value>
+									<value>daris-dcmtools-${daris-dcmtools.version}.zip</value>
 								</replacement>
 								<replacement>
 									<token>@CLIENT_VERSION@</token>
