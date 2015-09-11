@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>au.edu.unimelb.daris</groupId>
 		<artifactId>daris</artifactId>
-		<version>3.0.0</version>
+		<version>3.0.1</version>
 	</parent>
 	<artifactId>daris-client-dicom-client</artifactId>
 	<version>${daris-client-dicom-client.version}</version>
@@ -27,12 +27,12 @@
 		<dependency>
 			<groupId>com.arcitecta</groupId>
 			<artifactId>mfclient</artifactId>
-			<version>4.0.005</version>
+			<version>4.2.026</version>
 		</dependency>
 		<dependency>
 			<groupId>au.edu.unimelb.daris</groupId>
 			<artifactId>daris-dcmtools</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

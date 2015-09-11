@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>au.edu.unimelb.daris</groupId>
 		<artifactId>daris</artifactId>
-		<version>3.0.0</version>
+		<version>3.0.1</version>
 	</parent>
 	<artifactId>daris-client-mbcpetct-upload</artifactId>
 	<version>${daris-client-mbcpetct-upload.version}</version>
@@ -32,7 +32,7 @@
 		<dependency>
 			<groupId>au.edu.unimelb.daris</groupId>
 			<artifactId>daris-commons</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

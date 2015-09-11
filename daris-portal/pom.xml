@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>daris</artifactId>
 		<groupId>au.edu.unimelb.daris</groupId>
-		<version>3.0.0</version>
+		<version>3.0.1</version>
 	</parent>
 	<version>${daris-portal.version}</version>
 	<artifactId>daris-portal</artifactId>
