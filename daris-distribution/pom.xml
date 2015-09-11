@@ -276,13 +276,13 @@
 									<value>daris-client-server-config-${daris-client-server-config.version}.zip</value>
 								</replacement>
 								<replacement>
-                                    <token>@INSTALLER_VERSION@</token>
-                                    <value>${project.version}</value>
-                                </replacement>
-                                <replacement>
-                                    <token>@INSTALLER_FILE@</token>
-                                    <value>daris-installer-${project.version}.jar</value>
-                                </replacement>
+									<token>@INSTALLER_VERSION@</token>
+									<value>${project.version}</value>
+								</replacement>
+								<replacement>
+									<token>@INSTALLER_FILE@</token>
+									<value>daris-installer-${project.version}.jar</value>
+								</replacement>
 							</replacements>
 						</configuration>
 					</execution>
@@ -294,22 +294,6 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.5.4</version>
 				<executions>
-					<execution>
-						<!-- make zip -->
-						<id>make-zip</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<appendAssemblyId>false</appendAssemblyId>
-							<finalName>${project.parent.artifactId}-${project.parent.version}</finalName>
-							<descriptors>
-								<descriptor>src/main/assembly/make-zip.xml</descriptor>
-							</descriptors>
-							<attach>false</attach>
-						</configuration>
-					</execution>
 					<execution>
 						<!-- make installer jar -->
 						<id>installer-jar</id>
@@ -331,6 +315,23 @@
 							<attach>false</attach>
 						</configuration>
 					</execution>
+					<execution>
+						<!-- make zip -->
+						<id>make-zip</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<finalName>${project.parent.artifactId}-${project.parent.version}</finalName>
+							<descriptors>
+								<descriptor>src/main/assembly/make-zip.xml</descriptor>
+							</descriptors>
+							<attach>false</attach>
+						</configuration>
+					</execution>
+
 				</executions>
 			</plugin>
 		</plugins>

@@ -130,6 +130,9 @@
 	</fileSets>
 	<files>
 		<file>
+			<source>${project.build.directory}/daris-installer-${project.version}.jar</source>
+		</file>
+		<file>
 			<source>${project.build.directory}/index.html</source>
 			<outputDirectory>.</outputDirectory>
 		</file>
