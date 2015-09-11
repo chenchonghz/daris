@@ -9,7 +9,7 @@
 		<version>3.0.0</version>
 	</parent>
 	<artifactId>daris-dcmtools</artifactId>
-	<version>${daris-commons.version}</version>
+	<version>${daris-dcmtools.version}</version>
 	<name>daris-dcmtools</name>
 	<url>https://github.com/uom-daris/daris</url>
 	<packaging>jar</packaging>
@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>au.edu.unimelb.daris</groupId>
 			<artifactId>daris-commons</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
