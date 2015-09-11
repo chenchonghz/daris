@@ -120,6 +120,13 @@
 				<include>daris-client-*.zip</include>
 			</includes>
 		</fileSet>
+		<fileSet>
+			<directory>${project.parent.basedir}/daris-dcmtools/target</directory>
+			<outputDirectory>.</outputDirectory>
+			<includes>
+				<include>daris-dcmtools-*.zip</include>
+			</includes>
+		</fileSet>
 	</fileSets>
 	<files>
 		<file>
