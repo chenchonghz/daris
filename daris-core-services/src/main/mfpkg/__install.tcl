@@ -1,7 +1,7 @@
 #
 # daris-core-services (originally pssd)
 #
-# NOTE: It is assumed that the /pssd and /dicom asset namespaces exist and that they were 
+# NOTE: It is assumed that the /daris (or /pssd) asset store exists and that they were 
 #       configured with stores as part of the Mediaflux installation process.
 # 
 #       This installer assumes these namespaces in the installation of the trigger scripts

@@ -1,8 +1,12 @@
 package nig.mf.plugin.pssd.services;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+import nig.mf.plugin.pssd.Study;
 import nig.mf.pssd.plugin.util.CiteableIdUtil;
+import nig.mf.pssd.plugin.util.DistributedAsset;
 import nig.util.ObjectUtil;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.ServiceExecutor;
@@ -182,7 +186,7 @@ public class SvcStudyMove extends PluginService {
                 /*
                  * update study name & metadata (daris:pssd-study)
                  */
-                updateStudy(executor, srcStudyAssetId, dstStudyCid);
+                updateStudy(executor, srcStudyAssetId, srcStudyCid, dstStudyCid);
                 Collection<XmlDoc.Element> datasets = executor.execute(
                         "asset.query",
                         "<args><size>infinity</size><action>get-cid</action><where>cid in '"
@@ -264,13 +268,51 @@ public class SvcStudyMove extends PluginService {
     }
 
     private static void updateStudy(ServiceExecutor executor,
-            String studyAssetId, String dstStudyCid) throws Throwable {
-        String dstExMethodId = CiteableIdUtil.getParentId(dstStudyCid);
+            String studyAssetId, String srcStudyCid, String dstStudyCid)
+            throws Throwable {
+        String srcExMethodCid = CiteableIdUtil.getParentId(srcStudyCid);
+        String dstExMethodCid = CiteableIdUtil.getParentId(dstStudyCid);
         XmlDoc.Element ae = executor.execute("asset.get",
                 "<args><id>" + studyAssetId + "</id></args>", null, null)
                 .element("asset");
+        String step = ae.value("meta/:daris:pssd-study/method/@step");
         XmlDoc.Element se = ae.element("meta/daris:pssd-study");
-        se.element("method").setValue(dstExMethodId);
+        se.element("method").setValue(dstExMethodCid);
+
+        List<XmlDoc.Element> mes = new ArrayList<XmlDoc.Element>();
+        // find the docs with ns attribute = ex-method_id_step
+        if (ae.elementExists("meta")) {
+            List<XmlDoc.Element> des = ae.element("meta").elements();
+            if (des != null) {
+                for (XmlDoc.Element de : des) {
+                    XmlDoc.Attribute nsAttr = de.attribute("ns");
+                    if (nsAttr != null) {
+                        String ns = nsAttr.value();
+                        if (ns.equals(srcExMethodCid + "_" + step)) {
+                            // update the ns attribute with new ex-method id.
+                            de.remove(nsAttr);
+                            de.add(new XmlDoc.Attribute("ns", dstExMethodCid
+                                    + "_" + step));
+                            mes.add(de);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!mes.isEmpty()) {
+            // remove the docs with ns attribute, because changing only
+            // attribute will not result a change.
+            XmlDocMaker dm = new XmlDocMaker("args");
+            dm.add("id", studyAssetId);
+            dm.push("meta", new String[] { "action", "remove" });
+            for (XmlDoc.Element me : mes) {
+                dm.add(me.name(), new String[] { "id", me.value("@id") });
+            }
+            dm.pop();
+            executor.execute("asset.set", dm.root());
+        }
+
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("id", studyAssetId);
         dm.add("name", "study " + dstStudyCid);
@@ -278,8 +320,32 @@ public class SvcStudyMove extends PluginService {
         dm.push("daris:pssd-study", new String[] { "id", se.value("@id") });
         dm.add(se, false);
         dm.pop();
+        if (!mes.isEmpty()) {
+            // update the docs with ns attribute
+            for (XmlDoc.Element me : mes) {
+                me.remove(me.attribute("id"));
+                dm.add(me);
+            }
+        }
         dm.pop();
         executor.execute("asset.set", dm.root());
+
+        /*
+         * update template
+         */
+        // Generate template meta-data from the dst ex-method.
+        dm = new XmlDocMaker("args");
+        dm.add("id", studyAssetId);
+        Study.addMethodStudyTemplates(executor, dm, new DistributedAsset(null,
+                dstExMethodCid), step);
+        // update or remove template
+        if (dm.root().elementExists("template")) {
+            executor.execute("asset.template.set", dm.root());
+        } else {
+            if (ae.elementExists("template")) {
+                executor.execute("asset.template.remove", dm.root());
+            }
+        }
     }
 
     private static void updateDataset(ServiceExecutor executor,
