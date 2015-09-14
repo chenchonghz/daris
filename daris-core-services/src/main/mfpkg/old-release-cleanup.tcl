@@ -11,7 +11,7 @@ if { [xvalue exists [asset.exists :id path=/mflux/plugins/libs/dcmtools.jar]] ==
     asset.hard.destroy :id path=/mflux/plugins/libs/dcmtools.jar
 }
 
-set repository_description_asset_id [xvalue id [asset.query :where name='pssd-repository-description' and daris:pssd-repository-description has value]]
+set repository_description_asset_id [xvalue id [asset.query :where name='pssd-repository-description']]
 if { ${repository_description_asset_id} != "" } {
     asset.set :id ${repository_description_asset_id} :name "daris repository description"
 }
