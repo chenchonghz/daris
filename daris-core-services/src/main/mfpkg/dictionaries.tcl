@@ -1,10 +1,10 @@
-#============================================================================================
-# This dictionary supplies asset namespaces for creating PSSD projects in that the portal 
-# uses to present Project creators a pull-down list.  The service interface for project
-# creation just takes a string still as we don't want to remove flexibility
-# domain specific packages can add to this dictionary.  The pssd namespace is made
-# in the installation of the PSSD package
-
+# ============================================================================
+# This dictionary supplies asset namespaces for creating PSSD projects in that
+# the portal uses to present Project creators a pull-down list.  The service 
+# interface for project creation just takes a string still as we don't want to
+# remove flexibility domain specific packages can add to this dictionary.  The 
+# pssd namespace is made in the installation of the daris-core-services package
+# ============================================================================
 proc createDict_pssd_project_asset_namespaces {} {
 	if { [xvalue exists [dictionary.exists :name daris:pssd.project.asset.namespaces]] == "false" } {
 		dictionary.create :name daris:pssd.project.asset.namespaces :description "Asset namespaces for PSSD projects (used by the portal)." :case-sensitive true
@@ -18,21 +18,13 @@ proc createDict_pssd_project_asset_namespaces {} {
     }
 }
 
-
-#============================================================================================
-# This dictionary supplies CID root strings  for creating PSSD projects in that the portal 
-# uses to present Project creators a pull-down list.  The service interface for project
-# creation just takes a string still as we don't want to remove flexibility
-# domain specific packages can add to this dictionary.  These standard CID roots
-# are created in the pssd package installer
-
-proc createDict_pssd_research_keywords {} {
-	if { [xvalue exists [dictionary.exists :name daris:pssd.research.keyword]] == "false" } {
-		dictionary.create :name daris:pssd.research.keyword :description "Standard key words to be set on Projects." :case-sensitive true
-	}
-}
-
-
+# ============================================================================
+# This dictionary supplies CID root strings  for creating PSSD projects in 
+# that the portal uses to present Project creators a pull-down list.  The 
+# service interface for project creation just takes a string still as we don't
+# want to remove flexibility domain specific packages can add to this dictionary.
+# These standard CID roots are created in the pssd package installer.
+# ============================================================================
 proc createDict_pssd_project_cid_roots {} {
 	if { [xvalue exists [dictionary.exists :name daris:pssd.project.cid.rootnames]] == "false" } {
 		dictionary.create :name daris:pssd.project.cid.rootnames :description "Project CID root names (used by the portal)." :case-sensitive true
@@ -40,30 +32,22 @@ proc createDict_pssd_project_cid_roots {} {
     addDictionaryEntry daris:pssd.project.cid.rootnames "pssd.project" "Standard CID root names for PSSD Projects"
 }
 
-
-#============================================================================================
-# This dictionary supplies asset namespaces for creating PSSD projects in that the portal 
-# uses to present Project creators a pull-down list.  The service interface for project
-# creation just takes a string still as we don't want to remove flexibility
-# domain specific packages can add to this dictionary.  The pssd namespace is made
-# in the installation of the PSSD package
-
-proc createDict_pssd_project_asset_namespaces {} {
-	if { [xvalue exists [dictionary.exists :name daris:pssd.project.asset.namespaces]] == "false" } {
-		dictionary.create :name daris:pssd.project.asset.namespaces :description "Asset namespaces for PSSD projects (used by the portal)." :case-sensitive true
+# ============================================================================
+# This dictionary supplies keywords.
+# ============================================================================
+proc createDict_pssd_research_keywords {} {
+	if { [xvalue exists [dictionary.exists :name daris:pssd.research.keyword]] == "false" } {
+		dictionary.create :name daris:pssd.research.keyword :description "Standard key words to be set on Projects." :case-sensitive true
 	}
-    addDictionaryEntry daris:pssd.project.asset.namespaces "pssd" "Standard asset namespace for PSSD Projects"
 }
 
-
-#============================================================================================
-# This dictionary is not research domain specific.  I.e. the list of organizations transcends
-# research domains. Therefore it's ok for it to be in the PSSD package. It is used in the
-# om.pssd.project.metadata.harvest service to harvest meta-data for ANDS.
-#
-
+# ============================================================================
+# This dictionary is not research domain specific.  I.e. the list of 
+# organizations transcends research domains. Therefore it's ok for it to be in 
+# the PSSD package. It is used in the om.pssd.project.metadata.harvest service
+# to harvest meta-data for ANDS.
+# ============================================================================
 proc createDict_research_organization { } {
-
 	if { [xvalue exists [dictionary.exists :name daris:pssd.research.organization]] == "false" } {
 		dictionary.create :name daris:pssd.research.organization :description "Research Organizations" :case-sensitive true
 	}
@@ -87,8 +71,8 @@ proc createDict_research_organization { } {
 	addDictionaryEntry  daris:pssd.research.organization "Other research organization"
 }
 
-# funding and ethics are very generic
-# in different countries one could replace these entries
+# ============================================================================
+# Dictionary for ethics organizations.
 #=============================================================================
 proc createDict_ethics_organization { } {
 
@@ -109,10 +93,10 @@ proc createDict_ethics_organization { } {
 	addDictionaryEntry  daris:pssd.ethics.organization "Other"
 }
 
-
-#=============================================================================
+# ============================================================================
+# Dictionary for funding organizations
+# ============================================================================
 proc createDict_funding_organization { } {
-
 	if { [xvalue exists [dictionary.exists :name daris:pssd.funding.organization]] == "false" } {
 		dictionary.create :name daris:pssd.funding.organization :description "Organizations that supply funding" :case-sensitive true
 	}
@@ -131,9 +115,11 @@ proc createDict_funding_organization { } {
 	addDictionaryEntry  daris:pssd.funding.organization "Other"							
 }
 
-
-# The reference is the NEMA standard (http://medical.nema.org/) volume 03 Section C.7.3.1.1 Modality
+# ============================================================================
+# Dictionary for DICOM modalities. The reference is the NEMA standard
+# (http://medical.nema.org/) volume 03 Section C.7.3.1.1 Modality
 # Modality is DICOM element  (0008,0060)
+# ============================================================================
 proc createDict_DICOM_Modalities {} {
 	if { [xvalue exists [dictionary.exists :name daris:pssd.dicom.modality]] == "false" } {
 		dictionary.create :name daris:pssd.dicom.modality \
@@ -186,7 +172,9 @@ proc createDict_DICOM_Modalities {} {
 	addDictionaryEntry  daris:pssd.dicom.modality XC "External-camera Photography"
 }
 
-
+# ============================================================================
+# Dictionary for name prefixes.
+# ============================================================================
 proc createDict_human_name_prefixes { } {
 
 	if { [xvalue exists [dictionary.exists :name daris:pssd.human.name.prefix]] == "false" } {
@@ -201,8 +189,10 @@ proc createDict_human_name_prefixes { } {
 	addDictionaryEntry  daris:pssd.human.name.prefix "Sir"	
 }
 
-
-proc createDict_publication_identifier_types {} {
+# ============================================================================
+# Dictionary for public identifier types.
+# ============================================================================
+proc createDict_publication_identifier_types { } {
 
    if { [xvalue exists [dictionary.exists :name daris:pssd.publication.identifier.type]] == "false" } {
 		dictionary.create :name daris:pssd.publication.identifier.type :description "Common publication identifier types" :case-sensitive false
@@ -224,7 +214,9 @@ proc createDict_publication_identifier_types {} {
 	addDictionaryEntry daris:pssd.publication.identifier.type mediatype
 }
 
-#============================================================================#
+# ============================================================================
+# Create all dictionaries.
+# ============================================================================
 proc createUpdatePSSDDicts { } {
     createDict_research_organization
 	createDict_ethics_organization
@@ -237,9 +229,10 @@ proc createUpdatePSSDDicts { } {
     createDict_pssd_research_keywords
 }
 
-#============================================================================#
+# ============================================================================
+# Destroy all dictionaries.
+# ============================================================================
 proc destroyPSSDDicts { } {
-
 	set dicts { daris:pssd.research.organization daris:pssd.dicom.modality \
 	            daris:pssd.human.name.prefix daris:pssd.publication.identifier.type \
 	            daris:pssd.funding.organization daris:pssd.ethics.organization \
