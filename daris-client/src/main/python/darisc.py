@@ -301,7 +301,7 @@ class XmlStringWriter(object):
 
     def __add_attr(self, name, value):
         if name is not None and value is not None:
-            if not value:
+            if value:
                 self.__items.append(' ')
                 self.__items.append(str(name))
                 self.__items.append('="')
