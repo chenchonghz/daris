@@ -14,6 +14,8 @@ import nig.mf.pssd.plugin.util.DistributedAsset;
 import nig.mf.pssd.plugin.util.DistributedQuery.ResultAssetType;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.ServiceExecutor;
+import arc.mf.plugin.atomic.AtomicOperation;
+import arc.mf.plugin.atomic.AtomicTransaction;
 import arc.mf.plugin.dtype.AssetType;
 import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.CiteableIdType;
@@ -81,14 +83,16 @@ public class SvcObjectDestroy extends PluginService {
         return ACCESS_MODIFY;
     }
 
-    public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w) throws Throwable {
+    public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w)
+            throws Throwable {
 
         // Destroy service must be run locally (or via a peer command)
         // String proute = null; // local only
         Collection<String> assetIds = args.values("id");
         Collection<String> cids = args.values("cid");
 
-        if ((cids == null || cids.isEmpty()) && (assetIds == null || assetIds.isEmpty())) {
+        if ((cids == null || cids.isEmpty())
+                && (assetIds == null || assetIds.isEmpty())) {
             throw new IllegalArgumentException(
                     "Either id argument or cid argument is required. Found none.");
         }
@@ -96,39 +100,43 @@ public class SvcObjectDestroy extends PluginService {
         boolean destroyCid = args.booleanValue("destroy-cid", false);
         String ptag = args.stringValue("ptag");
         String pdist = args.stringValue("pdist", "infinity");
-        boolean checkRemoteChildren = args.booleanValue("check-remote-children", false);
+        boolean checkRemoteChildren = args.booleanValue(
+                "check-remote-children", false);
         boolean destroyProject = args.booleanValue("destroy", false);
         boolean hardDestroy = args.booleanValue("hard-destroy", false);
 
         if (cids != null) {
             for (String cid : cids) {
-                destroyObject(executor(), cid, destroyCid, ptag, pdist, checkRemoteChildren,
-                        destroyProject, hardDestroy);
+                destroyObject(executor(), cid, destroyCid, ptag, pdist,
+                        checkRemoteChildren, destroyProject, hardDestroy);
             }
         }
 
         if (assetIds != null) {
             for (String assetId : assetIds) {
                 String cid = executor().execute("asset.get",
-                        "<args><id>" + assetId + "</id></args>", null, null).value("asset/cid");
+                        "<args><id>" + assetId + "</id></args>", null, null)
+                        .value("asset/cid");
                 if (cid != null) {
-                    destroyObject(executor(), cid, destroyCid, ptag, pdist, checkRemoteChildren,
-                            destroyProject, hardDestroy);
+                    destroyObject(executor(), cid, destroyCid, ptag, pdist,
+                            checkRemoteChildren, destroyProject, hardDestroy);
                 }
             }
         }
 
     }
 
-    public static void destroyObject(ServiceExecutor executor, String cid, boolean destroyCid,
-            String ptag, String pdist, boolean checkRemoteChildren, boolean destroyProject,
-            boolean hardDestroy) throws Throwable {
+    public static void destroyObject(ServiceExecutor executor,
+            final String cid, final boolean destroyCid, String ptag,
+            String pdist, boolean checkRemoteChildren, boolean destroyProject,
+            final boolean hardDestroy) throws Throwable {
 
         // Must hold an "admin" role on local server
         Self.isAdmin(cid, false);
 
         DistributedAsset dID = new DistributedAsset(null, cid);
-        String objectType = nig.mf.pssd.plugin.util.PSSDUtil.typeOf(executor, dID);
+        String objectType = nig.mf.pssd.plugin.util.PSSDUtil.typeOf(executor,
+                dID);
         if (objectType == null) {
             throw new Exception("The asset associated with " + dID.toString()
                     + " does not exist or is not a PSSD object");
@@ -177,11 +185,10 @@ public class SvcObjectDestroy extends PluginService {
         }
 
         // Project and RSubject objects are special. Find out if we have one
-        boolean isRSubject = false;
-        boolean isProject = Project.isObjectProject(executor, dID);
-        if (!isProject) {
-            isRSubject = RSubject.isObjectRSubject(executor, dID);
-        }
+
+        final boolean isProject = Project.isObjectProject(executor, dID);
+        final boolean isRSubject = isProject ? false : RSubject
+                .isObjectRSubject(executor, dID);
         if (isProject && !destroyProject) {
             throw new Exception(
                     "You must set argument 'destroy' to true to destroy a whole Project tree.");
@@ -195,36 +202,67 @@ public class SvcObjectDestroy extends PluginService {
             }
         }
 
-        // Destroy the assets
-        XmlDocMaker dm = new XmlDocMaker("args");
-        dm.add("cid", cid);
-        dm.add("members", true);
-        if (hardDestroy) {
-            executor.execute("asset.hard.destroy", dm.root());
-        } else {
-            executor.execute("asset.destroy", dm.root());
-        }
+        //
+        XmlDoc.Element ae = executor.execute("asset.get",
+                "<args><cid>" + cid + "</cid></args>", null, null).element(
+                "asset");
+        final String ns = ae.value("namespace");
 
-        // Destroy all local roles associated with the object and clean up any
-        // dangling ACLs
-        if (isProject) {
-            System.out.println("The objects is a project - destroy roles");
-            Project.destroyRoles(executor, cid);
-            PSSDUtils.removeInvalidACLs(executor);
-            // destroy project specific tag dictionaries if any.
-            ProjectSpecificTagDictionary.destroyAll(executor, cid);
-        } else if (isRSubject) {
-            RSubject.destroyRoles(executor, cid);
-            PSSDUtils.removeInvalidACLs(executor);
-        }
+        new AtomicTransaction(new AtomicOperation() {
 
-        // Destroy CID as well if desired
-        if (destroyCid) {
-            nig.mf.pssd.plugin.util.CiteableIdUtil.destroyCID(null, executor, cid);
-        }
-        // Generate system event
-        SystemEventChannel.generate(new PSSDObjectEvent(Action.DESTROY, dID.getCiteableID(),
-                SvcCollectionMemberCount.countMembers(executor, dID.getCiteableID())));
+            @Override
+            public boolean execute(ServiceExecutor executor) throws Throwable {
+                // Destroy the assets
+                XmlDocMaker dm = new XmlDocMaker("args");
+                dm.add("cid", cid);
+                dm.add("members", true);
+                if (hardDestroy) {
+                    executor.execute("asset.hard.destroy", dm.root());
+                } else {
+                    executor.execute("asset.destroy", dm.root());
+                }
+
+                // Destroy all local roles associated with the object and clean
+                // up any
+                // dangling ACLs
+                if (isProject) {
+                    System.out
+                            .println("The objects is a project - destroy roles");
+                    Project.destroyRoles(executor, cid);
+                    PSSDUtils.removeInvalidACLs(executor);
+                    // destroy project specific tag dictionaries if any.
+                    ProjectSpecificTagDictionary.destroyAll(executor, cid);
+                } else if (isRSubject) {
+                    RSubject.destroyRoles(executor, cid);
+                    PSSDUtils.removeInvalidACLs(executor);
+                }
+
+                // Destroy CID as well if desired
+                if (destroyCid) {
+                    nig.mf.pssd.plugin.util.CiteableIdUtil.destroyCID(null,
+                            executor, cid);
+                }
+                // Destroy Namespace
+                if (ns.endsWith("/" + cid)) {
+                    if (executor.execute(
+                            "asset.query",
+                            "<args><action>count</action><where>namespace>='"
+                                    + ns + "'</where></args>", null, null)
+                            .intValue("value") == 0) {
+                        executor.execute("asset.namespace.destroy",
+                                "<args><namespace>" + ns
+                                        + "</namespace></args>", null, null);
+                    }
+                }
+                // Generate system event
+                SystemEventChannel.generate(new PSSDObjectEvent(Action.DESTROY,
+                        cid, SvcCollectionMemberCount.countMembers(executor,
+                                cid)));
+
+                return false;
+            }
+        }).execute(executor);
+
     }
 
 }
