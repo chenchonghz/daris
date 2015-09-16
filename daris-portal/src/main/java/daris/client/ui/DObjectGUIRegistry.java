@@ -6,6 +6,7 @@ import arc.mf.client.dti.file.DTIFile;
 import arc.mf.client.dti.task.DTITask;
 import arc.mf.model.asset.document.MetadataDocumentRef;
 import arc.mf.model.asset.document.MetadataNamespaceRef;
+import arc.mf.model.authentication.UserRef;
 import arc.mf.model.dictionary.Term;
 import daris.client.model.object.DObjectRef;
 import daris.client.model.project.ProjectMember;
@@ -15,7 +16,6 @@ import daris.client.model.sc.ContentItem;
 import daris.client.model.sc.ShoppingCartRef;
 import daris.client.model.transform.TransformRef;
 import daris.client.model.user.RoleUser;
-import daris.client.model.user.User;
 import daris.client.ui.dictionary.TermGUI;
 import daris.client.ui.doc.MetadataDocumentGUI;
 import daris.client.ui.doc.MetadataNamespaceGUI;
@@ -40,7 +40,7 @@ public class DObjectGUIRegistry {
 		SystemObjectGUIRegistry registry = SystemObjectGUIRegistry.get();
 		if (!_registered) {
 			registry.add(DObjectRef.class, DObjectGUI.INSTANCE);
-			registry.add(User.class, UserGUI.INSTANCE);
+			registry.add(UserRef.class, UserGUI.INSTANCE);
 			registry.add(RoleUser.class, RoleUserGUI.INSTANCE);
 			registry.add(ProjectMember.class, ProjectMemberGUI.INSTANCE);
 			registry.add(ProjectRoleMember.class, ProjectRoleMemberGUI.INSTANCE);

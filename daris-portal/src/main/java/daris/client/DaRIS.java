@@ -8,6 +8,8 @@ import arc.mf.desktop.plugin.PluginApplication;
 import arc.mf.event.SystemEventChannel;
 import arc.mf.model.asset.task.AssetTasks;
 import arc.mf.model.shopping.events.ShoppingEvents;
+import arc.mf.session.DefaultLoginDialog;
+import arc.mf.session.LoginDialog;
 import arc.mf.session.Session;
 import arc.mf.session.SessionHandler;
 
@@ -52,6 +54,10 @@ public class DaRIS implements EntryPoint {
                  */
                 final boolean noDTI = ObjectUtil.equals(Window.Location.getParameter("dti"), "no");
                 BrowserCheck.check(noDTI);
+                LoginDialog dlg = new DefaultLoginDialog();
+//                dlg.setTitle("DaRIS");
+//                dlg.setVersion(Version.VERSION);
+//                Session.setLoginDialog(dlg);
                 Session.setLoginDialog(DaRISLoginDialog.get());
                 Session.initialize(new SessionHandler() {
 

@@ -252,16 +252,18 @@ public class Project extends DObject {
         if (_members != null) {
             for (ProjectMember pm : _members) {
                 w.push("member");
-                if (pm.user().authority() != null) {
-                    if (pm.user().protocol() != null) {
+                if (pm.user().domain().authority().name() != null) {
+                    if (pm.user().domain().authority().protocol() != null) {
                         w.add("authority", new String[] { "protocol",
-                                pm.user().protocol() }, pm.user().authority());
+                                pm.user().domain().authority().protocol() }, pm
+                                .user().domain().authority().name());
                     } else {
-                        w.add("authority", pm.user().authority());
+                        w.add("authority", pm.user().domain().authority()
+                                .name());
                     }
                 }
                 w.add("domain", pm.user().domain());
-                w.add("user", pm.user().user());
+                w.add("user", pm.user().name());
                 w.add("role", pm.role());
                 if (pm.dataUse() != null) {
                     w.add("data-use", pm.dataUse());
@@ -307,16 +309,19 @@ public class Project extends DObject {
         if (_members != null) {
             for (ProjectMember pm : _members) {
                 w.push("member");
-                if (pm.user().authority() != null) {
-                    if (pm.user().protocol() != null) {
+                if (pm.user().domain().authority() != null
+                        && pm.user().domain().authority().name() != null) {
+                    if (pm.user().domain().authority().protocol() != null) {
                         w.add("authority", new String[] { "protocol",
-                                pm.user().protocol() }, pm.user().authority());
+                                pm.user().domain().authority().protocol() }, pm
+                                .user().domain().authority().name());
                     } else {
-                        w.add("authority", pm.user().authority());
+                        w.add("authority", pm.user().domain().authority()
+                                .name());
                     }
                 }
                 w.add("domain", pm.user().domain());
-                w.add("user", pm.user().user());
+                w.add("user", pm.user().name());
                 w.add("role", pm.role());
                 if (pm.dataUse() != null) {
                     w.add("data-use", pm.dataUse());

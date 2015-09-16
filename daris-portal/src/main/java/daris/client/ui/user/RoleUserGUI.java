@@ -11,7 +11,6 @@ import arc.gui.object.register.ObjectUpdateHandle;
 import arc.gui.object.register.ObjectUpdateListener;
 import arc.gui.window.Window;
 import daris.client.model.user.RoleUser;
-import daris.client.model.user.User;
 
 public class RoleUserGUI implements ObjectGUI {
 
@@ -24,7 +23,7 @@ public class RoleUserGUI implements ObjectGUI {
 	@Override
 	public String idToString(Object o) {
 
-		return ((User) o).id();
+		return ((RoleUser) o).id();
 	}
 
 	@Override

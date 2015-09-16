@@ -31,6 +31,7 @@ import arc.mf.client.util.ObjectUtil;
 import arc.mf.client.util.StateChangeListener;
 import arc.mf.client.util.Transformer;
 import arc.mf.client.util.Validity;
+import arc.mf.model.authentication.UserRef;
 import arc.mf.object.ObjectMessageResponse;
 
 import com.google.gwt.dom.client.NativeEvent;
@@ -42,12 +43,13 @@ import daris.client.model.project.Project;
 import daris.client.model.project.ProjectMember;
 import daris.client.model.project.ProjectRole;
 import daris.client.model.project.messages.ProjectMemberList;
-import daris.client.model.user.User;
 import daris.client.ui.DObjectGUIRegistry;
 
-public class ProjectMemberGrid extends ListGrid<ProjectMember> implements DropHandler, MustBeValid, StateChangeListener {
+public class ProjectMemberGrid extends ListGrid<ProjectMember> implements
+        DropHandler, MustBeValid, StateChangeListener {
 
-    private static class ProjectMemberTransformer extends Transformer<ProjectMember, ListGridEntry<ProjectMember>> {
+    private static class ProjectMemberTransformer extends
+            Transformer<ProjectMember, ListGridEntry<ProjectMember>> {
 
         public static final ProjectMemberTransformer INSTANCE = new ProjectMemberTransformer();
 
@@ -56,24 +58,29 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements DropHa
         }
 
         @Override
-        protected ListGridEntry<ProjectMember> doTransform(ProjectMember pm) throws Throwable {
+        protected ListGridEntry<ProjectMember> doTransform(ProjectMember pm)
+                throws Throwable {
 
-            ListGridEntry<ProjectMember> pme = new ListGridEntry<ProjectMember>(pm);
-            pme.set("authority", pm.user().authority());
+            ListGridEntry<ProjectMember> pme = new ListGridEntry<ProjectMember>(
+                    pm);
+            pme.set("authority", pm.user().domain().authority() == null ? null
+                    : pm.user().domain().authority().name());
             pme.set("domain", pm.user().domain());
-            pme.set("user", pm.user().user());
+            pme.set("user", pm.user().name());
             pme.set("role", pm.role());
             pme.set("dataUse", pm.dataUse());
             pme.set("id", pm.user().id());
             pme.set("name", pm.user().name());
-            pme.set("protocol", pm.user().protocol());
+            pme.set("protocol", pm.user().domain().authority() == null ? null
+                    : pm.user().domain().authority().protocol());
             pme.set("email", pm.user().email());
             pme.set("userString", pm.user().toString());
             return pme;
         }
     }
 
-    private static class ProjectMemberListTransformer extends
+    private static class ProjectMemberListTransformer
+            extends
             Transformer<List<ProjectMember>, List<ListGridEntry<ProjectMember>>> {
         public static final ProjectMemberListTransformer INSTANCE = new ProjectMemberListTransformer();
 
@@ -82,13 +89,16 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements DropHa
         };
 
         @Override
-        protected List<ListGridEntry<ProjectMember>> doTransform(List<ProjectMember> pms) throws Throwable {
+        protected List<ListGridEntry<ProjectMember>> doTransform(
+                List<ProjectMember> pms) throws Throwable {
 
             if (pms != null) {
                 if (!pms.isEmpty()) {
-                    List<ListGridEntry<ProjectMember>> pmes = new Vector<ListGridEntry<ProjectMember>>(pms.size());
+                    List<ListGridEntry<ProjectMember>> pmes = new Vector<ListGridEntry<ProjectMember>>(
+                            pms.size());
                     for (ProjectMember pm : pms) {
-                        pmes.add(ProjectMemberTransformer.INSTANCE.transform(pm));
+                        pmes.add(ProjectMemberTransformer.INSTANCE
+                                .transform(pm));
                     }
                     return pmes;
                 }
@@ -97,7 +107,8 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements DropHa
         }
     }
 
-    private static class ProjectMemberDataSource implements DataSource<ListGridEntry<ProjectMember>> {
+    private static class ProjectMemberDataSource implements
+            DataSource<ListGridEntry<ProjectMember>> {
 
         private Project _o;
         private FormEditMode _mode;
@@ -134,30 +145,33 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements DropHa
                     doLoad(f, start, end, _o.members(), lh);
                 }
             } else {
-                new ProjectMemberList(_o).send(new ObjectMessageResponse<List<ProjectMember>>() {
+                new ProjectMemberList(_o)
+                        .send(new ObjectMessageResponse<List<ProjectMember>>() {
 
-                    @Override
-                    public void responded(List<ProjectMember> pms) {
+                            @Override
+                            public void responded(List<ProjectMember> pms) {
 
-                        if (pms != null) {
-                            if (!pms.isEmpty()) {
-                                doLoad(f, start, end, pms, lh);
-                                return;
+                                if (pms != null) {
+                                    if (!pms.isEmpty()) {
+                                        doLoad(f, start, end, pms, lh);
+                                        return;
+                                    }
+                                }
+                                lh.loaded(0, 0, 0, null, null);
                             }
-                        }
-                        lh.loaded(0, 0, 0, null, null);
-                    }
-                });
+                        });
             }
         }
 
-        private void doLoad(Filter f, long start, long end, List<ProjectMember> pms,
+        private void doLoad(Filter f, long start, long end,
+                List<ProjectMember> pms,
                 final DataLoadHandler<ListGridEntry<ProjectMember>> lh) {
 
             if (pms != null) {
                 Collections.sort(pms);
             }
-            List<ListGridEntry<ProjectMember>> pmes = ProjectMemberListTransformer.INSTANCE.transform(pms);
+            List<ListGridEntry<ProjectMember>> pmes = ProjectMemberListTransformer.INSTANCE
+                    .transform(pms);
             int total = pms.size();
             int start0 = (int) start;
             int end0 = (int) end;
@@ -171,7 +185,8 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements DropHa
                     pmes = pmes.subList(start0, end0);
                 }
             }
-            lh.loaded(start0, end0, pmes == null ? 0 : total, pmes, DataLoadAction.REPLACE);
+            lh.loaded(start0, end0, pmes == null ? 0 : total, pmes,
+                    DataLoadAction.REPLACE);
         }
     }
 
@@ -231,30 +246,36 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements DropHa
             setRowDoubleClickHandler(new ListGridRowDoubleClickHandler<ProjectMember>() {
 
                 @Override
-                public void doubleClicked(final ProjectMember pm, DoubleClickEvent event) {
+                public void doubleClicked(final ProjectMember pm,
+                        DoubleClickEvent event) {
 
                     if (pm == null) {
                         return;
                     }
                     int x = event.getClientX();
                     int y = event.getClientY();
-                    ProjectMemberRoleSelector.showAt(x, y, new ProjectMemberRoleSelector.RoleSelectionListener() {
+                    ProjectMemberRoleSelector
+                            .showAt(x,
+                                    y,
+                                    new ProjectMemberRoleSelector.RoleSelectionListener() {
 
-                        @Override
-                        public void roleSelected(ProjectRole role, DataUse dataUse) {
+                                        @Override
+                                        public void roleSelected(
+                                                ProjectRole role,
+                                                DataUse dataUse) {
 
-                            if (role != null) {
-                                pm.setRole(role);
-                                pm.setDataUse(dataUse);
-                                _o.addMember(pm);
-                                if (_mode == FormEditMode.UPDATE) {
-                                    commitChangesAndRefresh();
-                                } else if (_mode == FormEditMode.CREATE) {
-                                    notifyOfChangeInState();
-                                }
-                            }
-                        }
-                    });
+                                            if (role != null) {
+                                                pm.setRole(role);
+                                                pm.setDataUse(dataUse);
+                                                _o.addMember(pm);
+                                                if (_mode == FormEditMode.UPDATE) {
+                                                    commitChangesAndRefresh();
+                                                } else if (_mode == FormEditMode.CREATE) {
+                                                    notifyOfChangeInState();
+                                                }
+                                            }
+                                        }
+                                    });
                 }
             });
 
@@ -276,30 +297,39 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements DropHa
                             commitChangesAndRefresh();
                         }
                     }));
-                    menu.add(new ActionEntry("Set role and data-use", new Action() {
+                    menu.add(new ActionEntry("Set role and data-use",
+                            new Action() {
 
-                        @Override
-                        public void execute() {
+                                @Override
+                                public void execute() {
 
-                            ProjectMemberRoleSelector.showAt(x, y,
-                                    new ProjectMemberRoleSelector.RoleSelectionListener() {
+                                    ProjectMemberRoleSelector
+                                            .showAt(x,
+                                                    y,
+                                                    new ProjectMemberRoleSelector.RoleSelectionListener() {
 
-                                        @Override
-                                        public void roleSelected(ProjectRole role, DataUse dataUse) {
+                                                        @Override
+                                                        public void roleSelected(
+                                                                ProjectRole role,
+                                                                DataUse dataUse) {
 
-                                            if (role != null) {
-                                                if (!role.equals(pm.role())
-                                                        || !ObjectUtil.equals(dataUse, pm.dataUse())) {
-                                                    pm.setRole(role);
-                                                    pm.setDataUse(dataUse);
-                                                    _o.addMember(pm);
-                                                    commitChangesAndRefresh();
-                                                }
-                                            }
-                                        }
-                                    });
-                        }
-                    }));
+                                                            if (role != null) {
+                                                                if (!role
+                                                                        .equals(pm
+                                                                                .role())
+                                                                        || !ObjectUtil
+                                                                                .equals(dataUse,
+                                                                                        pm.dataUse())) {
+                                                                    pm.setRole(role);
+                                                                    pm.setDataUse(dataUse);
+                                                                    _o.addMember(pm);
+                                                                    commitChangesAndRefresh();
+                                                                }
+                                                            }
+                                                        }
+                                                    });
+                                }
+                            }));
                     ActionContextMenu am = new ActionContextMenu(menu);
                     NativeEvent ne = event.getNativeEvent();
                     am.showAt(ne);
@@ -352,14 +382,15 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements DropHa
         if (_mode.equals(FormEditMode.READ_ONLY)) {
             return DropCheck.CANNOT;
         }
-        if (o instanceof User || o instanceof ProjectMember) {
+        if (o instanceof UserRef || o instanceof ProjectMember) {
             return DropCheck.CAN;
         }
         return DropCheck.CANNOT;
     }
 
     @Override
-    public void drop(final BaseWidget target, final List<Object> objects, final DropListener dl) {
+    public void drop(final BaseWidget target, final List<Object> objects,
+            final DropListener dl) {
 
         if (objects == null) {
             dl.dropped(DropCheck.CANNOT);
@@ -379,8 +410,9 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements DropHa
                     return;
                 }
                 for (Object o : objects) {
-                    if (o instanceof User) {
-                        _o.addMember(new ProjectMember(((User) o), role, dataUse));
+                    if (o instanceof UserRef) {
+                        _o.addMember(new ProjectMember(((UserRef) o), role,
+                                dataUse));
                     } else if (o instanceof ProjectMember) {
                         ProjectMember pm = ((ProjectMember) o);
                         pm.setRole(role);
@@ -394,8 +426,8 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements DropHa
 
         };
 
-        ProjectMemberRoleSelector.showAt(target.absoluteLeft() + target.width() / 2,
-                target.absoluteTop() + target.height() / 2, rsl);
+        ProjectMemberRoleSelector.showAt(target.absoluteLeft() + target.width()
+                / 2, target.absoluteTop() + target.height() / 2, rsl);
 
     }
 

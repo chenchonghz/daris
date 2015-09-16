@@ -7,6 +7,7 @@ import arc.gui.ValidatedInterfaceComponent;
 import arc.gui.form.Field;
 import arc.gui.form.FieldDefinition;
 import arc.gui.form.FieldGroup;
+import arc.gui.form.FieldRenderOptions;
 import arc.gui.form.Form;
 import arc.gui.form.FormEditMode;
 import arc.gui.form.FormItem;
@@ -220,6 +221,7 @@ public class ShoppingCartSettingsForm extends ValidatedInterfaceComponent {
         _layoutPatternField = new Field<Layout.Pattern>(new FieldDefinition("pattern",
                 new EnumerationType<Layout.Pattern>(new LayoutPatternEnum()),
                 "An Asset Path Language (APL) expression. Only applicable if the layout type is custom.", null, 0, 1));
+        _layoutPatternField.setRenderOptions(new FieldRenderOptions().setWidth(200));
         if (cart.layout() != null && cart.layout().pattern() != null) {
             Layout.Pattern.resolve(cart.layout().pattern().pattern(), new ObjectResolveHandler<Layout.Pattern>() {
 

@@ -10,84 +10,83 @@ import arc.gui.object.register.ObjectGUI;
 import arc.gui.object.register.ObjectUpdateHandle;
 import arc.gui.object.register.ObjectUpdateListener;
 import arc.gui.window.Window;
-import daris.client.model.user.User;
+import arc.mf.model.authentication.UserRef;
 
 public class UserGUI implements ObjectGUI {
 
-	public static final UserGUI INSTANCE = new UserGUI();
+    public static final UserGUI INSTANCE = new UserGUI();
 
-	private UserGUI() {
+    private UserGUI() {
 
-	}
+    }
 
-	@Override
-	public String idToString(Object o) {
+    @Override
+    public String idToString(Object o) {
 
-		return ((User) o).id();
-	}
+        return ((UserRef) o).actorName();
+    }
 
-	@Override
-	public String icon(Object o, int size) {
+    @Override
+    public String icon(Object o, int size) {
 
-		return null;
-	}
+        return null;
+    }
 
-	@Override
-	public Object reference(Object o) {
+    @Override
+    public Object reference(Object o) {
 
-		return null;
-	}
+        return null;
+    }
 
-	@Override
-	public boolean needToResolve(Object o) {
+    @Override
+    public boolean needToResolve(Object o) {
 
-		return false;
-	}
+        return false;
+    }
 
-	@Override
-	public void displayDetails(Object o, ObjectDetailsDisplay dd,
-			boolean forEdit) {
+    @Override
+    public void displayDetails(Object o, ObjectDetailsDisplay dd,
+            boolean forEdit) {
 
-	}
+    }
 
-	@Override
-	public void open(Window w, Object o) {
+    @Override
+    public void open(Window w, Object o) {
 
-	}
+    }
 
-	@Override
-	public DropHandler dropHandler(Object o) {
+    @Override
+    public DropHandler dropHandler(Object o) {
 
-		return null;
-	}
+        return null;
+    }
 
-	@Override
-	public DragWidget dragWidget(Object o) {
+    @Override
+    public DragWidget dragWidget(Object o) {
 
-		User u = (User) o;
-		return new DragWidget(User.TYPE_NAME, new Label(
-				(u.authority() == null ? "" : (u.authority() + ":"))
-						+ u.domain() + ":" + u.user()));
-	}
+        UserRef u = (UserRef) o;
+        return new DragWidget(UserRef.ACTOR_TYPE, new Label(u.actorName()));
+    }
 
-	@Override
-	public Menu actionMenu(Window w, Object o, SelectedObjectSet selected,
-			boolean readOnly) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Menu actionMenu(Window w, Object o, SelectedObjectSet selected,
+            boolean readOnly) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public Menu memberActionMenu(Window w, Object o,
-			SelectedObjectSet selected, boolean readOnly) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Menu memberActionMenu(Window w, Object o,
+            SelectedObjectSet selected, boolean readOnly) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public ObjectUpdateHandle createUpdateMonitor(Object o, ObjectUpdateListener ul) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public ObjectUpdateHandle createUpdateMonitor(Object o,
+            ObjectUpdateListener ul) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }
