@@ -142,7 +142,8 @@ public class DicomSend {
                 try {
                     System.out.println("Editting dicom files...");
                     editDicomFiles(dcmFiles, elements, localAET, tmpDir);
-                    System.out.println("Sending dicom files...");
+                    System.out.println("Sending dicom files to " + remoteAET + "@"
+                        + remoteHost + ":" + remotePort + "...");
                     sendDicomFiles(tmpDir, localAET, remoteHost, remotePort,
                             remoteAET);
                 } finally {
