@@ -116,7 +116,7 @@ public class DicomSend {
                 throw new Exception("--remote-host is not specified.");
             }
             if (remotePort <= 0) {
-                throw new Exception("--remote-port is not specified.");
+                remotePort = 104;
             }
             if (remoteAET == null) {
                 throw new Exception("--remote-aet is not specified.");
@@ -125,7 +125,8 @@ public class DicomSend {
                 tmpDir = new File(System.getProperty("user.home"));
             }
             if (elements.isEmpty()) {
-                System.out.println("Sending dicom files...");
+                System.out.println("Sending dicom files to " + remoteAET + "@"
+                        + remoteHost + ":" + remotePort + "...");
                 sendDicomFiles(dcmFiles, localAET, remoteHost, remotePort,
                         remoteAET);
             } else {
@@ -296,7 +297,7 @@ public class DicomSend {
         System.out
                 .println("    --remote-host <retmote-host>        Remove server host address.");
         System.out
-                .println("    --remote-host <retmote-host>        Remove server host address.");
+                .println("    --remote-port <retmote-port>        Remove server port. Defaults to 104.");
         System.out
                 .println("    --remote-aet  <retmote-ae-title>    Remove server/receiver's AE title.");
         System.out
