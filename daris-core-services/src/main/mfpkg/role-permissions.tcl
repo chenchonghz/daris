@@ -48,6 +48,7 @@ grantRoleReadAccessServices   daris:pssd.model.user \
       asset.doc.namespace.list \
       asset.doc.type.describe \
       asset.doc.type.list \
+      asset.doc.template.as.xml \
       asset.meta.transform.profile.describe \
       asset.namespace.get \
       asset.namespace.describe \
