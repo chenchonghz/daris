@@ -433,9 +433,9 @@ class Session(object):
     def logon(self, domain, user, password):
         self.__check_server()
         cmd = ['java', '-Ddc.prefix=darisc.py', '-jar', get_daris_client_jar_path()]
-        cmd += ['-mf.host', self.__host]
-        cmd += ['-mf.port', str(self.__port)]
-        cmd += ['-mf.transport', self.__transport]
+        cmd += ['--mf.host', self.__host]
+        cmd += ['--mf.port', str(self.__port)]
+        cmd += ['--mf.transport', self.__transport]
         cmd.append('logon')
         cmd.append(domain)
         cmd.append(user)
@@ -452,14 +452,14 @@ class Session(object):
         if not self.__token and not self.__sid:
             raise Exception('Not logged on. No sid or secure identity token is set.')
         cmd = ['java', '-Ddc.prefix=darisc.py', '-jar', DARIS_CLIENT_JAR_PATH]
-        cmd += ['-mf.host', self.__host]
-        cmd += ['-mf.port', str(self.__port)]
-        cmd += ['-mf.transport', self.__transport]
-        cmd += ['-mf.output', 'xml']
+        cmd += ['--mf.host', self.__host]
+        cmd += ['--mf.port', str(self.__port)]
+        cmd += ['--mf.transport', self.__transport]
+        cmd += ['--mf.output', 'xml']
         if self.__token:  # token has 1st priority
-            cmd += ['-mf.token', self.__token]
+            cmd += ['--mf.token', self.__token]
         else:
-            cmd += ['-mf.sid', self.__sid]
+            cmd += ['--mf.sid', self.__sid]
         cmd.append('execute')
         cmd.append(service)
         args = self.__build_args(args, inputs, output)
@@ -510,9 +510,9 @@ class Session(object):
     def logoff(self):
         self.__check_server()
         cmd = ['java', '-Ddc.prefix=darisc.py', '-jar', DARIS_CLIENT_JAR_PATH]
-        cmd += ['-mf.host', self.__host]
-        cmd += ['-mf.port', str(self.__port)]
-        cmd += ['-mf.transport', self.__transport]
+        cmd += ['--mf.host', self.__host]
+        cmd += ['--mf.port', str(self.__port)]
+        cmd += ['--mf.transport', self.__transport]
         cmd.append('logoff')
         try:
             sp = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

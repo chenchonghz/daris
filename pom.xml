@@ -32,7 +32,7 @@
 		<daris-client-mbcpetct-dicom-retrieve.version>1.0.0</daris-client-mbcpetct-dicom-retrieve.version>
 		<daris-client-mbcmr-upload.version>1.0.0</daris-client-mbcmr-upload.version>
 		<daris-client-dicom-client.version>1.0.0</daris-client-dicom-client.version>
-		<daris-client.version>0.0.2</daris-client.version>
+		<daris-client.version>0.0.3</daris-client.version>
 	</properties>
 	<modules>
 		<module>daris-commons</module>

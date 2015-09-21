@@ -631,7 +631,7 @@ public class Execute {
 		Command cmd = null;
 		boolean showHelp = false;
 		for (int i = 0; i < args.length; i++) {
-			if ("-help".equals(args[i])) {
+			if ("--help".equals(args[i])) {
 				showHelp = true;
 			} else {
 				cmd = Command.fromString(args[i]);
@@ -698,9 +698,9 @@ public class Execute {
 
 		for (int i = 0; i < options.length;) {
 			String opt = options[i];
-			if ("-help".equals(opt)) {
+			if ("--help".equals(opt)) {
 				i++;
-			} else if ("-mf.host".equals(opt)) {
+			} else if ("--mf.host".equals(opt)) {
 				if (i + 1 < options.length) {
 					o.setHost(options[i + 1]);
 					i += 2;
@@ -708,7 +708,7 @@ public class Execute {
 					throw new ArgumentParseException(
 							"Missing value for option mf.host.");
 				}
-			} else if ("-mf.port".equals(opt)) {
+			} else if ("--mf.port".equals(opt)) {
 				if (i + 1 < options.length) {
 					o.setPort(options[i + 1]);
 					i += 2;
@@ -716,7 +716,7 @@ public class Execute {
 					throw new ArgumentParseException(
 							"Missing value for option mf.port.");
 				}
-			} else if ("-mf.transport".equals(opt)) {
+			} else if ("--mf.transport".equals(opt)) {
 				if (i + 1 < options.length) {
 					o.setTransport(options[i + 1]);
 					i += 2;
@@ -724,7 +724,7 @@ public class Execute {
 					throw new ArgumentParseException(
 							"Missing value for option mf.transport.");
 				}
-			} else if ("-mf.sid".equals(opt)) {
+			} else if ("--mf.sid".equals(opt)) {
 				if (i + 1 < options.length) {
 					o.setSid(options[i + 1]);
 					i += 2;
@@ -732,7 +732,7 @@ public class Execute {
 					throw new ArgumentParseException(
 							"Missing value for option mf.sid.");
 				}
-			} else if ("-mf.token".equals(opt)) {
+			} else if ("--mf.token".equals(opt)) {
 				if (i + 1 < options.length) {
 					o.setToken(options[i + 1]);
 					i += 2;
@@ -740,7 +740,7 @@ public class Execute {
 					throw new ArgumentParseException(
 							"Missing value for option mf.token.");
 				}
-			} else if ("-mf.auth".equals(opt)) {
+			} else if ("--mf.auth".equals(opt)) {
 				if (i + 1 < options.length) {
 					o.setAuth(options[i + 1]);
 					i += 2;
@@ -748,7 +748,7 @@ public class Execute {
 					throw new ArgumentParseException(
 							"Missing value for option mf.auth.");
 				}
-			} else if ("-mf.output".equals(opt)) {
+			} else if ("--mf.output".equals(opt)) {
 				if (i + 1 < options.length) {
 					o.setOutputFormat(options[i + 1]);
 					i += 2;
@@ -774,7 +774,7 @@ public class Execute {
 				o.loadSidFromDefaultLocation();
 				if (o.sid() == null) {
 					throw new ArgumentParseException(
-							"Not logged on and missing token. Option -mf.sid or -mf.token is required for command: execute.");
+							"Not logged on and missing token. Option --mf.sid or --mf.token is required for command: execute.");
 				}
 			}
 		}
@@ -809,21 +809,21 @@ public class Execute {
 			System.out.println("");
 			System.out.println("Options:");
 			System.out
-					.println("    -help                           Prints usage.");
+					.println("    --help                           Prints usage.");
 			System.out
-					.println("    -mf.host <host>                 The Mediaflux server host.");
+					.println("    --mf.host <host>                 The Mediaflux server host.");
 			System.out
-					.println("    -mf.port <port>                 The Mediaflux server port.");
+					.println("    --mf.port <port>                 The Mediaflux server port.");
 			System.out
-					.println("    -mf.transport <transport>       The Mediaflux server transport. Can be http, https or tcp/ip.");
+					.println("    --mf.transport <transport>       The Mediaflux server transport. Can be http, https or tcp/ip.");
 			System.out
-					.println("    -mf.sid <sid>                   The Mediaflux session code (or the file contains the session code). For execute command only.");
+					.println("    --mf.sid <sid>                   The Mediaflux session code (or the file contains the session code). For execute command only.");
 			System.out
-					.println("    -mf.token <token>               The Mediaflux secure identity token. For execute command only.");
+					.println("    --mf.token <token>               The Mediaflux secure identity token. For execute command only.");
 			System.out
-					.println("    -mf.auth <domain,user,password> The Mediaflux user authentication details, it is in the form of domain,user,password. For execute command only.");
+					.println("    --mf.auth <domain,user,password> The Mediaflux user authentication details, it is in the form of domain,user,password. For execute command only.");
 			System.out
-					.println("    -mf.output <xml|shell>          The output format. Can be xml or shell. For execute command only.");
+					.println("    --mf.output <xml|shell>          The output format. Can be xml or shell. For execute command only.");
 			System.out.println("");
 			System.out.println("The available commands are:");
 			System.out.println("    logon      Log on Mediaflux.");
@@ -831,7 +831,7 @@ public class Execute {
 			System.out.println("    logoff     Log off Mediaflux.");
 			System.out.println("");
 			System.out.println("See '" + prefix()
-					+ " -help <command>' to read about a specific command.");
+					+ " --help <command>' to read about a specific command.");
 		} else {
 			switch (cmd) {
 			case LOGON:
@@ -844,13 +844,13 @@ public class Execute {
 				System.out.println("");
 				System.out.println("Options:");
 				System.out
-						.println("    -help                           Prints usage for logon command.");
+						.println("    --help                           Prints usage for logon command.");
 				System.out
-						.println("    -mf.host <host>                 The Mediaflux server host.");
+						.println("    --mf.host <host>                 The Mediaflux server host.");
 				System.out
-						.println("    -mf.port <port>                 The Mediaflux server port.");
+						.println("    --mf.port <port>                 The Mediaflux server port.");
 				System.out
-						.println("    -mf.transport <transport>       The Mediaflux server transport. Can be http, https or tcp/ip.");
+						.println("    --mf.transport <transport>       The Mediaflux server transport. Can be http, https or tcp/ip.");
 				break;
 			case EXECUTE:
 				System.out.println("Usage: " + prefix()
@@ -861,21 +861,21 @@ public class Execute {
 				System.out.println("");
 				System.out.println("Options:");
 				System.out
-						.println("    -help                           Prints usage for execute command.");
+						.println("    --help                           Prints usage for execute command.");
 				System.out
-						.println("    -mf.host <host>                 The Mediaflux server host.");
+						.println("    --mf.host <host>                 The Mediaflux server host.");
 				System.out
-						.println("    -mf.port <port>                 The Mediaflux server port.");
+						.println("    --mf.port <port>                 The Mediaflux server port.");
 				System.out
-						.println("    -mf.transport <transport>       The Mediaflux server transport. Can be http, https or tcp/ip.");
+						.println("    --mf.transport <transport>       The Mediaflux server transport. Can be http, https or tcp/ip.");
 				System.out
-						.println("    -mf.sid <sid>                   The Mediaflux session code (or the file contains the session code).");
+						.println("    --mf.sid <sid>                   The Mediaflux session code (or the file contains the session code).");
 				System.out
-						.println("    -mf.token <token>               The Mediaflux secure identity token.");
+						.println("    --mf.token <token>               The Mediaflux secure identity token.");
 				System.out
-						.println("    -mf.auth <domain,user,password> The Mediaflux user authentication details, it is in the form of domain,user,password.");
+						.println("    --mf.auth <domain,user,password> The Mediaflux user authentication details, it is in the form of domain,user,password.");
 				System.out
-						.println("    -mf.output <xml|shell>          The output format. Can be xml or shell.");
+						.println("    --mf.output <xml|shell>          The output format. Can be xml or shell.");
 				break;
 			case LOGOFF:
 				System.out
@@ -886,13 +886,13 @@ public class Execute {
 				System.out.println("");
 				System.out.println("Options:");
 				System.out
-						.println("    -help                           Prints usage for execute command.");
+						.println("    --help                           Prints usage for execute command.");
 				System.out
-						.println("    -mf.host <host>                 The Mediaflux server host.");
+						.println("    --mf.host <host>                 The Mediaflux server host.");
 				System.out
-						.println("    -mf.port <port>                 The Mediaflux server port.");
+						.println("    --mf.port <port>                 The Mediaflux server port.");
 				System.out
-						.println("    -mf.transport <transport>       The Mediaflux server transport. Can be http, https or tcp/ip.");
+						.println("    --mf.transport <transport>       The Mediaflux server transport. Can be http, https or tcp/ip.");
 				break;
 			default:
 				break;

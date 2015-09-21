@@ -1,4 +1,4 @@
-package daris.client;
+package daris.client.dicom;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -26,10 +26,10 @@ import com.pixelmed.network.StorageSOPClassSCU;
 public class DicomSend {
 
     public static void main(String[] args) {
-        String localAET = null;
-        String remoteHost = null;
-        int remotePort = -1;
-        String remoteAET = null;
+        String callingAET = null;
+        String calledHost = null;
+        int calledPort = -1;
+        String calledAET = null;
         SetOfDicomFiles dcmFiles = new SetOfDicomFiles();
         File tmpDir = null;
         boolean debug = false;
@@ -42,33 +42,33 @@ public class DicomSend {
                 } else if (args[i].equals("--debug")) {
                     debug = true;
                     i++;
-                } else if (args[i].equals("--local-aet")) {
-                    if (localAET != null) {
+                } else if (args[i].equals("--calling-aet")) {
+                    if (callingAET != null) {
                         throw new Exception(
-                                "--local-aet has already been specified.");
+                                "--calling-aet has already been specified.");
                     }
-                    localAET = args[i + 1];
+                    callingAET = args[i + 1];
                     i += 2;
-                } else if (args[i].equals("--remote-host")) {
-                    if (remoteHost != null) {
+                } else if (args[i].equals("--host")) {
+                    if (calledHost != null) {
                         throw new Exception(
-                                "--remove-host has already been specified.");
+                                "--host has already been specified.");
                     }
-                    remoteHost = args[i + 1];
+                    calledHost = args[i + 1];
                     i += 2;
-                } else if (args[i].equals("--remote-port")) {
-                    if (remotePort > 0) {
+                } else if (args[i].equals("--port")) {
+                    if (calledPort > 0) {
                         throw new Exception(
-                                "--remove-port has already been specified.");
+                                "--port has already been specified.");
                     }
-                    remotePort = Integer.parseInt(args[i + 1]);
+                    calledPort = Integer.parseInt(args[i + 1]);
                     i += 2;
-                } else if (args[i].equals("--remote-aet")) {
-                    if (remoteAET != null) {
+                } else if (args[i].equals("--called-aet")) {
+                    if (calledAET != null) {
                         throw new Exception(
-                                "--remove-aet has already been specified.");
+                                "--called-aet has already been specified.");
                     }
-                    remoteAET = args[i + 1];
+                    calledAET = args[i + 1];
                     i += 2;
                 } else if (args[i].equals("--element")) {
                     parseElement(elements, args[i + 1]);
@@ -109,26 +109,26 @@ public class DicomSend {
                     i++;
                 }
             }
-            if (localAET == null) {
-                throw new Exception("--local-aet is not specified.");
+            if (callingAET == null) {
+                throw new Exception("--calling-aet is not specified.");
             }
-            if (remoteHost == null) {
-                throw new Exception("--remote-host is not specified.");
+            if (calledHost == null) {
+                throw new Exception("--host is not specified.");
             }
-            if (remotePort <= 0) {
-                remotePort = 104;
+            if (calledPort <= 0) {
+                calledPort = 104;
             }
-            if (remoteAET == null) {
-                throw new Exception("--remote-aet is not specified.");
+            if (calledAET == null) {
+                throw new Exception("--called-aet is not specified.");
             }
             if (tmpDir == null) {
                 tmpDir = new File(System.getProperty("user.home"));
             }
             if (elements.isEmpty()) {
-                System.out.println("Sending dicom files to " + remoteAET + "@"
-                        + remoteHost + ":" + remotePort + "...");
-                sendDicomFiles(dcmFiles, localAET, remoteHost, remotePort,
-                        remoteAET);
+                System.out.println("Sending dicom files to " + calledAET + "@"
+                        + calledHost + ":" + calledPort + "...");
+                sendDicomFiles(dcmFiles, callingAET, calledHost, calledPort,
+                        calledAET);
             } else {
                 tmpDir = new File(tmpDir,
                         "daris-dicom-send-"
@@ -141,11 +141,11 @@ public class DicomSend {
                 }
                 try {
                     System.out.println("Editting dicom files...");
-                    editDicomFiles(dcmFiles, elements, localAET, tmpDir);
-                    System.out.println("Sending dicom files to " + remoteAET + "@"
-                        + remoteHost + ":" + remotePort + "...");
-                    sendDicomFiles(tmpDir, localAET, remoteHost, remotePort,
-                            remoteAET);
+                    editDicomFiles(dcmFiles, elements, callingAET, tmpDir);
+                    System.out.println("Sending dicom files to " + calledAET
+                            + "@" + calledHost + ":" + calledPort + "...");
+                    sendDicomFiles(tmpDir, callingAET, calledHost, calledPort,
+                            calledAET);
                 } finally {
                     System.out.print("Deleting temporary directory: " + tmpDir
                             + "...");
@@ -175,19 +175,19 @@ public class DicomSend {
         }
     }
 
-    private static void sendDicomFiles(File tmpDir, String localAET,
-            String remoteHost, int remotePort, String remoteAET)
+    private static void sendDicomFiles(File tmpDir, String callingAET,
+            String calleHost, int calledPort, String calledAET)
             throws Throwable {
         SetOfDicomFiles dcmFiles = new SetOfDicomFiles();
         addDicomDirectory(dcmFiles, tmpDir);
-        sendDicomFiles(dcmFiles, localAET, remoteHost, remotePort, remoteAET);
+        sendDicomFiles(dcmFiles, callingAET, calleHost, calledPort, calledAET);
     }
 
     private static void sendDicomFiles(SetOfDicomFiles dcmFiles,
-            String localAET, String remoteHost, int remotePort, String remoteAET)
-            throws Throwable {
+            String callingAET, String calledHost, int calledPort,
+            String calledAET) throws Throwable {
         final int total = dcmFiles.size();
-        new StorageSOPClassSCU(remoteHost, remotePort, remoteAET, localAET,
+        new StorageSOPClassSCU(calledHost, calledPort, calledAET, callingAET,
                 dcmFiles, 0, new MultipleInstanceTransferStatusHandler() {
                     @Override
                     public void updateStatus(int nRemaining, int nCompleted,
@@ -199,19 +199,19 @@ public class DicomSend {
     }
 
     private static void editDicomFiles(SetOfDicomFiles dcmFiles,
-            Map<AttributeTag, String> elements, String localAET, File tmpDir)
+            Map<AttributeTag, String> elements, String callingAET, File tmpDir)
             throws Throwable {
         int i = 1;
         for (SetOfDicomFiles.DicomFile dcmFile : dcmFiles) {
             String outFileName = String.format("%08d.dcm", i);
-            editDicomFile(new File(dcmFile.getFileName()), elements, localAET,
-                    new File(tmpDir, outFileName));
+            editDicomFile(new File(dcmFile.getFileName()), elements,
+                    callingAET, new File(tmpDir, outFileName));
             i++;
         }
     }
 
     private static void editDicomFile(File in,
-            Map<AttributeTag, String> elements, String localAET, File out)
+            Map<AttributeTag, String> elements, String callingAET, File out)
             throws Throwable {
         AttributeList list = new AttributeList();
         list.read(in);
@@ -245,10 +245,10 @@ public class DicomSend {
                 && mediaStorageSOPInstanceUID != null) {
             FileMetaInformation.addFileMetaInformation(list,
                     mediaStorageSOPClassUID, mediaStorageSOPInstanceUID,
-                    TransferSyntax.ExplicitVRLittleEndian, localAET);
+                    TransferSyntax.ExplicitVRLittleEndian, callingAET);
         } else {
             FileMetaInformation.addFileMetaInformation(list,
-                    TransferSyntax.ExplicitVRLittleEndian, localAET);
+                    TransferSyntax.ExplicitVRLittleEndian, callingAET);
         }
         // Put the new tag in place
         if (elements != null && !elements.isEmpty()) {
@@ -291,20 +291,20 @@ public class DicomSend {
 
     private static void showHelp() {
         System.out
-                .println("Usage: dicom-send --local-aet <local-ae-title> --remote-host <remote-host> --remote-port <remote-port> --remote-aet <remote-ae-title> [--element \"tag=value\"] <dicom-directories|dicom-files>");
+                .println("Usage: dicom-send --calling-aet <ae-title> --host <host> --port <port> --called-aet <ae-title> [--element \"tag=value\"] <dicom-directories|dicom-files>");
         System.out.println("Options:");
         System.out
-                .println("    --local-aet   <local-ae-title>      Local client/sender's AE title.");
+                .println("    --calling-aet <ae-title>    Calling DICOM AE title.");
         System.out
-                .println("    --remote-host <retmote-host>        Remove server host address.");
+                .println("    --called-aet  <ae-title>    Called DICOM AE title.");
         System.out
-                .println("    --remote-port <retmote-port>        Remove server port. Defaults to 104.");
+                .println("    --host <host>               Called DICOM server host address.");
         System.out
-                .println("    --remote-aet  <retmote-ae-title>    Remove server/receiver's AE title.");
+                .println("    --port <port>               Called DICOM server port. Defaults to 104.");
         System.out
-                .println("    --element     <tag=value>           The element value to override. Can occur more than onnce to override multiple elements. Example of tag=value: \"(0010,0020)=ABC123\"");
+                .println("    --element     <tag=value>   The element value to override. Can occur more than onnce to override multiple elements. Example of tag=value: \"(0010,0020)=ABC123\"");
         System.out
-                .println("    --tmp         <tmp-dir>             The temporary directory to save the modified dicom files. The files will be deleted after uploading. Defaults to user's home directory.");
+                .println("    --tmp         <tmp-dir>     The temporary directory to save the modified dicom files. The files will be deleted after uploading. Defaults to user's home directory.");
 
     }
 
