@@ -144,6 +144,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcStudyCreate());
         _services.add(new SvcStudyUpdate());
         _services.add(new SvcStudyMove());
+        _services.add(new SvcStudyCopy());
         _services.add(new SvcStudyRename());
         _services.add(new SvcExMethodStudiesPreCreate());
         _services.add(new SvcStudyTemplateReplace());
