@@ -49,6 +49,7 @@ import daris.client.ui.object.action.DObjectEditAction;
 import daris.client.ui.object.action.DerivedDataSetCreateAction;
 import daris.client.ui.object.action.DicomIngestAction;
 import daris.client.ui.object.action.DicomSendAction;
+import daris.client.ui.object.action.ObjectMemberExportForm;
 import daris.client.ui.object.action.PrimaryDataSetCreateAction;
 import daris.client.ui.object.action.StudyPreCreateAction;
 import daris.client.ui.query.action.SearchForm;
@@ -82,6 +83,8 @@ public class DObjectGUI implements ObjectGUI {
             Resource.INSTANCE.clear16().getSafeUri().asString(), 16, 16);
     public static final arc.gui.image.Image ICON_TAG = new arc.gui.image.Image(
             Resource.INSTANCE.tag16().getSafeUri().asString(), 16, 16);
+    public static final arc.gui.image.Image ICON_EXPORT = new arc.gui.image.Image(
+            Resource.INSTANCE.export16().getSafeUri().asString(), 16, 16);
 
     public static final DObjectGUI INSTANCE = new DObjectGUI();
 
@@ -273,6 +276,25 @@ public class DObjectGUI implements ObjectGUI {
             menu.add(new ActionInterfaceEntry(ICON_CREATE,
                     new StudyPreCreateAction(ro, w)));
         }
+
+        /*
+         * export member list
+         */
+        menu.add(new ActionEntry(ICON_EXPORT, "Export member list...",
+                "Exports member list as .xml or .csv file.", new Action() {
+
+                    @Override
+                    public void execute() {
+                        new ObjectMemberExportForm(ro).show(w,
+                                new ActionListener() {
+
+                                    @Override
+                                    public void executed(boolean succeeded) {
+                                        // DO NOTHING
+                                    }
+                                });
+                    }
+                }));
 
         if (ro.id() != null) {
             /*
