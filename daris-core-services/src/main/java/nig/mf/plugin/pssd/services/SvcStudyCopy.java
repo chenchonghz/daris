@@ -9,7 +9,6 @@ import arc.mf.plugin.ServiceExecutor;
 import arc.mf.plugin.atomic.AtomicOperation;
 import arc.mf.plugin.atomic.AtomicTransaction;
 import arc.mf.plugin.dtype.CiteableIdType;
-import arc.mf.plugin.dtype.XmlDocType;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDoc.Element;
 import arc.xml.XmlDocMaker;
@@ -27,21 +26,12 @@ public class SvcStudyCopy extends PluginService {
         _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT,
                 "The citeable id of study.", 1, 1));
 
-        Interface.Element to = new Interface.Element("to", XmlDocType.DEFAULT,
-                "The destination ex-method or subject to copy to.", 1, 1);
-        to.add(new Interface.Element(
-                "subject",
+        Interface.Element to = new Interface.Element("to",
                 CiteableIdType.DEFAULT,
-                "The citeable id of the destination subject. If not specified, ex-method must be specified.",
-                0, 1));
-        Interface.Element exMethod = new Interface.Element(
-                "ex-method",
-                CiteableIdType.DEFAULT,
-                "The citeable id of the destination ex-method. If not specified, subject must be specified.",
-                0, 1);
-        exMethod.add(new Interface.Attribute("step", CiteableIdType.DEFAULT,
-                "The step cid.", 0));
-        to.add(exMethod);
+                "The citeable id of the destination subject or ex-method.", 1,
+                1);
+        to.add(new Interface.Attribute("step", CiteableIdType.DEFAULT,
+                "The ex-method step of the destination ex-method.", 0));
         _defn.add(to);
     }
 
@@ -74,25 +64,28 @@ public class SvcStudyCopy extends PluginService {
         String srcMethodCid = srcStudyAE.value("meta/daris:pssd-study/method");
         String srcExMethodStep = srcStudyAE
                 .value("meta/daris:pssd-study/method/@id");
-        String dstSubjectCid = args.value("to/subject");
-        String dstExMethodCid = args.value("to/ex-method");
-        String dstExMethodStep = args.value("to/ex-method/@step");
-        if (dstSubjectCid == null && dstExMethodCid == null) {
-            throw new Exception(
-                    "Either to/subject or to/ex-method must be specified. Found none.");
-        }
-        if (dstSubjectCid != null && dstExMethodCid != null) {
-            throw new Exception(
-                    "Both to/subject and to/ex-method specified. Need only one.");
-        }
-
-        if (dstExMethodCid == null) {
+        String to = args.value("to");
+        String dstSubjectCid = null;
+        String dstExMethodCid = null;
+        String dstExMethodStep = args.value("to/@step");
+        if (CiteableIdUtil.isSubjectId(to)) {
+            dstSubjectCid = to;
             dstExMethodCid = findDstExMethod(executor(), dstSubjectCid,
                     srcMethodCid);
             if (dstExMethodCid == null) {
                 throw new Exception("No ex-method found in subject "
                         + dstSubjectCid);
             }
+        } else if (CiteableIdUtil.isExMethodId(to)) {
+            dstSubjectCid = CiteableIdUtil.getParentId(to);
+            dstExMethodCid = to;
+        } else {
+            throw new Exception("Invalid destination citeable id: " + to
+                    + ". Must be the id of a subject or ex-method.");
+        }
+        if (srcStudyCid.startsWith(dstSubjectCid + ".")) {
+            throw new Exception("Cannot send to the same subject: "
+                    + dstSubjectCid);
         }
         String dstMethodCid = executor().execute("asset.get",
                 "<args><cid>" + dstExMethodCid + "</cid></args>", null, null)
@@ -341,7 +334,7 @@ public class SvcStudyCopy extends PluginService {
             List<XmlDoc.Element> acls = dstObjAE.elements("acl");
             if (acls != null) {
                 for (XmlDoc.Element acl : acls) {
-                    while (acl.elementExists("asset")){
+                    while (acl.elementExists("asset")) {
                         acl.remove(acl.element("asset"));
                     }
                     XmlDoc.Element actor = acl.element("actor");
