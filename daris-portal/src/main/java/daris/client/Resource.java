@@ -250,6 +250,9 @@ public interface Resource extends ClientBundle {
 
     @Source("resource/16folder_yellow_open.png")
     ImageResource folderYellowOpen16();
+    
+    @Source("resource/16forward.png")
+    ImageResource forward16();
 
     @Source("resource/24forward.png")
     ImageResource forward24();

@@ -52,6 +52,7 @@ import daris.client.ui.object.action.DicomSendAction;
 import daris.client.ui.object.action.PrimaryDataSetCreateAction;
 import daris.client.ui.object.action.StudyPreCreateAction;
 import daris.client.ui.query.action.SearchForm;
+import daris.client.ui.study.StudySendForm;
 import daris.client.ui.widget.MessageBox;
 
 public class DObjectGUI implements ObjectGUI {
@@ -65,6 +66,8 @@ public class DObjectGUI implements ObjectGUI {
             .download16().getSafeUri().asString(), 16, 16);
     public static final Image ICON_EDIT = new Image(Resource.INSTANCE.edit16()
             .getSafeUri().asString(), 16, 16);
+    public static final Image ICON_SEND = new Image(Resource.INSTANCE
+            .forward16().getSafeUri().asString(), 16, 16);
     public static final Image ICON_DICOM_SEND = new Image(Resource.INSTANCE
             .send16().getSafeUri().asString(), 16, 16);
     public static final Image ICON_DICOM_INGEST = new Image(Resource.INSTANCE
@@ -507,6 +510,35 @@ public class DObjectGUI implements ObjectGUI {
                         });
                 menu.add(aeDestroyProcessed);
             }
+
+            if (((DObjectRef) o).isStudy()) {
+                menu.add(new ActionEntry(ICON_SEND, "Send/Copy study to...",
+                        "Send/Copy study to another project/subject.",
+                        new Action() {
+
+                            @Override
+                            public void execute() {
+                                new StudySendForm((DObjectRef) o).show(w,
+                                        new ActionListener() {
+
+                                            @Override
+                                            public void executed(
+                                                    boolean succeeded) {
+                                                if (succeeded) {
+                                                    MessageBox
+                                                            .info("Sending study",
+                                                                    "Started sending study "
+                                                                            + ((DObjectRef) o)
+                                                                                    .id(),
+                                                                    3);
+                                                }
+                                            }
+                                        });
+                                ;
+                            }
+                        }));
+            }
+
             /*
              * dicom send
              */
