@@ -13,6 +13,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 
 import daris.client.model.sc.ShoppingCart;
 import daris.client.model.sc.ShoppingCartRef;
+import daris.client.util.DownloadUtil;
 
 public class ShoppingCartOutputRetrieve extends ObjectMessage<Null> {
 
@@ -23,8 +24,8 @@ public class ShoppingCartOutputRetrieve extends ObjectMessage<Null> {
     public ShoppingCartOutputRetrieve(ShoppingCartRef cart) {
         _cart = cart;
     }
-    
-    public ShoppingCartOutputRetrieve(ShoppingCart cart){
+
+    public ShoppingCartOutputRetrieve(ShoppingCart cart) {
         this(new ShoppingCartRef(cart));
     }
 
@@ -68,14 +69,17 @@ public class ShoppingCartOutputRetrieve extends ObjectMessage<Null> {
     protected void process(Null o, final List<Output> outputs) {
 
         if (outputs != null && !outputs.isEmpty()) {
-            new ShoppingCartRef(_cart.id()).resolve(new ObjectResolveHandler<ShoppingCart>() {
-                @Override
-                public void resolved(ShoppingCart cart) {
-                    for (Output output : outputs) {
-                        output.download(generateArchiveFileName(cart));
-                    }
-                }
-            });
+            new ShoppingCartRef(_cart.id())
+                    .resolve(new ObjectResolveHandler<ShoppingCart>() {
+                        @Override
+                        public void resolved(ShoppingCart cart) {
+                            for (Output output : outputs) {
+                                // output.download(generateArchiveFileName(cart));
+                                DownloadUtil.download(output,
+                                        generateArchiveFileName(cart));
+                            }
+                        }
+                    });
 
         }
     }
@@ -86,7 +90,9 @@ public class ShoppingCartOutputRetrieve extends ObjectMessage<Null> {
         if (cart.name() != null) {
             filename += "_" + cart.name();
         }
-        filename += "_" + DateTimeFormat.getFormat("yyyy.MM.dd_HHmmss").format(cart.changed());
+        filename += "_"
+                + DateTimeFormat.getFormat("yyyy.MM.dd_HHmmss").format(
+                        cart.changed());
         filename += (ext != null ? ("." + ext) : "");
         return filename;
     }

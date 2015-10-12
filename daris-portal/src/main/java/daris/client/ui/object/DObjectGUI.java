@@ -55,6 +55,7 @@ import daris.client.ui.object.action.StudyPreCreateAction;
 import daris.client.ui.query.action.SearchForm;
 import daris.client.ui.study.StudySendForm;
 import daris.client.ui.widget.MessageBox;
+import daris.client.util.DownloadUtil;
 
 public class DObjectGUI implements ObjectGUI {
     public static final arc.gui.image.Image ICON_RELOAD_GREEN = new arc.gui.image.Image(
@@ -310,13 +311,9 @@ public class DObjectGUI implements ObjectGUI {
 
                                     @Override
                                     public void resolved(DObject o) {
-                                        DataSet dataset = (DataSet) o;
-                                        String contentUrl = dataset
+                                        String contentUrl = ((DataSet) o)
                                                 .contentDownloadUrl();
-                                        com.google.gwt.user.client.Window.open(
-                                                contentUrl,
-                                                "Downloading dataset "
-                                                        + dataset.id(), null);
+                                        DownloadUtil.download(contentUrl);
                                     }
                                 });
 
