@@ -328,8 +328,10 @@ public class DObjectGUI implements ObjectGUI {
 
                     @Override
                     public void resolved(DObject o) {
-                        DataSet dataset = (DataSet) o;
-                        String contentUrl = dataset.contentDownloadUrl();
+                        if (o == null) {
+                            return;
+                        }
+                        String contentUrl = ((DataSet) o).contentDownloadUrl();
                         if (contentUrl != null) {
                             aeDownloadContent.enable();
                         }
