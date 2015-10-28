@@ -219,7 +219,7 @@ public class Archive {
 
     public void saveUpdateArgs(XmlWriter w) {
         w.push("packaging");
-        w.add("package-method", _type.name());
+        w.add("package-method", _type.typeName());
         if (hasParams()) {
             Set<String> names = _params.keySet();
             for (String name : names) {
