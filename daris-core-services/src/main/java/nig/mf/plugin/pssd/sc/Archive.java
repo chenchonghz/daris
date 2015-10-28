@@ -29,17 +29,20 @@ public class Archive {
         public static Type fromString(String type) {
             Type[] vs = values();
             for (Type v : vs) {
-                if (v.toString().equalsIgnoreCase(type)) {
+                if (compressed_tar.toString().equals(type)
+                        || compressed_tar.name().equals(type)) {
+                    return compressed_tar;
+                } else if (v.toString().equalsIgnoreCase(type)) {
                     return v;
                 }
             }
             return none;
         }
-        
-        public static String[] stringValues(){
-            Type[] vs  = values();
+
+        public static String[] stringValues() {
+            Type[] vs = values();
             String[] svs = new String[vs.length];
-            for(int i=0;i<vs.length;i++){
+            for (int i = 0; i < vs.length; i++) {
                 svs[i] = vs[i].toString();
             }
             return svs;
@@ -115,7 +118,8 @@ public class Archive {
         return _type;
     }
 
-    public static Archive instantiate(XmlDoc.Element arcElement) throws Throwable {
+    public static Archive instantiate(XmlDoc.Element arcElement)
+            throws Throwable {
 
         Type type = Type.fromString(arcElement.value("type"));
         Archive arc = new Archive(type);
@@ -142,8 +146,10 @@ public class Archive {
             arc.setParameter("compression-level", "6");
             break;
         case iso9660:
-            arc.setParameter(PARAMETER_ENABLE_JOLIET, Boolean.toString(DEFAULT_ENABLE_JOLIET));
-            arc.setParameter(PARAMETER_ENABLE_ROCKRIDGE, Boolean.toString(DEFAULT_ENABLE_ROCKRIDGE));
+            arc.setParameter(PARAMETER_ENABLE_JOLIET,
+                    Boolean.toString(DEFAULT_ENABLE_JOLIET));
+            arc.setParameter(PARAMETER_ENABLE_ROCKRIDGE,
+                    Boolean.toString(DEFAULT_ENABLE_ROCKRIDGE));
             arc.setParameter(PARAMETER_ISO_TYPE, ISOType.cd.toString());
             arc.setParameter(PARAMETER_PUBLISHER, (String) null);
             arc.setParameter(PARAMETER_VOLUME_NAME, (String) null);
