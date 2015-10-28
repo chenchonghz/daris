@@ -22,7 +22,7 @@ public class Archive {
         none, zip, aar, jar, tar, compressed_tar, iso9660;
 
         @Override
-        public String toString() {
+        public final String toString() {
             return super.toString().replace('_', '-');
         }
 
@@ -34,6 +34,15 @@ public class Archive {
                 }
             }
             return none;
+        }
+        
+        public static String[] stringValues(){
+            Type[] vs  = values();
+            String[] svs = new String[vs.length];
+            for(int i=0;i<vs.length;i++){
+                svs[i] = vs[i].toString();
+            }
+            return svs;
         }
     }
 

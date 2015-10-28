@@ -57,7 +57,7 @@ public class SvcShoppingCartUserSelfSettingsSet extends PluginService {
         Interface.Element archive = new Interface.Element("archive", XmlDocType.DEFAULT,
                 "The archive settings for the shopping-cart output. Note: archive settings is only used when the destination is "
                         + DeliveryDestination.BROWSER + ".", 1, 1);
-        archive.add(new Interface.Element("type", new EnumType(Archive.Type.values()), "type of the archive.", 1, 1));
+        archive.add(new Interface.Element("type", new EnumType(Archive.Type.stringValues()), "type of the archive.", 1, 1));
         Interface.Element parameter = new Interface.Element("parameter", StringType.DEFAULT,
                 " Additional parameter for the archive type.", 0, Integer.MAX_VALUE);
         parameter.add(new Interface.Attribute("name", StringType.DEFAULT, "The parameter name.", 1));
