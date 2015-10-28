@@ -101,7 +101,7 @@ public class ShoppingCart {
         Archive.Type archiveType = Archive.Type.fromString(usse.value("archive/type"));
         if (archiveType != null) {
             dm.push("packaging");
-            dm.add("package-method", archiveType.name());
+            dm.add("package-method", archiveType.toString());
             if (usse.elementExists("archive/parameter")) {
                 dm.addAll(usse.elements("archive/parameter"));
             }
