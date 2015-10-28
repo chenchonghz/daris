@@ -304,21 +304,27 @@ public abstract class DataSetCreateForm extends ValidatedInterfaceComponent
     public void execute(final ActionListener l) {
         LocalFile f = _task.files().get(0);
         String ext = FileUtil.getExtension(f);
-        if (ext != null) {
-            new TypesFromExt(ext)
-                    .send(new ObjectMessageResponse<List<String>>() {
+        if (f.isFile()) {
+            if (ext != null) {
+                new TypesFromExt(ext)
+                        .send(new ObjectMessageResponse<List<String>>() {
 
-                        @Override
-                        public void responded(List<String> ctypes) {
-                            if (ctypes != null && !ctypes.isEmpty()) {
-                                executeTask(ctypes.get(0), l);
-                            } else {
-                                executeTask("content/unknown", l);
+                            @Override
+                            public void responded(List<String> ctypes) {
+                                if (ctypes != null && !ctypes.isEmpty()) {
+                                    executeTask(ctypes.get(0), l);
+                                } else {
+                                    executeTask("content/unknown", l);
+                                }
                             }
-                        }
-                    });
+                        });
+            } else {
+                executeTask("content/unknown", l);
+            }
         } else {
-            executeTask("content/unknown", l);
+            // assert f.isDirectory();
+            // the directory will be compressed as aar archive.
+            executeTask("application/arc-archive", l);
         }
     }
 
