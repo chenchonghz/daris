@@ -29,7 +29,7 @@ public class Archive {
         public static Type fromString(String type) {
             Type[] vs = values();
             for (Type v : vs) {
-                if (v.name().equalsIgnoreCase(type)) {
+                if (v.toString().equalsIgnoreCase(type)) {
                     return v;
                 }
             }
