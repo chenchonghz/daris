@@ -155,13 +155,13 @@ public class SvcStudyCopy extends PluginService {
             dm.add("description",
                     srcDataSetAE.value("meta/daris:pssd-object/description"));
         }
-        if (srcDataSetAE.elementExists("meta/daris:pssd-filename")) {
+        if (srcDataSetAE.elementExists("meta/daris:pssd-filename/original")) {
             dm.add("filename",
                     new String[] {
                             "private",
                             srcDataSetAE
-                                    .value("meta/daris:pssd-filename/@private") },
-                    srcDataSetAE.value("meta/daris:pssd-filename"));
+                                    .value("meta/daris:pssd-filename/original/@private") },
+                    srcDataSetAE.value("meta/daris:pssd-filename/original"));
         }
         boolean derived = type.equals("derivation");
         if (derived) {
