@@ -4,25 +4,25 @@ import arc.mf.client.xml.XmlElement;
 
 public class ArchiveEntry {
 
-	private String _name;
-	private int _index;
-	private long _size;
+    private String _name;
+    private long _idx;
+    private long _size;
 
-	public ArchiveEntry(XmlElement e) throws Throwable {
-		_name = e.value();
-		_index = e.intValue("@index", -1);
-		_size = e.longValue("@size", -1);
-	}
+    public ArchiveEntry(XmlElement e) throws Throwable {
+        _name = e.value();
+        _idx = e.longValue("@idx", 1);
+        _size = e.longValue("@size", -1);
+    }
 
-	public String name() {
-		return _name;
-	}
+    public String name() {
+        return _name;
+    }
 
-	public int index() {
-		return _index;
-	}
+    public long ordinal() {
+        return _idx;
+    }
 
-	public long size() {
-		return _size;
-	}
+    public long size() {
+        return _size;
+    }
 }
