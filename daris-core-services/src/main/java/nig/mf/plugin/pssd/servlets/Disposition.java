@@ -1,7 +1,5 @@
 package nig.mf.plugin.pssd.servlets;
 
-import arc.mf.plugin.http.HttpRequest;
-
 public enum Disposition {
     attachment, inline;
     public static Disposition parse(String value) {
@@ -15,13 +13,12 @@ public enum Disposition {
         return null;
     }
 
-    public static Disposition parse(HttpRequest request, Disposition defaultValue) {
-        Disposition value = parse(request.variableValue(ObjectServlet.ARG_DISPOSITION));
-        if (value == null) {
+    public static Disposition parse(String value, Disposition defaultValue) {
+        Disposition v = parse(value);
+        if (v == null) {
             return defaultValue;
         } else {
-            return value;
+            return v;
         }
     }
-
 }

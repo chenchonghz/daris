@@ -15,7 +15,8 @@ public class ShoppingCartDownloadModule implements Module {
 
     public static final ShoppingCartDownloadModule INSTANCE = new ShoppingCartDownloadModule();
 
-    public static final String NAME = ShoppingCartServlet.ModuleName.download.name();
+    public static final String NAME = ShoppingCartServlet.ModuleName.download
+            .name();
 
     private ShoppingCartDownloadModule() {
     }
@@ -26,34 +27,40 @@ public class ShoppingCartDownloadModule implements Module {
     }
 
     @Override
-    public void execute(HttpServer server, SessionKey sessionKey, HttpRequest request,
-            HttpResponse response) throws Throwable {
+    public void execute(HttpServer server, SessionKey sessionKey,
+            HttpRequest request, HttpResponse response) throws Throwable {
         String sid = request.variableValue(ShoppingCartServlet.ARG_SID);
-        Disposition disposition = Disposition.parse(request, Disposition.attachment);
+        Disposition disposition = Disposition.parse(
+                request.variableValue(ShoppingCartServlet.ARG_DISPOSITION),
+                Disposition.attachment);
         String filename = request.variableValue(ObjectServlet.ARG_FILENAME);
-        XmlDoc.Element ce = ShoppingCartDescribeModule.describe(server, sessionKey, sid);
+        XmlDoc.Element ce = ShoppingCartDescribeModule.describe(server,
+                sessionKey, sid);
         String ext = ce.value("packaging");
         String archiveType = null;
         if (ext != null) {
             archiveType = typeFromExt(server, sessionKey, ext);
         }
-        download(server, sessionKey, sid, disposition, filename, ext, archiveType, response);
+        download(server, sessionKey, sid, disposition, filename, ext,
+                archiveType, response);
     }
 
     static void download(HttpServer server, SessionKey sessionKey, String sid,
-            Disposition disposition, String filename, String ext, String archiveType,
-            HttpResponse response) throws Throwable {
+            Disposition disposition, String filename, String ext,
+            String archiveType, HttpResponse response) throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("sid", sid);
-        XmlDoc.Element ce = server.execute(sessionKey, "shopping.cart.describe", dm.root())
+        XmlDoc.Element ce = server
+                .execute(sessionKey, "shopping.cart.describe", dm.root())
                 .element("cart");
-        server.execute(sessionKey, "shopping.cart.output.retrieve", dm.root(), (HttpRequest) null,
-                response);
+        server.execute(sessionKey, "shopping.cart.output.retrieve", dm.root(),
+                (HttpRequest) null, response);
         if (archiveType != null) {
             response.setHeaderField("Content-Type", archiveType);
         }
         if (response.contentType() == null) {
-            response.setHeaderField("Content-Type", AbstractServlet.CONTENT_UNKNOWN);
+            response.setHeaderField("Content-Type",
+                    AbstractServlet.CONTENT_UNKNOWN);
         }
         if (filename == null) {
             String cartName = ce.value("name");
@@ -66,27 +73,30 @@ public class ShoppingCartDownloadModule implements Module {
         if (ext != null && !filename.endsWith(ext)) {
             filename = filename + "." + ext;
         }
-        response.setHeaderField("Content-Disposition", disposition.name() + "; filename=\""
-                + filename + "\"");
+        response.setHeaderField("Content-Disposition",
+                disposition.name() + "; filename=\"" + filename + "\"");
     }
 
-    private static String typeFromExt(HttpServer server, SessionKey sessionKey, String ext)
-            throws Throwable {
+    private static String typeFromExt(HttpServer server, SessionKey sessionKey,
+            String ext) throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("extension", ext);
-        return server.execute(sessionKey, "type.ext.types", dm.root()).value("extension/type");
+        return server.execute(sessionKey, "type.ext.types", dm.root())
+                .value("extension/type");
     }
 
     public static String urlFor(String sid, String sessionKey, String token) {
-        return ShoppingCartServlet.urlFor(ShoppingCartServlet.ModuleName.download, sid, sessionKey,
-                token, (String[]) null);
+        return ShoppingCartServlet.urlFor(
+                ShoppingCartServlet.ModuleName.download, sid, sessionKey, token,
+                (String[]) null);
     }
 
     public static String urlFor(String sid) {
         return urlFor(sid, null, null);
     }
 
-    public static String completeUrlFor(String hostAddr, SessionKey sessionKey, String sid) {
+    public static String completeUrlFor(String hostAddr, SessionKey sessionKey,
+            String sid) {
         return hostAddr + urlFor(sid);
     }
 

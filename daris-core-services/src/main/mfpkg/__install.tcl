@@ -259,4 +259,5 @@ actor.grant :type user :name ${domain}:${user} :perm < :resource -type service t
 http.servlets.set :url ${url} \
                   :servlet -path main.mfjp -default false daris.main \
                   :servlet -path object.mfjp -default false daris.object \
-                  :servlet -path shoppingcart.mfjp -default false daris.shoppingcart
+                  :servlet -path shoppingcart.mfjp -default false daris.shoppingcart \
+                  :servlet -path dicom.mfjp -default false daris.dicom
