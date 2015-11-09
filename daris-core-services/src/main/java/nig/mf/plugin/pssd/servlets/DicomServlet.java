@@ -10,6 +10,7 @@ import arc.mf.plugin.http.HttpServer.SessionKey;
 import nig.mf.plugin.pssd.servlets.modules.DicomFileGetModule;
 import nig.mf.plugin.pssd.servlets.modules.DicomImageGetModule;
 import nig.mf.plugin.pssd.servlets.modules.DicomMetadataGetModule;
+import nig.mf.plugin.pssd.servlets.modules.DicomViewModule;
 import nig.mf.plugin.pssd.servlets.modules.Module;
 
 public class DicomServlet extends AbstractServlet {
@@ -37,7 +38,7 @@ public class DicomServlet extends AbstractServlet {
 
     public static enum ModuleName {
 
-        file, metadata, image;
+        file, metadata, image, view;
         public static ModuleName parse(HttpRequest request,
                 ModuleName defaultModuleName) {
             String name = request.variableValue(ARG_MODULE);
@@ -105,8 +106,10 @@ public class DicomServlet extends AbstractServlet {
         case file:
             module = DicomFileGetModule.INSTANCE;
             break;
+        case view:
+            module = DicomViewModule.INSTANCE;
         default:
-            module = DicomFileGetModule.INSTANCE;
+            module = DicomViewModule.INSTANCE;
             break;
         }
         module.execute(server, sessionKey, request, response);

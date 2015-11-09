@@ -33,7 +33,7 @@ public class DicomImageGetModule implements Module {
         if (id == null) {
             id = server
                     .execute(sessionKey, "asset.get",
-                            "<args><cid>" + cid + "</cid></args>", null, null)
+                            "<cid>" + cid + "</cid>", null, null)
                     .value("asset/@id");
         }
         // idx
