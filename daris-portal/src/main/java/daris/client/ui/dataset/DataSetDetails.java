@@ -2,11 +2,15 @@ package daris.client.ui.dataset;
 
 import java.util.List;
 
+import com.google.gwt.user.client.ui.Frame;
+
 import arc.gui.form.Field;
 import arc.gui.form.FieldDefinition;
 import arc.gui.form.FieldGroup;
 import arc.gui.form.Form;
 import arc.gui.form.FormEditMode;
+import arc.gui.gwt.widget.dialog.Dialog;
+import arc.gui.gwt.widget.panel.SimplePanel;
 import arc.mf.client.Output;
 import arc.mf.client.xml.XmlElement;
 import arc.mf.dtype.BooleanType;
@@ -26,8 +30,6 @@ import daris.client.model.object.DObject;
 import daris.client.model.object.DObjectRef;
 import daris.client.model.object.MimeTypes;
 import daris.client.ui.archive.ArchiveExplorer;
-import daris.client.ui.dicom.DicomSeriesViewer;
-import daris.client.ui.image.ImageSeriesViewer.InitialPosition;
 import daris.client.ui.nifti.NiftiSeriesViewer;
 import daris.client.ui.object.DObjectDetails;
 import daris.client.ui.object.DataContentFieldGroup;
@@ -61,13 +63,18 @@ public class DataSetDetails extends DObjectDetails {
         }
         DataSet ds = (DataSet) object();
         if (ds instanceof DicomDataSet) {
+            
             DicomDataSet dds = (DicomDataSet) ds;
-            // @formatter:off
-//            setTab(TAB_NAME_DICOM, TAB_DESC_DICOM, new DicomImageNavigator(dds.assetId(), dds.size()));
-            // @formatter:on
-            setTab(TAB_NAME_DICOM, TAB_DESC_DICOM,
-                    new DicomSeriesViewer(dds.assetId(), dds.size(),
-                            InitialPosition.MIDDLE).widget());
+            Dialog.inform(dds.viewerUrl());
+            Frame frame = new Frame(dds.viewerUrl());
+            frame.setSize("100%", "100%");
+            SimplePanel sp = new SimplePanel();
+            sp.fitToParent();
+            sp.setContent(frame);
+            setTab(TAB_NAME_DICOM, TAB_DESC_DICOM, sp);
+//            setTab(TAB_NAME_DICOM, TAB_DESC_DICOM,
+//                    new DicomSeriesViewer(dds.assetId(), dds.size(),
+//                            InitialPosition.MIDDLE).widget());
         }
     }
 
