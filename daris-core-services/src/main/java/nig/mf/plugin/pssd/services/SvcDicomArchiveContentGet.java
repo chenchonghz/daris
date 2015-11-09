@@ -25,7 +25,7 @@ public class SvcDicomArchiveContentGet extends PluginService {
         _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT,
                 "The citeable id of the DICOM series asset", 0, 1));
         _defn.add(new Interface.Element("idx", LongType.POSITIVE_ONE,
-                "The ordinal position. Defaults to 1.", 0, 1));
+                "The ordinal position. Defaults to one.", 0, 1));
     }
 
     @Override

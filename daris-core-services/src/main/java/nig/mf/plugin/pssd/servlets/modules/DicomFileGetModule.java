@@ -1,6 +1,5 @@
 package nig.mf.plugin.pssd.servlets.modules;
 
-import arc.exception.ThrowableUtil;
 import arc.mf.plugin.http.HttpRequest;
 import arc.mf.plugin.http.HttpResponse;
 import arc.mf.plugin.http.HttpServer;
@@ -34,7 +33,7 @@ public class DicomFileGetModule implements Module {
         String cid = request.variableValue(DicomServlet.ARG_CID);
         // idx
         String idxStr = request.variableValue(DicomServlet.ARG_IDX);
-        long idx = idxStr == null ? 1 : Long.parseUnsignedLong(idxStr);
+        long idx = idxStr == null ? 1 : Long.parseLong(idxStr);
         // disposition
         Disposition disposition = Disposition.parse(
                 request.variableValue(DicomServlet.ARG_DISPOSITION),
@@ -65,7 +64,7 @@ public class DicomFileGetModule implements Module {
             error.append(id != null ? id : cid);
             error.append("</h3><br/>");
             error.append("<pre>");
-            error.append(ThrowableUtil.toStringWithStack(e));
+            error.append(e.getMessage());
             error.append("</pre>");
             response.setContent(error.toString(), "text/html");
             throw e;

@@ -3,19 +3,20 @@ package nig.mf.plugin.pssd;
 import java.util.Collection;
 import java.util.Vector;
 
-import nig.mf.plugin.pssd.announcement.events.PSSDAnnouncementEvent;
-import nig.mf.plugin.pssd.announcement.events.PSSDAnnouncementEventFilterFactory;
-import nig.mf.plugin.pssd.dicom.DicomAssetHandlerFactory;
-import nig.mf.plugin.pssd.services.*;
-import nig.mf.plugin.pssd.servlets.MainServlet;
-import nig.mf.plugin.pssd.servlets.ObjectServlet;
-import nig.mf.plugin.pssd.servlets.ShoppingCartServlet;
 import arc.mf.plugin.ConfigurationResolver;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.dicom.DicomAssetEngineRegistry;
 import arc.mf.plugin.event.FilterRegistry;
 import arc.mf.plugin.http.HttpServlet;
 import arc.mf.plugin.http.HttpServletPluginModule;
+import nig.mf.plugin.pssd.announcement.events.PSSDAnnouncementEvent;
+import nig.mf.plugin.pssd.announcement.events.PSSDAnnouncementEventFilterFactory;
+import nig.mf.plugin.pssd.dicom.DicomAssetHandlerFactory;
+import nig.mf.plugin.pssd.services.*;
+import nig.mf.plugin.pssd.servlets.DicomServlet;
+import nig.mf.plugin.pssd.servlets.MainServlet;
+import nig.mf.plugin.pssd.servlets.ObjectServlet;
+import nig.mf.plugin.pssd.servlets.ShoppingCartServlet;
 
 public class PSSDPluginModule implements HttpServletPluginModule {
 
@@ -320,6 +321,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _servlets.add(new MainServlet());
         _servlets.add(new ObjectServlet());
         _servlets.add(new ShoppingCartServlet());
+        _servlets.add(new DicomServlet());
     }
 
     protected void registerSystemEvents() throws Throwable {

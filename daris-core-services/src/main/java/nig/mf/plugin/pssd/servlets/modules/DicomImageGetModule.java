@@ -1,6 +1,5 @@
 package nig.mf.plugin.pssd.servlets.modules;
 
-import arc.exception.ThrowableUtil;
 import arc.mf.plugin.http.HttpRequest;
 import arc.mf.plugin.http.HttpResponse;
 import arc.mf.plugin.http.HttpServer;
@@ -39,10 +38,10 @@ public class DicomImageGetModule implements Module {
         }
         // idx
         String idxStr = request.variableValue(DicomServlet.ARG_IDX);
-        long idx = idxStr == null ? 0 : Long.parseUnsignedLong(idxStr);
+        long idx = idxStr == null ? 1 : Long.parseLong(idxStr);
         // frame
         String frameStr = request.variableValue(DicomServlet.ARG_FRAME);
-        long frame = frameStr == null ? 0 : Long.parseUnsignedLong(frameStr);
+        long frame = frameStr == null ? 1 : Long.parseLong(frameStr);
         // disposition
         Disposition disposition = Disposition.parse(
                 request.variableValue(DicomServlet.ARG_DISPOSITION),
@@ -50,8 +49,8 @@ public class DicomImageGetModule implements Module {
         // filename
         String fileName = request.variableValue(DicomServlet.ARG_FILENAME);
         XmlDocMaker dm = new XmlDocMaker("args");
-        dm.add("id", new String[] { "idx", String.valueOf(idx), "frame",
-                String.valueOf(frame) }, id);
+        dm.add("id", new String[] { "idx", String.valueOf(idx - 1), "frame",
+                String.valueOf(frame - 1) }, id);
         dm.add("lossless", true);
 
         try {
@@ -70,7 +69,7 @@ public class DicomImageGetModule implements Module {
             error.append(id != null ? id : cid);
             error.append("</h3><br/>");
             error.append("<pre>");
-            error.append(ThrowableUtil.toStringWithStack(e));
+            error.append(e.getMessage());
             error.append("</pre>");
             response.setContent(error.toString(), "text/html");
             throw e;

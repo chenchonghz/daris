@@ -17,6 +17,7 @@ import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
 
 public class SvcArchiveContentGet extends PluginService {
+
     public static final String SERVICE_NAME = "daris.archive.content.get";
 
     public static final String SERVICE_DESCRIPTION = "retrieve a file entry from the specified asset's content.";
@@ -83,7 +84,11 @@ public class SvcArchiveContentGet extends PluginService {
         Outputs sos = new Outputs(1);
         XmlDoc.Element ae = executor()
                 .execute("asset.get", dm.root(), null, sos).element("asset");
-
+        String cType = ae.value("content/type");
+        String cExt = ae.value("content/type/@ext");
+        if (!isArchiveTypeSupported(cExt, cType)) {
+            throw new Exception("Unsupported content mime type: " + cType);
+        }
         /*
          * get archive entry
          */
@@ -165,6 +170,28 @@ public class SvcArchiveContentGet extends PluginService {
     @Override
     public int maxNumberOfOutputs() {
         return 1;
+    }
+
+    public static boolean isArchiveTypeSupported(String extension,
+            String mimeType) {
+        boolean extSupported = false;
+        if (extension != null) {
+            extSupported = extension.equalsIgnoreCase("aar")
+                    || extension.equalsIgnoreCase("zip")
+                    || extension.equalsIgnoreCase("jar")
+                    || extension.equalsIgnoreCase("tar");
+        }
+        boolean typeSupported = false;
+        if (mimeType != null) {
+            typeSupported = mimeType.equals("application/arc-archive")
+                    || mimeType.equals("application/zip")
+                    || mimeType.equals("application/x-zip")
+                    || mimeType.equals("application/x-zip-compressed")
+                    || mimeType.equals("application/zip")
+                    || mimeType.equals("application/java-archive")
+                    || mimeType.equals("application/x-tar");
+        }
+        return extSupported || typeSupported;
     }
 
 }

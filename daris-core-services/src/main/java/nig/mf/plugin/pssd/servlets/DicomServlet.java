@@ -74,11 +74,11 @@ public class DicomServlet extends AbstractServlet {
                 0);
 
         arguments().add(ARG_IDX, new EnumType(ModuleName.values()),
-                "This specifies the idx'th file in the DICOM dataset/series(archive). Defaults to zero.",
+                "This specifies the idx'th file in the DICOM dataset/series(archive). Defaults to one.",
                 0);
 
         arguments().add(ARG_FRAME, new EnumType(ModuleName.values()),
-                " This specifies the frame ordinal. Can only be greater than zero for multi-frame data - that is, (0028,0008) set and greater than 1. Defaults to zero.",
+                " This specifies the frame ordinal. Can only be greater than one for multi-frame data - that is, (0028,0008) set and greater than one. Defaults to one.",
                 0);
 
         arguments().add(ARG_DISPOSITION, new EnumType(Disposition.values()),

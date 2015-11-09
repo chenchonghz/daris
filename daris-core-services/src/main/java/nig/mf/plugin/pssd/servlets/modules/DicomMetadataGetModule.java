@@ -1,6 +1,5 @@
 package nig.mf.plugin.pssd.servlets.modules;
 
-import arc.exception.ThrowableUtil;
 import arc.mf.plugin.http.HttpRequest;
 import arc.mf.plugin.http.HttpResponse;
 import arc.mf.plugin.http.HttpServer;
@@ -35,7 +34,7 @@ public class DicomMetadataGetModule implements Module {
         }
         // idx
         String idxStr = request.variableValue(DicomServlet.ARG_IDX);
-        long idx = idxStr == null ? 0 : Long.parseUnsignedLong(idxStr);
+        long idx = idxStr == null ? 1 : Long.parseLong(idxStr);
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("id", new String[] { "idx", String.valueOf(idx) }, id);
         dm.add("defn", true);
@@ -43,7 +42,7 @@ public class DicomMetadataGetModule implements Module {
             XmlDoc.Element re = server.execute(sessionKey, "dicom.metadata.get",
                     dm.root());
             XmlStringWriter w = new XmlStringWriter();
-            w.push("dicom", new String[] { "idx", String.valueOf(idx) });
+            w.push("dicom", new String[] { "idx", String.valueOf(idx - 1) });
             w.add(re, false);
             w.pop();
             response.setContent(w.document(), "text/xml");
@@ -55,7 +54,7 @@ public class DicomMetadataGetModule implements Module {
             error.append(id != null ? id : cid);
             error.append("</h3><br/>");
             error.append("<pre>");
-            error.append(ThrowableUtil.toStringWithStack(e));
+            error.append(e.getMessage());
             error.append("</pre>");
             response.setContent(error.toString(), "text/html");
             throw e;

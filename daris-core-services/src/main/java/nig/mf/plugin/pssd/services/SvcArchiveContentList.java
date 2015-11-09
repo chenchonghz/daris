@@ -79,19 +79,17 @@ public class SvcArchiveContentList extends PluginService {
                         "asset(" + (id == null ? ("cid=" + cid) : ("id=" + id))
                                 + ") has not content.");
             }
-            String ctype = ce.value("type");
-            String ext = ce.value("type/@ext");
-            long csize = ce.longValue("size");
-            if (!("zip".equalsIgnoreCase(ext) || "jar".equalsIgnoreCase(ext)
-                    || "aar".equalsIgnoreCase(ext)
-                    || "tar".equalsIgnoreCase(ext))) {
-                throw new Exception("Unsupported archive format: " + ext);
+            String cType = ce.value("type");
+            String cExt = ce.value("type/@ext");
+            long cSize = ce.longValue("size");
+            if (!SvcArchiveContentGet.isArchiveTypeSupported(cExt, cType)) {
+                throw new Exception("Unsupported content mime type: " + cType);
             }
             dm = new XmlDocMaker("args");
-            dm.add("format", ext);
+            dm.add("format", cExt);
             dm.add("size", size);
             dm.add("idx", idx);
-            Input si = new Input(so.stream(), csize, ctype, null);
+            Input si = new Input(so.stream(), cSize, cType, null);
             try {
                 XmlDoc.Element re = executor().execute("archive.content.list",
                         dm.root(), new Inputs(si), null);
