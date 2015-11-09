@@ -8,9 +8,9 @@ import arc.mf.client.xml.XmlWriter;
 import arc.mf.object.ObjectMessage;
 import daris.client.model.archive.ArchiveEntry;
 import daris.client.model.archive.ArchiveEntryCollectionRef;
-import daris.client.util.DownloadUtil;
+import daris.client.model.archive.ImageEntry;
 
-public class ArchiveContentGet extends ObjectMessage<ArchiveEntry> {
+public class ArchiveContentImageGet extends ObjectMessage<ImageEntry> {
 
     private ArchiveEntryCollectionRef _arc;
     private int _idx;
@@ -21,9 +21,14 @@ public class ArchiveContentGet extends ObjectMessage<ArchiveEntry> {
      * @param idx
      *            starts from one.
      */
-    public ArchiveContentGet(ArchiveEntryCollectionRef arc, int idx) {
+    public ArchiveContentImageGet(ArchiveEntryCollectionRef arc, int idx) {
         _arc = arc;
         _idx = idx;
+    }
+    
+    public ArchiveContentImageGet(ArchiveEntryCollectionRef arc,
+            ArchiveEntry entry){
+        this(arc, entry.ordinal());
     }
 
     @Override
@@ -33,20 +38,22 @@ public class ArchiveContentGet extends ObjectMessage<ArchiveEntry> {
         } else {
             w.add("cid", _arc.citeableId());
         }
+        // convert the image to browser supported png format.
+        w.add("auto-convert", true);
         // _idx starts from 1.
         w.add("idx", _idx);
     }
 
     @Override
     protected String messageServiceName() {
-        return "daris.archive.content.get";
+        return "daris.archive.content.image.get";
     }
 
     @Override
-    protected ArchiveEntry instantiate(XmlElement xe) throws Throwable {
+    protected ImageEntry instantiate(XmlElement xe) throws Throwable {
         XmlElement ee = xe.element("entry");
         if (ee != null) {
-            return new ArchiveEntry(ee);
+            return new ImageEntry(ee);
         }
         return null;
     }
@@ -67,9 +74,10 @@ public class ArchiveContentGet extends ObjectMessage<ArchiveEntry> {
     }
 
     @Override
-    protected void process(ArchiveEntry o, List<Output> outputs)
+    protected void process(ImageEntry ae, List<Output> outputs)
             throws Throwable {
         Output output = outputs.get(0);
-        DownloadUtil.download(output, o.fileName());
+        ae.setOutputUrl(output.url());
     }
+
 }

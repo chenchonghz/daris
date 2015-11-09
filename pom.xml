@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>au.edu.unimelb.daris</groupId>
 	<artifactId>daris</artifactId>
@@ -33,6 +34,7 @@
 		<daris-client-mbcmr-upload.version>1.0.0</daris-client-mbcmr-upload.version>
 		<daris-client-dicom-client.version>1.0.0</daris-client-dicom-client.version>
 		<daris-client.version>0.0.3</daris-client.version>
+		<daris-explorer.version>0.0.1</daris-explorer.version>
 	</properties>
 	<modules>
 		<module>daris-commons</module>
@@ -51,8 +53,9 @@
 		<module>daris-client-mbcmr-upload</module>
 		<module>daris-client-dicom-client</module>
 		<module>daris-distribution</module>
-    <module>daris-client</module>
-  </modules>
+		<module>daris-client</module>
+		<module>daris-explorer</module>
+	</modules>
 	<build>
 		<pluginManagement>
 			<plugins>
