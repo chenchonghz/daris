@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 
 import arc.gui.gwt.widget.BaseWidget;
 import arc.gui.gwt.widget.ContainerWidget;
+import arc.gui.gwt.widget.HTML;
 import arc.gui.gwt.widget.button.Button;
 import arc.gui.gwt.widget.event.SelectionHandler;
 import arc.gui.gwt.widget.format.WidgetFormatter;
@@ -95,7 +96,16 @@ public class ArchiveEntryNavigator extends ContainerWidget
         _lg.fitToParent();
         _lg.addColumnDefn("idx", "idx", "Ordinal index").setWidth(50);
         _lg.addColumnDefn("name", "name", "File name/path.").setMinWidth(250);
-        _lg.addColumnDefn("size", "size", "File size").setWidth(100);
+        _lg.addColumnDefn("size", "size (bytes)", "File size",
+                new WidgetFormatter<ArchiveEntry, Long>() {
+
+                    @Override
+                    public BaseWidget format(ArchiveEntry ae, final Long size) {
+                        HTML html = new HTML(
+                                size >= 0 ? Long.toString(size) : "");
+                        return html;
+                    }
+                }).setWidth(100);
         _lg.addColumnDefn("idx", "download", "Download",
                 new WidgetFormatter<ArchiveEntry, Integer>() {
 
