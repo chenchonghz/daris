@@ -260,4 +260,5 @@ http.servlets.set :url ${url} \
                   :servlet -path main.mfjp -default false daris.main \
                   :servlet -path object.mfjp -default false daris.object \
                   :servlet -path shoppingcart.mfjp -default false daris.shoppingcart \
-                  :servlet -path dicom.mfjp -default false daris.dicom
+                  :servlet -path dicom.mfjp -default false daris.dicom \
+                  :servlet -path nifti.mfjp -default false daris.nifti
