@@ -1,10 +1,13 @@
 package daris.client.ui.nifti;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Timer;
+
 import arc.gui.form.FormEditMode;
 import arc.gui.gwt.colour.RGB;
 import arc.gui.gwt.widget.BaseWidget;
 import arc.gui.gwt.widget.button.Button;
-import arc.gui.gwt.widget.dialog.Dialog;
 import arc.gui.gwt.widget.panel.HorizontalPanel;
 import arc.gui.gwt.widget.panel.SimplePanel;
 import arc.gui.gwt.widget.panel.VerticalPanel;
@@ -13,11 +16,6 @@ import arc.gui.gwt.widget.scroll.ScrollPanel;
 import arc.gui.gwt.widget.scroll.ScrollPolicy;
 import arc.mf.client.util.ActionListener;
 import arc.mf.object.ObjectResolveHandler;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Timer;
-
 import daris.client.model.dataset.DataSet;
 import daris.client.model.nifti.NiftiHeader;
 import daris.client.model.nifti.NiftiHeaderRef;

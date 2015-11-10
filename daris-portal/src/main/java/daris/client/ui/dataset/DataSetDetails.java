@@ -9,17 +9,12 @@ import arc.gui.form.FieldDefinition;
 import arc.gui.form.FieldGroup;
 import arc.gui.form.Form;
 import arc.gui.form.FormEditMode;
-import arc.gui.gwt.widget.dialog.Dialog;
 import arc.gui.gwt.widget.panel.SimplePanel;
-import arc.mf.client.Output;
-import arc.mf.client.xml.XmlElement;
 import arc.mf.dtype.BooleanType;
 import arc.mf.dtype.ConstantType;
 import arc.mf.dtype.DocType;
 import arc.mf.dtype.LongType;
 import arc.mf.dtype.StringType;
-import arc.mf.session.ServiceResponseHandler;
-import arc.mf.session.Session;
 import daris.client.model.dataset.DataSet;
 import daris.client.model.dataset.DataSet.Transform;
 import daris.client.model.dataset.DerivedDataSet;
@@ -30,7 +25,6 @@ import daris.client.model.object.DObject;
 import daris.client.model.object.DObjectRef;
 import daris.client.model.object.MimeTypes;
 import daris.client.ui.archive.ArchiveExplorer;
-import daris.client.ui.nifti.NiftiSeriesViewer;
 import daris.client.ui.object.DObjectDetails;
 import daris.client.ui.object.DataContentFieldGroup;
 
@@ -63,7 +57,7 @@ public class DataSetDetails extends DObjectDetails {
         }
         DataSet ds = (DataSet) object();
         if (ds instanceof DicomDataSet) {
-            
+
             DicomDataSet dds = (DicomDataSet) ds;
             Frame frame = new Frame(dds.viewerUrl());
             frame.setSize("100%", "100%");
@@ -71,9 +65,9 @@ public class DataSetDetails extends DObjectDetails {
             sp.fitToParent();
             sp.setContent(frame);
             setTab(TAB_NAME_DICOM, TAB_DESC_DICOM, sp);
-//            setTab(TAB_NAME_DICOM, TAB_DESC_DICOM,
-//                    new DicomSeriesViewer(dds.assetId(), dds.size(),
-//                            InitialPosition.MIDDLE).widget());
+            // setTab(TAB_NAME_DICOM, TAB_DESC_DICOM,
+            // new DicomSeriesViewer(dds.assetId(), dds.size(),
+            // InitialPosition.MIDDLE).widget());
         }
     }
 
@@ -86,10 +80,18 @@ public class DataSetDetails extends DObjectDetails {
         if (ds.data() != null && (MimeTypes.NIFTI_SERIES.equals(ds.mimeType())
                 || MimeTypes.NIFTI_SERIES
                         .equals(ds.data().logicalMimeType()))) {
-
+            String niftiViewerUrl = DataSet.niftiViewerUrl(ds);
+            Frame frame = new Frame(niftiViewerUrl);
+            frame.setSize("100%", "100%");
+            SimplePanel sp = new SimplePanel();
+            sp.fitToParent();
+            sp.setContent(frame);
+            setTab(TAB_NAME_NIFTI, TAB_DESC_NIFTI, sp);
+            // @formatter:off
             // TODO: we should include analyzer in the pssd/daris all-in-one
             // package so that we do not have to maintain the package
             // dependencies. It is annoying.
+            /*
             Session.execute("package.exists", "<package>nig-analyzer</package>",
                     0, new ServiceResponseHandler() {
 
@@ -107,7 +109,8 @@ public class DataSetDetails extends DObjectDetails {
                                                 .widget());
                             }
                         }
-                    });
+                    });*/
+         // @formatter:on
         }
     }
 

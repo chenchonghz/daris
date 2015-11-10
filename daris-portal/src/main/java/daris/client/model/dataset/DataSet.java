@@ -202,8 +202,8 @@ public abstract class DataSet extends DObject {
         }
     }
 
-    protected DataSet(String id, String proute, String name,
-            String description, boolean editable, int version, boolean isleaf) {
+    protected DataSet(String id, String proute, String name, String description,
+            boolean editable, int version, boolean isleaf) {
         super(id, proute, name, description, editable, version, isleaf);
     }
 
@@ -278,6 +278,36 @@ public abstract class DataSet extends DObject {
                 sb.append("." + data().extension());
             }
         }
+        return sb.toString();
+    }
+
+    public static String niftiViewerUrl(DataSet niftiDataSet) {
+        if (niftiDataSet.data() == null && !RemoteServer.haveSession()) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(com.google.gwt.user.client.Window.Location.getProtocol());
+        sb.append("//");
+        sb.append(com.google.gwt.user.client.Window.Location.getHost());
+        sb.append("/daris/nifti.mfjp?_skey=");
+        sb.append(RemoteServer.sessionId());
+        sb.append("&module=view&id=");
+        sb.append(niftiDataSet.assetId());
+        return sb.toString();
+    }
+
+    public static String dicomViewerUrl(DicomDataSet dicomDataSet) {
+        if (dicomDataSet.data() == null && !RemoteServer.haveSession()) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(com.google.gwt.user.client.Window.Location.getProtocol());
+        sb.append("//");
+        sb.append(com.google.gwt.user.client.Window.Location.getHost());
+        sb.append("/daris/dicom.mfjp?_skey=");
+        sb.append(RemoteServer.sessionId());
+        sb.append("&module=view&id=");
+        sb.append(dicomDataSet.assetId());
         return sb.toString();
     }
 }

@@ -20,9 +20,10 @@ public class ArchiveEntryDetailPanel extends ContainerWidget {
     public ArchiveEntryDetailPanel(ArchiveEntry entry) {
         _entry = entry;
         _cp = new CenteringPanel(Axis.BOTH);
-        initWidget(_cp);
         _detail = new HTML();
-        add(_detail);
+        _cp.add(_detail);
+        initWidget(_cp);
+
         if (_entry.fileExtension() != null) {
             new TypesFromExt(_entry.fileExtension())
                     .send(new ObjectMessageResponse<List<String>>() {
@@ -41,16 +42,16 @@ public class ArchiveEntryDetailPanel extends ContainerWidget {
 
     private void updateDetail(ArchiveEntry entry, String mimeType) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<table>");
-        sb.append("<tr><td align=\"right\">Name</td><td>");
+        sb.append("<table border=\"1\">");
+        sb.append("<tr><td align=\"right\">Name:</td><td align=\"left\">");
         sb.append(entry.name());
         sb.append("</td></tr>");
-        sb.append("<tr><td align=\"right\">Size</td><td>");
+        sb.append("<tr><td align=\"right\">Size:</td><td align=\"left\">");
         sb.append(entry.size() < 0 ? "unknown" : entry.size());
         sb.append(" bytes");
         sb.append("</td></tr>");
         if (mimeType != null) {
-            sb.append("<tr><td align=\"right\">MIME Type</td><td>");
+            sb.append("<tr><td align=\"right\">MIME Type:</td><td align=\"left\">");
             sb.append(mimeType);
             sb.append("</td></tr>");
         }
