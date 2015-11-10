@@ -7,28 +7,25 @@ import arc.mf.plugin.http.HttpRequest;
 import arc.mf.plugin.http.HttpResponse;
 import arc.mf.plugin.http.HttpServer;
 import arc.mf.plugin.http.HttpServer.SessionKey;
-import nig.mf.plugin.pssd.servlets.modules.DicomFileGetModule;
-import nig.mf.plugin.pssd.servlets.modules.DicomImageGetModule;
-import nig.mf.plugin.pssd.servlets.modules.DicomMetadataGetModule;
-import nig.mf.plugin.pssd.servlets.modules.DicomViewModule;
 import nig.mf.plugin.pssd.servlets.modules.Module;
+import nig.mf.plugin.pssd.servlets.modules.NiftiFileGetModule;
+import nig.mf.plugin.pssd.servlets.modules.NiftiHeaderGetModule;
+import nig.mf.plugin.pssd.servlets.modules.NiftiViewModule;
 
-public class DicomServlet extends AbstractServlet {
-    public static final String PATH = "dicom.mfjp";
+public class NiftiServlet extends AbstractServlet {
+    public static final String PATH = "nifti.mfjp";
 
     public static final String URL_BASE = ROOT + "/" + PATH;
 
-    public static final String NAME = "daris.dicom";
+    public static final String NAME = "daris.nifti";
 
-    public static final String DESCRIPTION = "Retrieve the DICOM file, header or image (for display) from a DICOM dataset.";
+    public static final String DESCRIPTION = "Retrieve the NIFTI file, header or image from a NIFTI dataset.";
 
     public static final String ARG_CID = "cid";
 
     public static final String ARG_ID = "id";
 
     public static final String ARG_IDX = "idx";
-
-    public static final String ARG_FRAME = "frame";
 
     public static final String ARG_MODULE = "module";
 
@@ -38,7 +35,7 @@ public class DicomServlet extends AbstractServlet {
 
     public static enum ModuleName {
 
-        file, metadata, image, view;
+        file, header, view;
         public static ModuleName parse(HttpRequest request,
                 ModuleName defaultModuleName) {
             String name = request.variableValue(ARG_MODULE);
@@ -62,7 +59,7 @@ public class DicomServlet extends AbstractServlet {
         }
     }
 
-    public DicomServlet() {
+    public NiftiServlet() {
         super();
         arguments().add(ARG_ID, CiteableIdType.DEFAULT,
                 "The asset id of the DICOM series.", 1);
@@ -71,15 +68,11 @@ public class DicomServlet extends AbstractServlet {
                 "The citeable id of the DICOM dataset/series.", 1);
 
         arguments().add(ARG_MODULE, new EnumType(ModuleName.values()),
-                "The module to execute. Can be 'file', 'metadata', 'image' or 'view'. Defaults to 'view'.",
+                "The module to execute. Can be 'file', 'header' or 'view'. Defaults to 'view'.",
                 0);
 
         arguments().add(ARG_IDX, new EnumType(ModuleName.values()),
                 "This specifies the idx'th file in the DICOM dataset/series(archive). Defaults to one.",
-                0);
-
-        arguments().add(ARG_FRAME, new EnumType(ModuleName.values()),
-                " This specifies the frame ordinal. Can only be greater than one for multi-frame data - that is, (0028,0008) set and greater than one. Defaults to one.",
                 0);
 
         arguments().add(ARG_DISPOSITION, new EnumType(Disposition.values()),
@@ -97,19 +90,16 @@ public class DicomServlet extends AbstractServlet {
         ModuleName moduleName = ModuleName.parse(request, ModuleName.file);
         Module module = null;
         switch (moduleName) {
-        case metadata:
-            module = DicomMetadataGetModule.INSTANCE;
-            break;
-        case image:
-            module = DicomImageGetModule.INSTANCE;
-            break;
         case file:
-            module = DicomFileGetModule.INSTANCE;
+            module = NiftiFileGetModule.INSTANCE;
+            break;
+        case header:
+            module = NiftiHeaderGetModule.INSTANCE;
             break;
         case view:
-            module = DicomViewModule.INSTANCE;
+            module = NiftiViewModule.INSTANCE;
         default:
-            module = DicomViewModule.INSTANCE;
+            module = NiftiViewModule.INSTANCE;
             break;
         }
         module.execute(server, sessionKey, request, response);

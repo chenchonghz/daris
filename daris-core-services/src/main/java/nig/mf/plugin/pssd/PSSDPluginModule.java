@@ -15,6 +15,7 @@ import nig.mf.plugin.pssd.dicom.DicomAssetHandlerFactory;
 import nig.mf.plugin.pssd.services.*;
 import nig.mf.plugin.pssd.servlets.DicomServlet;
 import nig.mf.plugin.pssd.servlets.MainServlet;
+import nig.mf.plugin.pssd.servlets.NiftiServlet;
 import nig.mf.plugin.pssd.servlets.ObjectServlet;
 import nig.mf.plugin.pssd.servlets.ShoppingCartServlet;
 
@@ -323,6 +324,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _servlets.add(new ObjectServlet());
         _servlets.add(new ShoppingCartServlet());
         _servlets.add(new DicomServlet());
+        _servlets.add(new NiftiServlet());
     }
 
     protected void registerSystemEvents() throws Throwable {
