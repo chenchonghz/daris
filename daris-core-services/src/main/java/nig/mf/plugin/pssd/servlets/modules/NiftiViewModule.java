@@ -40,7 +40,12 @@ public class NiftiViewModule implements Module {
         XmlDoc.Element ae = server
                 .execute(sessionKey, "asset.get", dm.root(), null, null)
                 .element("asset");
-
+        if (id == null) {
+            id = ae.value("@id");
+        } else {
+            cid = ae.value("cid");
+        }
+        
         NiftiFileGetModule.validate(ae);
 
         String cType = ae.value("content/type");
@@ -48,14 +53,14 @@ public class NiftiViewModule implements Module {
 
         List<String> imgUrls = new ArrayList<String>();
         if (NiftiFileGetModule.isNII(cExt, cType)) {
-            imgUrls.add(generateImgUrl(id, id + ".nii"));
+            imgUrls.add(generateImgUrl(sessionKey, id, id + ".nii"));
         } else if (NiftiFileGetModule.isGZIP(cExt, cType)) {
-            imgUrls.add(generateImgUrl(id, id + ".nii.gz"));
+            imgUrls.add(generateImgUrl(sessionKey, id, id + ".nii.gz"));
         } else if (NiftiFileGetModule.isArchive(cExt, cType)) {
             List<XmlDoc.Element> ees = server.execute(sessionKey,
                     "daris.archive.content.list", dm.root(), null, null)
                     .elements("entry");
-            imgUrls.addAll(generateImgUrls(id, ees));
+            imgUrls.addAll(generateImgUrls(sessionKey, id, ees));
         }
         if (imgUrls.isEmpty()) {
             throw new Exception("No image url is generated. Probably asset "
@@ -67,22 +72,27 @@ public class NiftiViewModule implements Module {
         response.setContent(html.toString(), "text/html");
     }
 
-    private static String generateImgUrl(String assetId, String fileName) {
+    private static String generateImgUrl(SessionKey sessionKey, String assetId,
+            String fileName) {
         StringBuilder sb = new StringBuilder();
-        sb.append(DicomServlet.URL_BASE);
-        sb.append("?module=file&disposition=attachment&id=");
+        sb.append(NiftiServlet.URL_BASE);
+        sb.append("?_skey=");
+        sb.append(sessionKey.key());
+        sb.append("&module=file&disposition=attachment&id=");
         sb.append(assetId);
         sb.append("&filename=");
         sb.append(fileName);
         return sb.toString();
     }
 
-    private static List<String> generateImgUrls(String assetId,
-            List<Element> ees) {
+    private static List<String> generateImgUrls(SessionKey sessionKey,
+            String assetId, List<Element> ees) {
         List<String> urls = new ArrayList<String>();
         StringBuilder sb = new StringBuilder();
-        sb.append(DicomServlet.URL_BASE);
-        sb.append("?module=file&disposition=attachment&id=");
+        sb.append(NiftiServlet.URL_BASE);
+        sb.append("?_skey=");
+        sb.append(sessionKey.key());
+        sb.append("&module=file&disposition=attachment&id=");
         sb.append(assetId);
         sb.append("&idx=");
         String base = sb.toString();

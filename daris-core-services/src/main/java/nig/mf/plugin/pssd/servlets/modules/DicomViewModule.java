@@ -32,16 +32,13 @@ public class DicomViewModule implements Module {
 
         XmlDoc.Element ae = null;
         if (id == null) {
-            ae = server
-                    .execute(sessionKey, "asset.get",
-                            "<cid>" + cid + "</cid>", null, null)
-                    .element("asset");
+            ae = server.execute(sessionKey, "asset.get",
+                    "<cid>" + cid + "</cid>", null, null).element("asset");
             id = ae.value("@id");
         } else {
-            ae = server
-                    .execute(sessionKey, "asset.get",
-                            "<id>" + id + "</id>", null, null)
-                    .element("asset");
+            ae = server.execute(sessionKey, "asset.get", "<id>" + id + "</id>",
+                    null, null).element("asset");
+            cid = ae.value("cid");
         }
         String cType = ae.value("content/type");
         String cExt = ae.value("content/type/@ext");
@@ -55,7 +52,7 @@ public class DicomViewModule implements Module {
             throw new Exception("Asset " + id
                     + " is not a valid DICOM series. Contains no DICOM file.");
         }
-        List<String> imgUrls = generateDicomImageUrls(id, size);
+        List<String> imgUrls = generateDicomImageUrls(sessionKey, id, size);
         StringBuilder html = new StringBuilder();
         generateResponseHtml(html, imgUrls, "DICOM Image Series " + id);
         response.setContent(html.toString(), "text/html");
@@ -105,11 +102,13 @@ public class DicomViewModule implements Module {
         html.append("</html>\n");
     }
 
-    private static List<String> generateDicomImageUrls(String assetId,
-            int size) {
+    private static List<String> generateDicomImageUrls(SessionKey sessionKey,
+            String assetId, int size) {
         StringBuilder sb = new StringBuilder();
         sb.append(DicomServlet.URL_BASE);
-        sb.append("?module=file&disposition=attachment&id=");
+        sb.append("?_skey=");
+        sb.append(sessionKey.key());
+        sb.append("&module=file&disposition=attachment&id=");
         sb.append(assetId);
         sb.append("&idx=");
         String baseUrl = sb.toString();
