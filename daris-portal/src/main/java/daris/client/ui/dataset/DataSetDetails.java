@@ -65,7 +65,6 @@ public class DataSetDetails extends DObjectDetails {
         if (ds instanceof DicomDataSet) {
             
             DicomDataSet dds = (DicomDataSet) ds;
-            Dialog.inform(dds.viewerUrl());
             Frame frame = new Frame(dds.viewerUrl());
             frame.setSize("100%", "100%");
             SimplePanel sp = new SimplePanel();
