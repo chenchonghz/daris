@@ -66,7 +66,7 @@ public class NiftiFileGetModule implements Module {
         if (fileName == null) {
             fileName = ae.value("meta/daris:pssd-filename/original");
         }
-        if (isNII(cExt, cType)) {
+        if (isNII(cExt)) {
             response.setHeaderField("Content-Type", MIME_TYPE_NII);
             if (fileName == null) {
                 fileName = idStr + ".nii";
@@ -75,7 +75,7 @@ public class NiftiFileGetModule implements Module {
                     disposition.name() + "; filename=\"" + fileName + "\"");
             server.execute(sessionKey, "asset.get", dm.root(),
                     (HttpRequest) null, response);
-        } else if (isGZIP(cExt, cType)) {
+        } else if (isGZ(cExt)) {
             response.setHeaderField("Content-Type", MIME_TYPE_NII_GZ);
             if (fileName == null) {
                 fileName = idStr + ".nii.gz";
@@ -84,7 +84,7 @@ public class NiftiFileGetModule implements Module {
                     disposition.name() + "; filename=\"" + fileName + "\"");
             server.execute(sessionKey, "asset.get", dm.root(),
                     (HttpRequest) null, response);
-        } else if (isArchive(cExt, cType)) {
+        } else if (isArchive(cExt)) {
             response.setHeaderField("Content-Type", MIME_TYPE_NII);
             if (fileName == null) {
                 fileName = idStr + "_" + idx + ".nii";
@@ -108,8 +108,7 @@ public class NiftiFileGetModule implements Module {
         }
         String ctype = ae.value("content/type");
         String cext = ae.value("content/type/@ext");
-        if (!isNII(cext, ctype) && !isGZIP(cext, ctype)
-                && !isArchive(cext, ctype)) {
+        if (!isNII(cext) && !isGZ(cext) && !isArchive(cext)) {
             throw new Exception("Asset " + idStr
                     + " is not a valid NIFTI series. Unsupported content mime type: "
                     + ctype);
@@ -128,40 +127,32 @@ public class NiftiFileGetModule implements Module {
         }
     }
 
-    static boolean isNII(String ext, String mimeType) {
-        return "nii".equalsIgnoreCase("nii")
-                || "image/nifti-1".equalsIgnoreCase(mimeType);
+    static boolean isNII(String ext) {
+        return "nii".equalsIgnoreCase(ext);
     }
 
-    static boolean isGZIP(String ext, String mimeType) {
-        return "gz".equalsIgnoreCase(ext)
-                || "application/x-gzip".equals(mimeType);
+    static boolean isGZ(String ext) {
+        return "gz".equalsIgnoreCase(ext);
     }
 
-    static boolean isZIP(String ext, String mimeType) {
-        return "zip".equalsIgnoreCase(ext) || "application/zip".equals(mimeType)
-                || "application/x-zip".equals(mimeType)
-                || "application/x-zip-compressed".equals(mimeType);
+    static boolean isZIP(String ext) {
+        return "zip".equalsIgnoreCase(ext);
     }
 
-    static boolean isAAR(String ext, String mimeType) {
-        return "aar".equalsIgnoreCase(ext)
-                || "application/arc-archive".equalsIgnoreCase(mimeType);
+    static boolean isAAR(String ext) {
+        return "aar".equalsIgnoreCase(ext);
     }
 
-    static boolean isJAR(String ext, String mimeType) {
-        return "jar".equalsIgnoreCase(ext)
-                || "application/java-archive".equalsIgnoreCase(mimeType);
+    static boolean isJAR(String ext) {
+        return "jar".equalsIgnoreCase(ext);
     }
 
-    static boolean isTAR(String ext, String mimeType) {
-        return "tar".equalsIgnoreCase(ext)
-                || "application/x-tar".equals(mimeType);
+    static boolean isTAR(String ext) {
+        return "tar".equalsIgnoreCase(ext);
     }
 
-    static boolean isArchive(String ext, String mimeType) {
-        return isZIP(ext, mimeType) || isJAR(ext, mimeType)
-                || isAAR(ext, mimeType) || isTAR(ext, mimeType);
+    static boolean isArchive(String ext) {
+        return isZIP(ext) || isJAR(ext) || isAAR(ext) || isTAR(ext);
     }
 
 }

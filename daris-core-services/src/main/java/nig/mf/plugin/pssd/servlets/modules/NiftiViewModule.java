@@ -45,18 +45,18 @@ public class NiftiViewModule implements Module {
         } else {
             cid = ae.value("cid");
         }
-        
+
         NiftiFileGetModule.validate(ae);
 
         String cType = ae.value("content/type");
         String cExt = ae.value("content/type/@ext");
 
         List<String> imgUrls = new ArrayList<String>();
-        if (NiftiFileGetModule.isNII(cExt, cType)) {
+        if (NiftiFileGetModule.isNII(cExt)) {
             imgUrls.add(generateImgUrl(sessionKey, id, id + ".nii"));
-        } else if (NiftiFileGetModule.isGZIP(cExt, cType)) {
+        } else if (NiftiFileGetModule.isGZ(cExt)) {
             imgUrls.add(generateImgUrl(sessionKey, id, id + ".nii.gz"));
-        } else if (NiftiFileGetModule.isArchive(cExt, cType)) {
+        } else if (NiftiFileGetModule.isArchive(cExt)) {
             List<XmlDoc.Element> ees = server.execute(sessionKey,
                     "daris.archive.content.list", dm.root(), null, null)
                     .elements("entry");
@@ -64,7 +64,8 @@ public class NiftiViewModule implements Module {
         }
         if (imgUrls.isEmpty()) {
             throw new Exception("No image url is generated. Probably asset "
-                    + id + " is not a valid NIFTI series.");
+                    + id + " is not a valid NIFTI series. Content type: "
+                    + cType);
         }
 
         StringBuilder html = new StringBuilder();
