@@ -29,17 +29,26 @@ public abstract class DObject {
                     Type.STUDY, Type.DATASET };
         }
 
-        public static Type fromString(String value) throws Throwable {
-            if (value != null) {
-                Type[] vs = values();
-                for (Type v : vs) {
-                    if (v.typeName().equals(value)) {
-                        return v;
+        public static Type parse(XmlDoc.Element e, Type defaultValue)
+                throws Throwable {
+            if (e.nameEquals(Type.REPOSITORY.typeName())) {
+                return Type.REPOSITORY;
+            }
+            if (e.nameEquals(Type.METHOD.typeName())) {
+                return Type.METHOD;
+            }
+            if (e.nameEquals("object")) {
+                String value = e.value("@type");
+                if (value != null) {
+                    Type[] vs = values();
+                    for (Type v : vs) {
+                        if (v.typeName().equals(value)) {
+                            return v;
+                        }
                     }
                 }
             }
-            throw new Exception(
-                    "Failed to instantiate DObject.Type from string: " + value);
+            return defaultValue;
         }
     }
 
@@ -79,12 +88,14 @@ public abstract class DObject {
 
     public static DObject create(XmlDoc.Element oe) throws Throwable {
         if (oe != null) {
-            DObject.Type type = DObject.Type.fromString(oe.value("@type"));
+            DObject.Type type = DObject.Type.parse(oe, null);
             if (type == null) {
                 throw new Exception(
                         "No type attribute found in XML element: " + oe);
             }
             switch (type) {
+            case REPOSITORY:
+                return new Repository(oe);
             case PROJECT:
                 return new Project(oe);
             case SUBJECT:

@@ -320,6 +320,9 @@ public class LogonDialog {
         _stage.initStyle(StageStyle.UTILITY);
         _stage.initModality(Modality.APPLICATION_MODAL);
         _stage.setScene(new Scene(gridPane, 480, 480));
+        _stage.setOnCloseRequest(event -> {
+            System.exit(0);
+        });
     }
 
     private void logon() {
