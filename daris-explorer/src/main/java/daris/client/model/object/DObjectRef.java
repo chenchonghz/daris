@@ -18,6 +18,7 @@ public class DObjectRef extends ObjectRef<DObject>
     private String _description;
     private int _numberOfChildren;
     private boolean _forEdit;
+    private boolean _resolved = false;
 
     public DObjectRef(String route, String cid, String name, String description,
             int numberOfChildren, boolean forEdit) {
@@ -41,6 +42,15 @@ public class DObjectRef extends ObjectRef<DObject>
 
     public DObjectRef(String cid, int numberOfChildren) {
         this(null, cid, null, null, numberOfChildren, false);
+    }
+
+    public boolean resolved() {
+        return _resolved && super.resolved();
+    }
+    
+    public void reset() {
+        super.reset();
+        _resolved = false;
     }
 
     public void setForEdit(boolean forEdit) {
@@ -73,6 +83,9 @@ public class DObjectRef extends ObjectRef<DObject>
             if (o.numberOfChildren() > -1) {
                 _numberOfChildren = o.numberOfChildren();
             }
+        }
+        if (!_resolved) {
+            _resolved = true;
         }
         return o;
     }
@@ -167,4 +180,29 @@ public class DObjectRef extends ObjectRef<DObject>
         }
         return CiteableIdUtils.compare(cid1, cid2);
     }
+
+    public boolean isRepository() {
+        return (this instanceof RepositoryRef) || _cid == null;
+    }
+
+    public boolean isProject() {
+        return CiteableIdUtils.isProjectCID(_cid);
+    }
+
+    public boolean isSubject() {
+        return CiteableIdUtils.isSubjectCID(_cid);
+    }
+
+    public boolean isExMethod() {
+        return CiteableIdUtils.isExMethodCID(_cid);
+    }
+
+    public boolean isStudy() {
+        return CiteableIdUtils.isStudyCID(_cid);
+    }
+
+    public boolean isDataSet() {
+        return CiteableIdUtils.isDataSetCID(_cid);
+    }
+
 }

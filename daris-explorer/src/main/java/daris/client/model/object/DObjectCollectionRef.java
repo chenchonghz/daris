@@ -63,7 +63,10 @@ public class DObjectCollectionRef extends OrderedCollectionRef<DObjectRef> {
         if (_parent != null && _parent.citeableId() != null) {
             w.add("id", _parent.citeableId());
         }
+        w.add("idx", start + 1);
+        w.add("size", size);
         w.add("isleaf", true);
+        w.add("sort", true);
     }
 
     @Override

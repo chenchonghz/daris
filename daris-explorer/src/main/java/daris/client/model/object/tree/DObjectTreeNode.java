@@ -77,14 +77,26 @@ public class DObjectTreeNode implements Container, RemoteNode {
     @Override
     public Image icon() {
         if (_icon == null) {
-            _icon = new ResourceImage("images/16folder_blue.png", 16, 16);
+            _icon = new ResourceImage("/images/16folder_blue.png", 16, 16);
         }
         return _icon;
     }
 
     @Override
     public String name() {
-        return _object.name();
+        if (_object.isRepository()) {
+            if (_object.name() != null) {
+                return _object.name();
+            } else {
+                return "DaRIS";
+            }
+        } else if (_object.isProject()) {
+            return _object.citeableId()
+                    + (_object.name() == null ? "" : (": " + _object.name()));
+        } else {
+            return CiteableIdUtils.getLastPart(_object.citeableId())
+                    + (_object.name() == null ? "" : (": " + _object.name()));
+        }
     }
 
     @Override
@@ -131,7 +143,7 @@ public class DObjectTreeNode implements Container, RemoteNode {
 
             @Override
             public void resolved(List<DObjectRef> os) throws Throwable {
-                
+                // TODO:
             }
         });
     }
@@ -144,7 +156,7 @@ public class DObjectTreeNode implements Container, RemoteNode {
     @Override
     public Image openIcon() {
         if (_openIcon == null) {
-            _openIcon = new ResourceImage("images/16folder_blue_open.png", 16,
+            _openIcon = new ResourceImage("/images/16folder_blue_open.png", 16,
                     16);
         }
         return _openIcon;

@@ -58,6 +58,9 @@ public abstract class DObject {
     private String _name;
     private String _description;
     private int _numberOfChildren;
+    private String _namespace;
+    private XmlDoc.Element _metadataForView;
+    private XmlDoc.Element _metadataForEdit;
 
     protected DObject(XmlDoc.Element oe) throws Throwable {
         _aid = oe.value("id/asset");
@@ -66,6 +69,12 @@ public abstract class DObject {
         _name = oe.value("name");
         _description = oe.value("description");
         _numberOfChildren = oe.intValue("number-of-children", -1);
+        _namespace = oe.value("namespace");
+        if (oe.elementExists("meta/metadata")) {
+            _metadataForEdit = oe.element("meta");
+        } else {
+            _metadataForView = oe.element("meta");
+        }
     }
 
     public abstract Type type();
@@ -76,6 +85,10 @@ public abstract class DObject {
 
     public String citeableId() {
         return _cid;
+    }
+
+    public String namespace() {
+        return _namespace;
     }
 
     public String name() {
@@ -122,14 +135,20 @@ public abstract class DObject {
         return _route;
     }
 
+    public XmlDoc.Element metadataForView() {
+        return _metadataForView;
+    }
+
     public boolean hasMetadataForView() {
-        // TODO:
-        return false;
+        return _metadataForView != null;
+    }
+
+    public XmlDoc.Element metadataForEdit() {
+        return _metadataForEdit;
     }
 
     public boolean hasMetadataForEdit() {
-        // TODO:
-        return false;
+        return _metadataForEdit != null;
     }
 
     public int numberOfChildren() {

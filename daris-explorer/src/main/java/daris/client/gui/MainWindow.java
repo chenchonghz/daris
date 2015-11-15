@@ -1,6 +1,8 @@
 package daris.client.gui;
 
 import arc.mf.desktop.HasScene;
+import daris.client.app.MainApp;
+import daris.client.gui.object.DObjectViewPane;
 import daris.client.gui.object.tree.DObjectTreeView;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -20,6 +22,8 @@ import javafx.stage.Stage;
 public class MainWindow implements HasScene {
 
     private Scene _scene;
+    private DObjectTreeView _nav;
+    private DObjectViewPane _dv;
 
     public MainWindow() {
 
@@ -59,17 +63,25 @@ public class MainWindow implements HasScene {
         borderPane.setTop(menuBar);
 
         StackPane navStackPane = new StackPane();
-        navStackPane.getChildren().add(new DObjectTreeView());
+        DObjectTreeView _nav = new DObjectTreeView();
+        navStackPane.getChildren().add(_nav);
 
-        StackPane detailStackPane = new StackPane();
+        _dv = new DObjectViewPane();
 
-        SplitPane splitPane = new SplitPane(navStackPane, detailStackPane);
+        _nav.getSelectionModel().selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    _dv.displayObject(
+                            newValue == null ? null : newValue.getValue());
+                });
+
+        SplitPane splitPane = new SplitPane(navStackPane, _dv);
         splitPane.setOrientation(Orientation.HORIZONTAL);
         splitPane.setDividerPositions(0.3);
 
         borderPane.setCenter(splitPane);
 
         _scene = new Scene(borderPane, Color.WHITE);
+        _scene.getStylesheets().add(MainApp.css());
     }
 
     public void show(Stage stage) {

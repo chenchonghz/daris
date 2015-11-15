@@ -21,7 +21,7 @@ public class RepositoryRef extends DObjectRef {
     protected DObject instantiate(Element xe) throws Throwable {
         DObject o = DObject.create(xe.element("repository"));
         if (o != null) {
-            setName(((Repository) o).acronym());
+            setName(((Repository) o).name());
             setDescription(o.description());
             if (o.numberOfChildren() > -1) {
                 setNumberOfChildren(o.numberOfChildren());

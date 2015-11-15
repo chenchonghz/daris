@@ -18,6 +18,9 @@ public class DObjectTreeView extends TreeView<DObjectRef>
 
     public DObjectTreeView() {
         super(new DObjectTreeItem(new RepositoryRef()));
+        setCellFactory(tree -> {
+            return new DObjectTreeCell();
+        });
         RepositoryRef repo = (RepositoryRef) getRoot().getValue();
         repo.resolve(o -> {
             ApplicationThread.execute(() -> {
@@ -26,7 +29,11 @@ public class DObjectTreeView extends TreeView<DObjectRef>
         });
         getSelectionModel().selectedItemProperty()
                 .addListener((observable, oldValue, newValue) -> {
-                    // TODO
+                    if (newValue != null) {
+                        if (!newValue.getValue().resolved()) {
+                            ((DObjectTreeItem) newValue).refresh(false);
+                        }
+                    }
                 });
         setShowRoot(true);
     }

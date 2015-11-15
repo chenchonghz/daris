@@ -1,11 +1,14 @@
 package daris.client.gui.object.tree;
 
-import arc.mf.client.util.UnhandledException;
+import java.util.ArrayList;
+import java.util.List;
+
 import arc.mf.desktop.ui.util.ApplicationThread;
 import daris.client.model.CiteableIdUtils;
-import daris.client.model.object.DObjectCollectionRef;
+import daris.client.model.Repository;
+import daris.client.model.object.DObjectChildrenRef;
 import daris.client.model.object.DObjectRef;
-import daris.client.model.repository.RepositoryRef;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
@@ -19,14 +22,14 @@ public class DObjectTreeItem extends TreeItem<DObjectRef> {
     public static String ICON_DATASET = "/images/16dataset_primary.png";
     public static String ICON_LOADING = "/images/16loading.gif";
 
-    private DObjectCollectionRef _children;
+    private DObjectChildrenRef _children;
     private HBox _graphic;
     private HBox _icon;
     private Label _label;
 
     public DObjectTreeItem(DObjectRef o) {
         super(o);
-        _children = new DObjectCollectionRef(o);
+        _children = new DObjectChildrenRef(o);
         _graphic = new HBox();
         _icon = new HBox(0.0);
         _icon.setPrefWidth(16.0);
@@ -35,51 +38,39 @@ public class DObjectTreeItem extends TreeItem<DObjectRef> {
         _label = new Label(labelTextFor(o));
         _graphic.getChildren().add(_label);
         setIcon(false);
-        addEventHandler(TreeItem.branchExpandedEvent(), event -> {
-            updateChildren(false);
-            setIcon(true);
-        });
-        addEventHandler(TreeItem.branchCollapsedEvent(), event -> {
-            setIcon(false);
-        });
-
+        setGraphic(_graphic);
+        expandedProperty()
+                .addListener((observableValue, oldValue, newValue) -> {
+                    if (!newValue.equals(oldValue)) {
+                        setIcon(newValue);
+                    }
+                });
     }
 
+    @Override
+    public ObservableList<TreeItem<DObjectRef>> getChildren() {
+        if (!_children.resolved()) {
+            setIcon(ICON_LOADING);
+            _children.resolve(cos -> {
+                if (cos != null && !cos.isEmpty()) {
+                    List<TreeItem<DObjectRef>> items = new ArrayList<TreeItem<DObjectRef>>(
+                            cos.size());
+                    for (DObjectRef co : cos) {
+                        items.add(new DObjectTreeItem(co));
+                    }
+                    ApplicationThread.execute(() -> {
+                        super.getChildren().setAll(items);
+                        setIcon(isExpanded());
+                    });
+                }
+            });
+        }
+        return super.getChildren();
+    }
+
+    @Override
     public boolean isLeaf() {
         return getValue().hasChildren().no();
-    }
-
-    void updateGraphic() {
-        setIcon(isExpanded());
-        _label.setText(labelTextFor(getValue()));
-    }
-
-    private void updateChildren(boolean refresh) {
-        if (!refresh && !getChildren().isEmpty()) {
-            return;
-        }
-        if (refresh) {
-            _children.reset();
-        }
-        try {
-            ApplicationThread.execute(() -> {
-                setIcon(ICON_LOADING);
-            });
-            _children.resolve(cos -> {
-                ApplicationThread.execute(() -> {
-                    getChildren().clear();
-                    if (cos != null) {
-                        for (DObjectRef co : cos) {
-                            getChildren().add(new DObjectTreeItem(co));
-                        }
-                    }
-                    setIcon(true);
-                });
-            });
-        } catch (Throwable e) {
-            UnhandledException.report(
-                    "Retrieving members of " + getValue().idToString(), e);
-        }
     }
 
     private void setIcon(boolean open) {
@@ -118,16 +109,47 @@ public class DObjectTreeItem extends TreeItem<DObjectRef> {
         }
     }
 
-    private static String labelTextFor(DObjectRef o) {
-        if (o instanceof RepositoryRef) {
-            return o.name() == null ? "DaRIS" : o.name();
-        }
-        String cid = o.citeableId();
-        if (CiteableIdUtils.isProjectCID(cid)) {
-            return o.citeableId() + ": " + (o.name() == null ? "" : o.name());
+    private static String labelTextFor(DObjectRef object) {
+        if (object.isRepository()) {
+            if (object.resolved()) {
+                Repository repo = (Repository) (object.referent());
+                if (repo.acronym() != null) {
+                    return repo.acronym();
+                } else if (repo.name() != null) {
+                    return repo.name();
+                } else {
+                    return "DaRIS";
+                }
+            } else if (object.name() != null) {
+                return object.name();
+            } else {
+                return "DaRIS";
+            }
+        } else if (object.isProject()) {
+            return object.citeableId()
+                    + (object.name() == null ? "" : (": " + object.name()));
         } else {
-            String n = CiteableIdUtils.getLastPart(cid);
-            return n + ": " + (o.name() == null ? n : o.name());
+            return CiteableIdUtils.getLastPart(object.citeableId())
+                    + (object.name() == null ? "" : (": " + object.name()));
+        }
+    }
+
+    void refresh(boolean refreshChildren) {
+        getValue().reset();
+        getValue().resolve(o -> {
+            ApplicationThread.execute(() -> {
+                _label.setText(labelTextFor(getValue()));
+            });
+        });
+        if (refreshChildren) {
+            boolean expanded = isExpanded();
+            if (expanded) {
+                setExpanded(false);
+            }
+            _children.reset();
+            if (expanded) {
+                setExpanded(true);
+            }
         }
     }
 

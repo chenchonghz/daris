@@ -12,11 +12,8 @@ import arc.mf.model.server.events.ServerEvents;
 import daris.client.gui.LogonDialog;
 import daris.client.gui.MainWindow;
 import daris.client.model.object.events.PSSDObjectEvents;
-import daris.client.model.repository.RepositoryRef;
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 public class MainApp extends Application {
 
@@ -110,6 +107,11 @@ public class MainApp extends Application {
             ServerEvents.initialize();
             PSSDObjectEvents.initialize();
         }
+    }
+    
+    
+    public static String css(){
+        return MainApp.class.getResource("/css/MainApp.css").toExternalForm();
     }
 
 }
