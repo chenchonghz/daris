@@ -28,6 +28,8 @@ public abstract class DObjectView<T extends DObject> extends TabPane {
 
     protected int metadataTabIndex = -1;
 
+    protected int contentTabIndex = -1;
+
     public DObjectView(T object) {
         super();
         setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
@@ -54,6 +56,18 @@ public abstract class DObjectView<T extends DObject> extends TabPane {
             getTabs().add(metadataTab);
             metadataTabIndex = getTabs().indexOf(metadataTab);
         }
+
+        /*
+         * content tab
+         */
+        if (object.hasContent()) {
+            StackPane contentPane = new StackPane();
+            ContentView contentView = new ContentView(object);
+            contentPane.getChildren().add(contentView);
+            Tab contentTab = new Tab("Content", contentPane);
+            getTabs().add(contentTab);
+            contentTabIndex = getTabs().indexOf(contentTab);
+        }
     }
 
     protected T object() {
@@ -62,7 +76,18 @@ public abstract class DObjectView<T extends DObject> extends TabPane {
 
     protected void addInterfaceMetadata(
             KVTreeTableView<String, Object> treeTableView, T object) {
-        treeTableView.addEntry("id", object.citeableId());
+
+        if (object instanceof Repository) {
+            treeTableView.addEntry("Description Asset ID", object.assetId());
+        } else {
+            treeTableView.addEntry("Citeable ID", object.citeableId());
+            treeTableView.addEntry("Asset ID", object.assetId());
+        }
+        treeTableView.addEntry("Name", object.name());
+        treeTableView.addEntry("Description", object.description());
+        if (!(object instanceof Repository)) {
+            treeTableView.addEntry("Namespace", object.namespace());
+        }
     }
 
     @SuppressWarnings("unchecked")

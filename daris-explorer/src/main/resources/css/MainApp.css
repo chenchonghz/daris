@@ -18,3 +18,9 @@
     -fx-background-color: -fx-focus-color, -fx-cell-focus-inner-border, -fx-focus-color;
     -fx-background-insets: 0, 1, 2;
 }
+
+.tree-cell {
+    -fx-border-width: 0 0 1 0;
+    -fx-border-style: none none dotted none;
+    -fx-border-color: #eeeeee;
+}

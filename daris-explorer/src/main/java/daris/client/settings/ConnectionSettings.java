@@ -128,9 +128,13 @@ public class ConnectionSettings {
             XmlDoc.Element root = dm.root();
             OutputStreamWriter w = null;
             try {
+                File file = new File(LOCATION);
+                File dir = file.getParentFile();
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
                 w = new OutputStreamWriter(
-                        new BufferedOutputStream(
-                                new FileOutputStream(new File(LOCATION))),
+                        new BufferedOutputStream(new FileOutputStream(file)),
                         "UTF-8");
                 w.write(root.toString());
             } finally {

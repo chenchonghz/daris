@@ -2,8 +2,11 @@ package daris.client.model;
 
 import arc.mf.client.ServerRoute;
 import arc.xml.XmlDoc;
+import daris.client.model.object.DataContent;
 
 public abstract class DObject {
+
+    public static final int VERSION_LATEST = 0;
 
     public static enum Type {
         REPOSITORY("repository"), PROJECT("project"), SUBJECT(
@@ -55,17 +58,24 @@ public abstract class DObject {
     private String _route;
     private String _aid;
     private String _cid;
+    private int _version;
+    private long _vid;
     private String _name;
     private String _description;
     private int _numberOfChildren;
     private String _namespace;
     private XmlDoc.Element _metadataForView;
     private XmlDoc.Element _metadataForEdit;
+    private boolean _editable;
+    private DataContent _content;
 
     protected DObject(XmlDoc.Element oe) throws Throwable {
-        _aid = oe.value("id/asset");
+        _aid = oe.value("id/@asset");
         _route = oe.value("id/proute");
         _cid = oe.value("id");
+        _version = oe.intValue("@version", VERSION_LATEST);
+        _vid = oe.longValue("@vid", -1);
+        _editable = oe.booleanValue("@editable");
         _name = oe.value("name");
         _description = oe.value("description");
         _numberOfChildren = oe.intValue("number-of-children", -1);
@@ -74,6 +84,9 @@ public abstract class DObject {
             _metadataForEdit = oe.element("meta");
         } else {
             _metadataForView = oe.element("meta");
+        }
+        if (oe.elementExists("data")) {
+            _content = new DataContent(oe.element("data"));
         }
     }
 
@@ -97,6 +110,39 @@ public abstract class DObject {
 
     public String description() {
         return _description;
+    }
+
+    public int version() {
+        return _version;
+    }
+
+    public long vid() {
+        return _vid;
+    }
+
+    /**
+     * Can the object be edited by the current user?
+     * 
+     * @return
+     */
+    public boolean editable() {
+        return _editable;
+    }
+
+    public DataContent content() {
+        return _content;
+    }
+
+    public boolean hasContent() {
+        return _content != null;
+    }
+
+    public boolean hasBrowsableArchiveContent() {
+        if (hasContent()) {
+            return _content.isBrowsableArchive();
+        } else {
+            return false;
+        }
     }
 
     public static DObject create(XmlDoc.Element oe) throws Throwable {

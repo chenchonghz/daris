@@ -26,7 +26,7 @@ public class KVTreeTableView<K, V> extends TreeTableView<Entry<K, V>> {
 
         TreeTableColumn<Entry<K, V>, String> valueColumn = new TreeTableColumn<>(
                 "Value");
-        valueColumn.setPrefWidth(200);
+        valueColumn.setPrefWidth(500);
         valueColumn.setCellValueFactory(param -> {
             Entry<K, V> o = param.getValue().getValue();
             V v = o.getValue();
@@ -64,6 +64,14 @@ public class KVTreeTableView<K, V> extends TreeTableView<Entry<K, V>> {
 
     public TreeItem<Entry<K, V>> addEntry(K key) {
         return addEntry(getRoot(), key, null);
+    }
+
+    public void setNameColumnPrefWidth(double width) {
+        getColumns().get(0).setPrefWidth(width);
+    }
+    
+    public void setValueColumnPrefWidth(double width) {
+        getColumns().get(1).setPrefWidth(width);
     }
 
 }

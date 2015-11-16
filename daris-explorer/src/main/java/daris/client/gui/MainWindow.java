@@ -4,6 +4,7 @@ import arc.mf.desktop.HasScene;
 import daris.client.app.MainApp;
 import daris.client.gui.object.DObjectViewPane;
 import daris.client.gui.object.tree.DObjectTreeView;
+import daris.client.util.OSUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
@@ -14,6 +15,9 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SplitPane;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -56,6 +60,13 @@ public class MainWindow implements HasScene {
                 System.exit(0);
             }
         });
+        if (OSUtils.isMac()) {
+            exitItem.setAccelerator(new KeyCodeCombination(KeyCode.Q,
+                    KeyCombination.META_DOWN));
+        } else {
+            exitItem.setAccelerator(new KeyCodeCombination(KeyCode.Q,
+                    KeyCombination.CONTROL_DOWN));
+        }
         darisMenu.getItems().add(exitItem);
 
         menuBar.getMenus().add(darisMenu);
@@ -69,19 +80,23 @@ public class MainWindow implements HasScene {
         _dv = new DObjectViewPane();
 
         _nav.getSelectionModel().selectedItemProperty()
-                .addListener((observable, oldValue, newValue) -> {
+                .addListener((observable, oldValue, newValue) ->
+
+        {
                     _dv.displayObject(
                             newValue == null ? null : newValue.getValue());
                 });
 
-        SplitPane splitPane = new SplitPane(navStackPane, _dv);
+        SplitPane splitPane = new SplitPane();
         splitPane.setOrientation(Orientation.HORIZONTAL);
-        splitPane.setDividerPositions(0.3);
+        splitPane.setDividerPositions(0.3f);
+        splitPane.getItems().setAll(navStackPane, _dv);
 
         borderPane.setCenter(splitPane);
 
-        _scene = new Scene(borderPane, Color.WHITE);
+        _scene = new Scene(borderPane, 1280.0, 800.0, Color.WHITE);
         _scene.getStylesheets().add(MainApp.css());
+
     }
 
     public void show(Stage stage) {

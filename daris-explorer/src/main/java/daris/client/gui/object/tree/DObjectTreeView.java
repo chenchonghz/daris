@@ -23,8 +23,9 @@ public class DObjectTreeView extends TreeView<DObjectRef>
         });
         RepositoryRef repo = (RepositoryRef) getRoot().getValue();
         repo.resolve(o -> {
+            SystemEventChannel.add(this);
             ApplicationThread.execute(() -> {
-                SystemEventChannel.add(this);
+                getSelectionModel().select(getRoot());
             });
         });
         getSelectionModel().selectedItemProperty()
