@@ -24,10 +24,12 @@ public class ContentView extends Accordion {
             ArchiveEntryCollectionRef arc = new ArchiveEntryCollectionRef(_o);
             arc.setPageSize(10);
             TitledPane archivePane = new TitledPane("Content archive",
-                    new ArchiveContentTableView(arc));
+                    new ArchiveContentView(arc));
             getPanes().add(archivePane);
+            setExpandedPane(archivePane);
+        } else {
+            setExpandedPane(metadataPane);
         }
-        setExpandedPane(metadataPane);
     }
 
     private static KVTreeTableView<String, Object> createContentMetadataTreeTableView(
@@ -44,7 +46,8 @@ public class ContentView extends Accordion {
         }
         table.addEntry("Size",
                 content.humanReadableSize + " (" + content.size + " bytes)");
-        table.addEntry("Checksum", Long.toHexString(content.csum).toUpperCase());
+        table.addEntry("Checksum",
+                Long.toHexString(content.csum).toUpperCase());
         TreeItem<Entry<String, Object>> storeItem = table.addEntry("Store");
         table.addEntry(storeItem, "Name", content.storeName);
         table.addEntry(storeItem, "Type", content.storeType);

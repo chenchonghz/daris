@@ -22,9 +22,9 @@
 		<dependency>
 			<groupId>com.arcitecta</groupId>
 			<artifactId>mexplorer</artifactId>
-			<version>0.04</version>
+			<version>1.0.0</version>
 			<scope>system</scope>
-			<systemPath>/opt/mexplorer/mexplorer-0.04.jar</systemPath>
+			<systemPath>/opt/mexplorer/mexplorer-1.0.0.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

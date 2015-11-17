@@ -14,4 +14,30 @@ public class DataSet extends DObject {
         return DObject.Type.DATASET;
     }
 
+    public boolean isDicomSeries() {
+        // TODO
+        return false;
+    }
+
+    public boolean isNiftiSeries() {
+        // TODO
+        return false;
+    }
+
+    public String dicomWebViewUrl() {
+        // TODO
+        if (!isDicomSeries()) {
+            return null;
+        }
+        return null;
+    }
+
+    public String niftiWebViewUrl() {
+        // TODO
+        if (!isNiftiSeries()) {
+            return null;
+        }
+        return null;
+    }
+
 }

@@ -44,8 +44,6 @@ public abstract class PagedTableView<T> extends Pagination {
             public void resolved(List<T> os) throws Throwable {
                 ApplicationThread.execute(() -> {
                     _table.getItems().setAll(os);
-                    System.out.println(_collection.totalNumberOfMembers());
-                    System.out.println(_collection.pagingSize());
                     long total = _collection.totalNumberOfMembers();
                     int pageSize = _collection.pagingSize();
                     int nbPages = (int) (total / pageSize);
