@@ -29,12 +29,13 @@ public class ArchiveEntryView extends StackPane {
                     getClass().getResourceAsStream("/images/64loading.gif")));
             // _imageView.fitWidthProperty().bind(widthProperty());
             _imageView.setPreserveRatio(true);
+            _imageView.setFitWidth(getWidth());
             _infoTable.setPrefHeight(150.0);
             AnchorPane ap = new AnchorPane();
             ap.getChildren().setAll(_imageView, _infoTable);
             AnchorPane.setTopAnchor(_imageView, 0.0);
-            AnchorPane.setLeftAnchor(_imageView, 0.0);
-            AnchorPane.setRightAnchor(_imageView, 0.0);
+//            AnchorPane.setLeftAnchor(_imageView, 0.0);
+//            AnchorPane.setRightAnchor(_imageView, 0.0);
             AnchorPane.setLeftAnchor(_infoTable, 0.0);
             AnchorPane.setRightAnchor(_infoTable, 0.0);
             AnchorPane.setBottomAnchor(_infoTable, 0.0);
