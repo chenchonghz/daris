@@ -54,7 +54,7 @@ public class ArchiveEntry {
         return null;
     }
 
-    public boolean isViewAbleImage() {
+    public boolean isViewableImage() {
         return isViewableImage(_name);
     }
 

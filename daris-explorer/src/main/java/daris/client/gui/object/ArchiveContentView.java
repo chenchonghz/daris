@@ -22,7 +22,7 @@ public class ArchiveContentView extends SplitPane {
         });
 
         setOrientation(Orientation.HORIZONTAL);
-        setDividerPositions(0.5f);
+        setDividerPositions(0.45f);
         getItems().setAll(nav, _dv);
     }
 
