@@ -18,7 +18,11 @@ public class ArchiveContentView extends SplitPane {
 
         _dv = new StackPane();
         nav.addTableSelectionListener((observable, oldValue, newValue) -> {
-            _dv.getChildren().setAll(new ArchiveEntryView(_arc, newValue));
+            if (newValue != null) {
+                _dv.getChildren().setAll(new ArchiveEntryView(_arc, newValue));
+            } else {
+                _dv.getChildren().clear();
+            }
         });
 
         setOrientation(Orientation.HORIZONTAL);
