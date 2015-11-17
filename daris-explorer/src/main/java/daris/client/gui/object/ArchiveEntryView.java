@@ -34,8 +34,8 @@ public class ArchiveEntryView extends StackPane {
             AnchorPane ap = new AnchorPane();
             ap.getChildren().setAll(_imageView, _infoTable);
             AnchorPane.setTopAnchor(_imageView, 0.0);
-//            AnchorPane.setLeftAnchor(_imageView, 0.0);
-//            AnchorPane.setRightAnchor(_imageView, 0.0);
+            // AnchorPane.setLeftAnchor(_imageView, 0.0);
+            // AnchorPane.setRightAnchor(_imageView, 0.0);
             AnchorPane.setLeftAnchor(_infoTable, 0.0);
             AnchorPane.setRightAnchor(_infoTable, 0.0);
             AnchorPane.setBottomAnchor(_infoTable, 0.0);
@@ -78,7 +78,13 @@ public class ArchiveEntryView extends StackPane {
                         ApplicationThread.execute(() -> {
                             try (InputStream in = output.stream()) {
                                 _imageView.setImage(new Image(in));
-                                _imageView.setFitWidth(getWidth());
+                                double w = getWidth();
+                                double h = getHeight();
+                                if (w < h) {
+                                    _imageView.setFitWidth(w);
+                                } else {
+                                    _imageView.setFitHeight(h);
+                                }
                             } catch (Throwable ex) {
                                 UnhandledException.report(
                                         "Loading archive entry image", ex);
