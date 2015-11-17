@@ -65,10 +65,10 @@ public class DicomServlet extends AbstractServlet {
     public DicomServlet() {
         super();
         arguments().add(ARG_ID, CiteableIdType.DEFAULT,
-                "The asset id of the DICOM series.", 1);
+                "The asset id of the DICOM series.", 0);
 
         arguments().add(ARG_CID, CiteableIdType.DEFAULT,
-                "The citeable id of the DICOM dataset/series.", 1);
+                "The citeable id of the DICOM dataset/series.", 0);
 
         arguments().add(ARG_MODULE, new EnumType(ModuleName.values()),
                 "The module to execute. Can be 'file', 'metadata', 'image' or 'view'. Defaults to 'view'.",
@@ -94,6 +94,14 @@ public class DicomServlet extends AbstractServlet {
     @Override
     protected void execute(HttpServer server, SessionKey sessionKey,
             HttpRequest request, HttpResponse response) throws Throwable {
+        if (request.variableValue(ARG_ID) == null
+                && request.variableValue(ARG_CID) == null) {
+            throw new Exception("Either asset id or cid is required. Found none.");
+        }
+        if (request.variableValue(ARG_ID) != null
+                && request.variableValue(ARG_CID) != null) {
+            throw new Exception("Either asset id or cid is required. Found both.");
+        }
         ModuleName moduleName = ModuleName.parse(request, ModuleName.file);
         Module module = null;
         switch (moduleName) {

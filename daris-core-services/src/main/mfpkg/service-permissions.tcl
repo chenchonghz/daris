@@ -313,3 +313,12 @@ actor.grant :role -type role service-user :type plugin:service :name om.pssd.dat
 # service: om.pssd.dataset.unprocessed.list
 actor.grant :role -type role service-user :type plugin:service :name om.pssd.dataset.unprocessed.list
 
+actor.grant :role -type role service-user :type plugin:service :name daris.archive.content.list
+
+actor.grant :role -type role service-user :type plugin:service :name daris.archive.content.get
+
+actor.grant :role -type role service-user :type plugin:service :name daris.archive.content.image.get
+
+actor.grant :role -type role service-user :type plugin:service :name daris.dicom.archive.content.get
+
+
