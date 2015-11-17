@@ -13,6 +13,7 @@ import nig.mf.plugin.pssd.announcement.events.PSSDAnnouncementEvent;
 import nig.mf.plugin.pssd.announcement.events.PSSDAnnouncementEventFilterFactory;
 import nig.mf.plugin.pssd.dicom.DicomAssetHandlerFactory;
 import nig.mf.plugin.pssd.services.*;
+import nig.mf.plugin.pssd.servlets.ArchiveServlet;
 import nig.mf.plugin.pssd.servlets.DicomServlet;
 import nig.mf.plugin.pssd.servlets.MainServlet;
 import nig.mf.plugin.pssd.servlets.NiftiServlet;
@@ -325,6 +326,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _servlets.add(new ShoppingCartServlet());
         _servlets.add(new DicomServlet());
         _servlets.add(new NiftiServlet());
+        _servlets.add(new ArchiveServlet());
     }
 
     protected void registerSystemEvents() throws Throwable {
