@@ -69,9 +69,10 @@ public abstract class DObject {
     private String _description;
     private int _numberOfChildren;
     private String _namespace;
-    private XmlDoc.Element _metadataForView;
+    private XmlDoc.Element _metadata;
     private XmlDoc.Element _metadataForEdit;
     private boolean _editable;
+    private String _mimeType;
     private DataContent _content;
 
     protected DObject(XmlDoc.Element oe) throws Throwable {
@@ -88,14 +89,19 @@ public abstract class DObject {
         if (oe.elementExists("meta/metadata")) {
             _metadataForEdit = oe.element("meta");
         } else {
-            _metadataForView = oe.element("meta");
+            _metadata = oe.element("meta");
         }
+        _mimeType = oe.value("type");
         if (oe.elementExists("data")) {
             _content = new DataContent(oe.element("data"));
         }
     }
 
     public abstract Type type();
+
+    public String mimeType() {
+        return _mimeType;
+    }
 
     public String assetId() {
         return _aid;
@@ -169,7 +175,7 @@ public abstract class DObject {
             case STUDY:
                 return new Study(oe);
             case DATASET:
-                return new DataSet(oe);
+                return DataSet.create(oe);
             default:
                 break;
             }
@@ -186,12 +192,12 @@ public abstract class DObject {
         return _route;
     }
 
-    public XmlDoc.Element metadataForView() {
-        return _metadataForView;
+    public XmlDoc.Element metadata() {
+        return _metadata;
     }
 
-    public boolean hasMetadataForView() {
-        return _metadataForView != null;
+    public boolean hasMetadata() {
+        return _metadata != null;
     }
 
     public XmlDoc.Element metadataForEdit() {
@@ -205,5 +211,7 @@ public abstract class DObject {
     public int numberOfChildren() {
         return _numberOfChildren;
     }
+
+
 
 }

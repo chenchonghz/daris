@@ -138,10 +138,10 @@ public class NiftiViewModule implements Module {
                 "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n");
         html.append(
                 "<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">\n");
-        html.append(
-                "<link rel=\"stylesheet\" type=\"text/css\" href=\"http://rii.uthscsa.edu/mango/papaya/papaya.css?version=0.8&build=895\" />\n");
-        html.append(
-                "<script type=\"text/javascript\" src=\"http://rii.uthscsa.edu/mango/papaya/papaya.js?version=0.8&build=895\"></script>\n");
+        html.append("<link rel=\"stylesheet\" type=\"text/css\" href=\""
+                + DicomViewModule.URL_PAPAYA_CSS + "\"/>\n");
+        html.append("<script type=\"text/javascript\" src=\""
+                + DicomViewModule.URL_PAPAYA_JS + "\"></script>\n");
         html.append("<title>");
         html.append(title);
         html.append("</title>\n");

@@ -55,16 +55,31 @@ public class Subject extends DObject {
         return _privateMetadata;
     }
 
+    public boolean hasPrivateMetadata() {
+        return _privateMetadata != null;
+    }
+
     public XmlDoc.Element publicMetadata() {
         return _publicMetadata;
+    }
+
+    public boolean hasPublicMetadata() {
+        return _publicMetadata != null;
     }
 
     public XmlDoc.Element privateMetadataForEdit() {
         return _privateMetadataForEdit;
     }
 
+    public boolean hasPrivateMetadataForEdit() {
+        return _privateMetadataForEdit != null;
+    }
+
     public XmlDoc.Element publicMetadataForEdit() {
         return _publicMetadataForEdit;
     }
 
+    public boolean hasPublicMetadataForEdit() {
+        return _publicMetadataForEdit != null;
+    }
 }

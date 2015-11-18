@@ -26,9 +26,9 @@ public abstract class DObjectView<T extends DObject> extends TabPane {
     protected final int interfaceTabIndex = 0;
     private KVTreeTableView<String, Object> _interfaceTreeTableView;
 
-    protected int metadataTabIndex = -1;
+    protected Tab metadataTab;
 
-    protected int contentTabIndex = -1;
+    protected Tab contentTab;
 
     public DObjectView(T object) {
         super();
@@ -47,14 +47,13 @@ public abstract class DObjectView<T extends DObject> extends TabPane {
         /*
          * metadata tab
          */
-        if (object.hasMetadataForView()) {
+        if (object.hasMetadata()) {
             StackPane metadataPane = new StackPane();
             XmlTreeTableView metadataTreeTableView = new XmlTreeTableView(
-                    object.metadataForView(), false);
+                    object.metadata(), false);
             metadataPane.getChildren().add(metadataTreeTableView);
-            Tab metadataTab = new Tab("Metadata", metadataPane);
+            metadataTab = new Tab("Metadata", metadataPane);
             getTabs().add(metadataTab);
-            metadataTabIndex = getTabs().indexOf(metadataTab);
         }
 
         /*
@@ -64,9 +63,8 @@ public abstract class DObjectView<T extends DObject> extends TabPane {
             StackPane contentPane = new StackPane();
             ContentView contentView = new ContentView(object);
             contentPane.getChildren().add(contentView);
-            Tab contentTab = new Tab("Content", contentPane);
+            contentTab = new Tab("Content", contentPane);
             getTabs().add(contentTab);
-            contentTabIndex = getTabs().indexOf(contentTab);
         }
     }
 
