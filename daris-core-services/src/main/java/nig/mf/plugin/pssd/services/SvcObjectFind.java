@@ -648,7 +648,7 @@ public class SvcObjectFind extends PluginService {
      * @param editable
      * @throws Throwable
      */
-    public static void addPssdProject(ServiceExecutor executor, XmlWriter w,
+    private static void addPssdProject(ServiceExecutor executor, XmlWriter w,
             String projectId, DistributedAsset dAsset, XmlDoc.Element ae,
             boolean editable, ModelUserRoleSet selfRoles) throws Throwable {
 

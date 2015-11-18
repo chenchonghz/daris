@@ -255,7 +255,7 @@ public class ProjectMemberMap {
 		Collection<String> rms = rolesHaveRole(executor, role);
 		if (rms != null) {
 			for (String rm : rms) {
-				if (rm.startsWith("pssd.project")) {
+				if (rm.startsWith("daris:pssd.project")) {
 					continue;
 				}
 				XmlDocMaker dm = new XmlDocMaker("args");
