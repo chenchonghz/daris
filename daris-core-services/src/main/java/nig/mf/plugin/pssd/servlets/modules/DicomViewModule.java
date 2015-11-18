@@ -13,9 +13,6 @@ import nig.mf.plugin.pssd.servlets.DicomServlet;
 
 public class DicomViewModule implements Module {
 
-    public static final String URL_PAPAYA_JS = "https://cdn.rawgit.com/uom-daris/daris/master/daris-core-services/src/main/javascript/lib/papaya/papaya.js?version=0.8&build=1046";
-    public static final String URL_PAPAYA_CSS = "https://cdn.rawgit.com/uom-daris/daris/master/daris-core-services/src/main/javascript/lib/papaya/papaya.css?version=0.8&build=1046";
-
     public static final DicomViewModule INSTANCE = new DicomViewModule();
 
     public static final String NAME = DicomServlet.ModuleName.view.name();
@@ -77,9 +74,9 @@ public class DicomViewModule implements Module {
         html.append(
                 "<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">\n");
         html.append("<link rel=\"stylesheet\" type=\"text/css\" href=\""
-                + URL_PAPAYA_CSS + "\"/>\n");
-        html.append("<script type=\"text/javascript\" src=\"" + URL_PAPAYA_JS
-                + "\"></script>\n");
+                + PapayaViewer.URL_PAPAYA_CSS + "\"/>\n");
+        html.append("<script type=\"text/javascript\" src=\""
+                + PapayaViewer.URL_PAPAYA_JS + "\"></script>\n");
         html.append("<title>");
         html.append(title);
         html.append("</title>\n");

@@ -44,13 +44,8 @@
 			<!-- provided so that we do not deploy -->
 			<scope>provided</scope>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>com.github.jai-imageio</groupId>
-			<artifactId>jai-imageio-core</artifactId>
-			<version>1.3.0</version>
-		</dependency>
-		-->
+		<!-- <dependency> <groupId>com.github.jai-imageio</groupId> <artifactId>jai-imageio-core</artifactId> 
+			<version>1.3.0</version> </dependency> -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -114,6 +109,22 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.5.4</version>
 				<executions>
+					<execution>
+						<!-- make javascript zip -->
+						<id>javascript-zip</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<finalName>javascript</finalName>
+							<descriptors>
+								<descriptor>src/main/assembly/javascript-zip.xml</descriptor>
+							</descriptors>
+							<attach>false</attach>
+						</configuration>
+					</execution>
 					<execution>
 						<!-- make plugin zip -->
 						<id>plugin-zip</id>

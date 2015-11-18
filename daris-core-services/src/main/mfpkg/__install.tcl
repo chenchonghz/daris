@@ -263,3 +263,12 @@ http.servlets.set :url ${url} \
                   :servlet -path dicom.mfjp -default false daris.dicom \
                   :servlet -path nifti.mfjp -default false daris.nifti \
                   :servlet -path archive.mfjp -default false daris.archive
+
+#=============================================================================
+# Install papaya.js (DICOM/NIFTI viewer). Required by dicom.mfjp and nifti.mfjp
+#=============================================================================
+set label      [string toupper PACKAGE_$package]
+asset.import :url archive:javascript.zip \
+    :namespace -create yes www/js \
+    :label -create yes ${label} :label PUBLISHED \
+    :update true
