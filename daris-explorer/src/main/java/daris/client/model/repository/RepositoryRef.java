@@ -2,8 +2,7 @@ package daris.client.model.repository;
 
 import arc.mf.client.xml.XmlWriterNe;
 import arc.xml.XmlDoc.Element;
-import daris.client.model.DObject;
-import daris.client.model.Repository;
+import daris.client.model.object.DObject;
 import daris.client.model.object.DObjectRef;
 
 public class RepositoryRef extends DObjectRef {

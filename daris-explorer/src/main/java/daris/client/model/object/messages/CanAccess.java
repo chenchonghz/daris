@@ -4,7 +4,7 @@ import arc.mf.client.xml.XmlWriterNe;
 import arc.mf.object.ObjectMessage;
 import arc.xml.XmlDoc.Element;
 import daris.client.model.CiteableIdUtils;
-import daris.client.model.DObject;
+import daris.client.model.object.DObject;
 import daris.client.model.object.DObjectRef;
 
 public class CanAccess extends ObjectMessage<Boolean> {

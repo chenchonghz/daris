@@ -7,7 +7,6 @@ import arc.mf.client.xml.XmlWriterNe;
 import arc.mf.object.ObjectRef;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDoc.Element;
-import daris.client.model.DObject;
 
 public class DObjectChildrenRef extends ObjectRef<List<DObjectRef>> {
 

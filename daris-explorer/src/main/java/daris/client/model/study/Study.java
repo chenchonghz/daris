@@ -1,10 +1,11 @@
-package daris.client.model;
+package daris.client.model.study;
 
 import arc.xml.XmlDoc.Element;
+import daris.client.model.object.DObject;
 
 public class Study extends DObject {
 
-    protected Study(Element oe) throws Throwable {
+    public Study(Element oe) throws Throwable {
         super(oe);
         // TODO Auto-generated constructor stub
     }

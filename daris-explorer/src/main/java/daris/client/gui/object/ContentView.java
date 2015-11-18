@@ -3,8 +3,8 @@ package daris.client.gui.object;
 import java.util.Map.Entry;
 
 import daris.client.gui.xml.KVTreeTableView;
-import daris.client.model.DObject;
 import daris.client.model.archive.ArchiveEntryCollectionRef;
+import daris.client.model.object.DObject;
 import daris.client.model.object.DataContent;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.TitledPane;
@@ -48,8 +48,8 @@ public class ContentView extends Accordion {
                 content.humanReadableSize + " (" + content.size + " bytes)");
         table.addEntry("Checksum",
                 Long.toHexString(content.csum).toUpperCase());
-        TreeItem<Entry<String, Object>> storeItem = table.addEntry("Store");
-        table.addEntry(storeItem, "Name", content.storeName);
+        TreeItem<Entry<String, Object>> storeItem = table.addEntry("Store",
+                content.storeName);
         table.addEntry(storeItem, "Type", content.storeType);
         if (content.url != null) {
             TreeItem<Entry<String, Object>> urlItem = table.addEntry("URL",

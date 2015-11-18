@@ -1,6 +1,7 @@
-package daris.client.model;
+package daris.client.model.method;
 
 import arc.xml.XmlDoc.Element;
+import daris.client.model.object.DObject;
 
 public class Method extends DObject {
 

@@ -1,10 +1,11 @@
-package daris.client.model;
+package daris.client.model.exmethod;
 
 import arc.xml.XmlDoc.Element;
+import daris.client.model.object.DObject;
 
 public class ExMethod extends DObject {
 
-    protected ExMethod(Element oe) throws Throwable {
+    public ExMethod(Element oe) throws Throwable {
         super(oe);
         // TODO Auto-generated constructor stub
     }

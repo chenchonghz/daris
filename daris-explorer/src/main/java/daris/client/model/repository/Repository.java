@@ -1,6 +1,7 @@
-package daris.client.model;
+package daris.client.model.repository;
 
 import arc.xml.XmlDoc;
+import daris.client.model.object.DObject;
 
 public class Repository extends DObject {
 

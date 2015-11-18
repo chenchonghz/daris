@@ -1,7 +1,7 @@
 package daris.client.gui.dataset;
 
 import daris.client.gui.object.DObjectView;
-import daris.client.model.DataSet;
+import daris.client.model.dataset.DataSet;
 
 public class DataSetView extends DObjectView<DataSet>{
 

@@ -22,7 +22,7 @@ import arc.mf.object.tree.TreeNodeContentsHandler;
 import arc.mf.object.tree.TreeNodeDescriptionHandler;
 import arc.mf.object.tree.TreeNodeRemoveHandler;
 import daris.client.model.CiteableIdUtils;
-import daris.client.model.DObject;
+import daris.client.model.object.DObject;
 import daris.client.model.object.DObjectCollectionRef;
 import daris.client.model.object.DObjectRef;
 import daris.client.model.object.events.PSSDObjectEvent;

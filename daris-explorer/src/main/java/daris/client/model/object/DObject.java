@@ -1,8 +1,13 @@
-package daris.client.model;
+package daris.client.model.object;
 
 import arc.mf.client.ServerRoute;
 import arc.xml.XmlDoc;
-import daris.client.model.object.DataContent;
+import daris.client.model.dataset.DataSet;
+import daris.client.model.exmethod.ExMethod;
+import daris.client.model.project.Project;
+import daris.client.model.repository.Repository;
+import daris.client.model.study.Study;
+import daris.client.model.subject.Subject;
 
 public abstract class DObject {
 

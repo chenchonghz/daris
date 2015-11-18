@@ -6,7 +6,6 @@ import arc.mf.client.xml.XmlWriterNe;
 import arc.mf.object.ObjectRef;
 import arc.xml.XmlDoc.Element;
 import daris.client.model.CiteableIdUtils;
-import daris.client.model.DObject;
 import daris.client.model.repository.RepositoryRef;
 
 public class DObjectRef extends ObjectRef<DObject>

@@ -8,7 +8,6 @@ import arc.mf.client.xml.XmlWriterNe;
 import arc.mf.object.CollectionResolveHandler;
 import arc.mf.object.OrderedCollectionRef;
 import arc.xml.XmlDoc;
-import daris.client.model.DObject;
 
 public class DObjectCollectionRef extends OrderedCollectionRef<DObjectRef> {
 

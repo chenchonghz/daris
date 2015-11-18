@@ -23,6 +23,7 @@ public class KVTreeTableView<K, V> extends TreeTableView<Entry<K, V>> {
             return new ReadOnlyStringWrapper(
                     keyToString(o.getKey(), o.getValue()));
         });
+        nameColumn.setStyle("-fx-font-weight: bold;");
 
         TreeTableColumn<Entry<K, V>, String> valueColumn = new TreeTableColumn<>(
                 "Value");
@@ -69,7 +70,7 @@ public class KVTreeTableView<K, V> extends TreeTableView<Entry<K, V>> {
     public void setNameColumnPrefWidth(double width) {
         getColumns().get(0).setPrefWidth(width);
     }
-    
+
     public void setValueColumnPrefWidth(double width) {
         getColumns().get(1).setPrefWidth(width);
     }

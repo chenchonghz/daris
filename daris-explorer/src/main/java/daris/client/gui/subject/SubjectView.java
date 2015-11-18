@@ -1,7 +1,7 @@
 package daris.client.gui.subject;
 
 import daris.client.gui.object.DObjectView;
-import daris.client.model.Subject;
+import daris.client.model.subject.Subject;
 
 public class SubjectView extends DObjectView<Subject>{
 

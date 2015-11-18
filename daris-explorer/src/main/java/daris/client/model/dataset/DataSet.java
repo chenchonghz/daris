@@ -1,10 +1,11 @@
-package daris.client.model;
+package daris.client.model.dataset;
 
 import arc.xml.XmlDoc.Element;
+import daris.client.model.object.DObject;
 
 public class DataSet extends DObject {
 
-    protected DataSet(Element oe) throws Throwable {
+    public DataSet(Element oe) throws Throwable {
         super(oe);
         // TODO Auto-generated constructor stub
     }

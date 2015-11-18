@@ -1,7 +1,7 @@
 package daris.client.gui.exmethod;
 
 import daris.client.gui.object.DObjectView;
-import daris.client.model.ExMethod;
+import daris.client.model.exmethod.ExMethod;
 
 public class ExMethodView extends DObjectView<ExMethod> {
 

@@ -1,5 +1,7 @@
 package daris.client.model;
 
+import daris.client.model.object.DObject;
+
 public class CiteableIdUtils {
 
     /**

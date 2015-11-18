@@ -3,7 +3,7 @@ package daris.client.model.archive;
 import arc.mf.client.xml.XmlWriterNe;
 import arc.mf.object.OrderedCollectionRef;
 import arc.xml.XmlDoc;
-import daris.client.model.DObject;
+import daris.client.model.object.DObject;
 import daris.client.model.object.DObjectRef;
 
 public class ArchiveEntryCollectionRef

@@ -1,7 +1,7 @@
 package daris.client.gui.repository;
 
 import daris.client.gui.object.DObjectView;
-import daris.client.model.Repository;
+import daris.client.model.repository.Repository;
 
 public class RepositoryView extends DObjectView<Repository>{
 

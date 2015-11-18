@@ -5,9 +5,9 @@ import java.util.List;
 
 import arc.mf.desktop.ui.util.ApplicationThread;
 import daris.client.model.CiteableIdUtils;
-import daris.client.model.Repository;
 import daris.client.model.object.DObjectChildrenRef;
 import daris.client.model.object.DObjectRef;
+import daris.client.model.repository.Repository;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeItem;
