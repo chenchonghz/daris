@@ -1306,7 +1306,8 @@ public class SvcObjectFind extends PluginService {
             return;
         }
 
-        w.push("data");
+        w.push("data", new String[] { "id", ce.value("@id"), "stime",
+                ce.value("@stime"), "version", ce.value("@version") });
         w.add(ce, false);
         w.pop();
     }
