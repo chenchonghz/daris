@@ -8,6 +8,8 @@ import java.util.Map;
 import arc.mf.client.xml.XmlWriterNe;
 import arc.mf.desktop.server.Session;
 import arc.xml.XmlDoc;
+import daris.client.model.method.MethodRef;
+import daris.client.model.method.MethodStep;
 import daris.client.model.mime.MimeTypes;
 import daris.client.model.object.DObject;
 
@@ -177,6 +179,7 @@ public abstract class DataSet extends DObject {
     private SourceType _source;
     private Transform _transform;
     private String _fileName;
+    private String _dataSetVid;
 
     protected DataSet(XmlDoc.Element oe) throws Throwable {
         super(oe);
@@ -186,6 +189,7 @@ public abstract class DataSet extends DObject {
             _transform = new Transform(oe.element("transform"));
         }
         _fileName = oe.value("filename");
+        _dataSetVid = oe.value("vid");
     }
 
     public Transform transform() {
@@ -204,6 +208,10 @@ public abstract class DataSet extends DObject {
     public DObject.Type type() {
 
         return DObject.Type.DATASET;
+    }
+
+    public String dataSetVid() {
+        return _dataSetVid;
     }
 
     public boolean isNiftiSeries() {
@@ -273,5 +281,9 @@ public abstract class DataSet extends DObject {
             return new PrimaryDataSet(oe);
         }
     }
+
+    public abstract MethodRef method();
+
+    public abstract MethodStep step();
 
 }

@@ -64,7 +64,7 @@ public abstract class DObject {
     private String _aid;
     private String _cid;
     private int _version;
-    private long _vid;
+    private String _assetVid;
     private String _name;
     private String _description;
     private int _numberOfChildren;
@@ -80,7 +80,7 @@ public abstract class DObject {
         _route = oe.value("id/proute");
         _cid = oe.value("id");
         _version = oe.intValue("@version", VERSION_LATEST);
-        _vid = oe.longValue("@vid", -1);
+        _assetVid = oe.value("@vid");
         _editable = oe.booleanValue("@editable");
         _name = oe.value("name");
         _description = oe.value("description");
@@ -127,8 +127,8 @@ public abstract class DObject {
         return _version;
     }
 
-    public long vid() {
-        return _vid;
+    public String assetVid() {
+        return _assetVid;
     }
 
     /**
@@ -211,7 +211,5 @@ public abstract class DObject {
     public int numberOfChildren() {
         return _numberOfChildren;
     }
-
-
 
 }

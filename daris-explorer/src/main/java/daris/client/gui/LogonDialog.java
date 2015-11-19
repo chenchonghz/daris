@@ -1,10 +1,14 @@
 package daris.client.gui;
 
+import java.util.List;
+
 import arc.mf.desktop.server.LogonResponseHandler;
 import arc.mf.desktop.server.Session;
 import arc.mf.desktop.server.Transport;
 import arc.mf.desktop.ui.field.IntegerField;
 import arc.mf.desktop.ui.util.ApplicationThread;
+import daris.client.idp.IdentityProvider;
+import daris.client.idp.IdentityProviderList;
 import daris.client.settings.ConnectionSettings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -42,16 +46,28 @@ public class LogonDialog {
     private int _port;
     private boolean _encrypt;
     private String _domain;
+    private IdentityProvider _provider;
     private String _user;
     private String _password;
     private LogonResponseHandler _rh;
+    private List<IdentityProvider> _providers;
 
     private Stage _stage;
+    private GridPane _gridPane;
+    private Text _title;
+    private Label _hostLabel;
     private ComboBox<String> _hostCombo;
+    private Label _transportLabel;
     private ComboBox<Transport> _transportCombo;
+    private Label _portLabel;
     private IntegerField _portField;
+    private Label _domainLabel;
     private TextField _domainField;
+    private Label _providerLabel;
+    private ComboBox<IdentityProvider> _providerCombo;
+    private Label _userLabel;
     private TextField _userField;
+    private Label _passwordLabel;
     private PasswordField _passwordField;
 
     private Label _statusLabel;
@@ -78,33 +94,33 @@ public class LogonDialog {
         /*
          * 
          */
-        GridPane gridPane = new GridPane();
-        gridPane.setAlignment(Pos.CENTER);
-        gridPane.setHgap(10);
-        gridPane.setVgap(10);
-        gridPane.setPadding(new Insets(25, 25, 25, 25));
-        gridPane.setBorder(new Border(new BorderStroke[] {
+        _gridPane = new GridPane();
+        _gridPane.setAlignment(Pos.CENTER);
+        _gridPane.setHgap(10);
+        _gridPane.setVgap(10);
+        _gridPane.setPadding(new Insets(25, 25, 25, 25));
+        _gridPane.setBorder(new Border(new BorderStroke[] {
                 new BorderStroke(Color.BEIGE, BorderStrokeStyle.SOLID,
                         new CornerRadii(5), BorderWidths.DEFAULT) }));
 
         ColumnConstraints cc = new ColumnConstraints();
         cc.setHalignment(HPos.RIGHT);
-        gridPane.getColumnConstraints().add(cc);
+        _gridPane.getColumnConstraints().add(cc);
         cc = new ColumnConstraints();
         cc.setHalignment(HPos.LEFT);
-        gridPane.getColumnConstraints().add(cc);
+        _gridPane.getColumnConstraints().add(cc);
 
-        Text sceneTitle = new Text("DaRIS");
-        sceneTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-        gridPane.add(sceneTitle, 0, 0, 2, 1);
-        GridPane.setConstraints(sceneTitle, 0, 0, 2, 1, HPos.LEFT, VPos.CENTER);
+        /*
+         * title
+         */
+        _title = new Text("DaRIS");
+        _title.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+        GridPane.setConstraints(_title, 0, 0, 2, 1, HPos.LEFT, VPos.CENTER);
 
         /*
          * host
          */
-        Label serverLabel = new Label("Host:");
-        gridPane.add(serverLabel, 0, 1);
-
+        _hostLabel = new Label("Host:");
         _hostCombo = new ComboBox<String>();
         _hostCombo.setEditable(true);
         _hostCombo.setPromptText("address");
@@ -146,14 +162,11 @@ public class LogonDialog {
                         validate();
                     }
                 });
-        gridPane.add(_hostCombo, 1, 1);
 
         /*
          * transport
          */
-        Label transportLabel = new Label("Transport:");
-        gridPane.add(transportLabel, 0, 2);
-
+        _transportLabel = new Label("Transport:");
         _transportCombo = new ComboBox<Transport>();
         _transportCombo.getItems().addAll(Transport.values());
         _transportCombo.setValue(_encrypt ? Transport.HTTPS : Transport.HTTP);
@@ -181,14 +194,11 @@ public class LogonDialog {
                         validate();
                     }
                 });
-        gridPane.add(_transportCombo, 1, 2);
 
         /*
          * port
          */
-        Label portLabel = new Label("Port:");
-        gridPane.add(portLabel, 0, 3);
-
+        _portLabel = new Label("Port:");
         _portField = new IntegerField(0, 65535);
         _portField.setPrefWidth(90);
         _portField.setMaxWidth(90);
@@ -210,14 +220,11 @@ public class LogonDialog {
                 }
             }
         });
-        gridPane.add(_portField, 1, 3);
 
         /*
          * domain
          */
-        Label domainLabel = new Label("Domain:");
-        gridPane.add(domainLabel, 0, 4);
-
+        _domainLabel = new Label("Domain:");
         _domainField = new TextField();
         _domainField.setText(_domain);
         _domainField.textProperty().addListener(new ChangeListener<String>() {
@@ -226,6 +233,7 @@ public class LogonDialog {
             public void changed(ObservableValue<? extends String> observable,
                     String oldValue, String newValue) {
                 _domain = newValue;
+                updateProviders(_domain);
                 validate();
             }
         });
@@ -237,14 +245,26 @@ public class LogonDialog {
                 }
             }
         });
-        gridPane.add(_domainField, 1, 4);
+
+        /*
+         * provider
+         */
+        _providerLabel = new Label("Provider:");
+        _providerCombo = new ComboBox<IdentityProvider>();
+        if (_providers != null && !_providers.isEmpty()) {
+            _providerCombo.getItems().setAll(_providers);
+        }
+        _providerCombo.setValue(_provider);
+        _providerCombo.valueProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    _provider = newValue;
+                    validate();
+                });
 
         /*
          * user
          */
-        Label userLabel = new Label("User:");
-        gridPane.add(userLabel, 0, 5);
-
+        _userLabel = new Label("User:");
         _userField = new TextField();
         _userField.setText(_user);
         _userField.textProperty().addListener(new ChangeListener<String>() {
@@ -264,14 +284,11 @@ public class LogonDialog {
                 }
             }
         });
-        gridPane.add(_userField, 1, 5);
 
         /*
          * password
          */
-        Label passwordLabel = new Label("Password:");
-        gridPane.add(passwordLabel, 0, 6);
-
+        _passwordLabel = new Label("Password:");
         _passwordField = new PasswordField();
         _passwordField.setText(_password);
         _passwordField.textProperty().addListener(new ChangeListener<String>() {
@@ -298,11 +315,9 @@ public class LogonDialog {
                 }
             }
         });
-        gridPane.add(_passwordField, 1, 6);
 
         _statusLabel = new Label();
         _statusLabel.setTextFill(Color.RED);
-        gridPane.add(_statusLabel, 0, 7, 2, 1);
 
         _logonButton = new Button("Logon");
         _logonButton.setDisable(true);
@@ -314,20 +329,74 @@ public class LogonDialog {
                 logon();
             }
         });
-        gridPane.add(_logonButton, 0, 8, 2, 1);
+        
+        /*
+         * initial show
+         */
+        updateGrid();
 
         _stage = new Stage();
         _stage.initStyle(StageStyle.UTILITY);
         _stage.initModality(Modality.APPLICATION_MODAL);
-        _stage.setScene(new Scene(gridPane, 480, 480));
+        _stage.setScene(new Scene(_gridPane, 480, 520));
         _stage.setOnCloseRequest(event -> {
             System.exit(0);
         });
     }
 
+    private void updateGrid() {
+        _gridPane.getChildren().clear();
+        _gridPane.add(_title, 0, 0, 2, 1);
+        _gridPane.addRow(1, _hostLabel, _hostCombo);
+        _gridPane.addRow(2, _transportLabel, _transportCombo);
+        _gridPane.addRow(3, _portLabel, _portField);
+        _gridPane.addRow(4, _domainLabel, _domainField);
+        if (_providers != null && !_providers.isEmpty()) {
+            _providerCombo.setValue(_providers.get(0));
+            _gridPane.addRow(5, _providerLabel, _providerCombo);
+            _gridPane.addRow(6, _userLabel, _userField);
+            _gridPane.addRow(7, _passwordLabel, _passwordField);
+            _gridPane.add(_statusLabel, 0, 8, 2, 1);
+            _gridPane.add(_logonButton, 0, 9, 2, 1);
+        } else {
+            _gridPane.addRow(5, _userLabel, _userField);
+            _gridPane.addRow(6, _passwordLabel, _passwordField);
+            _gridPane.add(_statusLabel, 0, 7, 2, 1);
+            _gridPane.add(_logonButton, 0, 8, 2, 1);
+        }
+    }
+
+    private void updateProviders(String domain) {
+        if (domain == null || _host == null || _port <= 0) {
+            _providers = null;
+            _provider = null;
+            return;
+        }
+        IdentityProviderList.resolve(_host, _port, _encrypt, domain,
+                (providers) -> {
+                    _providers = providers;
+                    if (_providers == null || _providers.isEmpty()) {
+                        _provider = null;
+                    }
+                    ApplicationThread.execute(() -> {
+                        updateGrid();
+                    });
+                });
+    }
+
     private void logon() {
         _logonButton.setDisable(true);
         new Thread(() -> {
+            String provider = _provider == null ? null : _provider.id();
+            if (provider != null) {
+                int idx = _user.indexOf(":");
+                if (idx < 0) {
+                    if (provider.contains(":")) {
+                        provider = "[" + provider + "]";
+                    }
+                    _user = provider.concat(":").concat(_user);
+                }
+            }
             Session.logon(_encrypt ? Transport.HTTPS : Transport.HTTP, _host,
                     _port, _domain, _user, _password,
                     new LogonResponseHandler() {
@@ -390,6 +459,12 @@ public class LogonDialog {
         if (_domain == null || _domain.trim().isEmpty()) {
             _statusLabel.setText("Missing authentication domain name.");
             _domainField.requestFocus();
+            return false;
+        }
+
+        if (_providers != null && _provider == null) {
+            _statusLabel.setText("Missing identity provider.");
+            _providerCombo.requestFocus();
             return false;
         }
 

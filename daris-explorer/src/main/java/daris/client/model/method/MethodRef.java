@@ -17,4 +17,8 @@ public class MethodRef extends DObjectRef {
         this(null, cid, name, description);
     }
 
+    public MethodRef(String cid) {
+        this(null, cid, null, null);
+    }
+
 }
