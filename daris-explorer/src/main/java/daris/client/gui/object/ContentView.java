@@ -22,7 +22,7 @@ public class ContentView extends Accordion {
 
         if (_o.hasBrowsableArchiveContent()) {
             ArchiveEntryCollectionRef arc = new ArchiveEntryCollectionRef(_o);
-            arc.setPageSize(10);
+            // arc.setPageSize(500);
             TitledPane archivePane = new TitledPane("Content archive",
                     new ArchiveContentView(arc));
             getPanes().add(archivePane);

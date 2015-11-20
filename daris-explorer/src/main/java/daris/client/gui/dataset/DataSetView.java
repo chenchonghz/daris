@@ -78,6 +78,8 @@ public class DataSetView extends DObjectView<DataSet> {
     @Override
     protected void addInterfaceMetadata(KVTreeTableView<String, Object> table,
             DataSet dataset) {
+        super.addInterfaceMetadata(table, dataset);
+
         table.addEntry("VID", dataset.dataSetVid());
         table.addEntry("Source Type", dataset.sourceType());
         if (dataset.mimeType() != null
