@@ -13,38 +13,33 @@ public class ArchiveEntryCollectionRef
 
     private String _assetId;
     private String _cid;
-    private String _assetMimeType;
 
     private int _pageSize = PAGE_SIZE_DEFAULT;
 
     public ArchiveEntryCollectionRef(DObject obj) {
-        this(obj.citeableId(), true, null);
+        this(obj.citeableId(), true);
     }
 
     public ArchiveEntryCollectionRef(DObjectRef obj) {
-        this(obj.citeableId(), true, null);
+        this(obj.citeableId(), true);
     }
 
-    public ArchiveEntryCollectionRef(DObjectRef obj, String assetMimeType) {
-        this(obj.citeableId(), true, assetMimeType);
-    }
-
-    public ArchiveEntryCollectionRef(String id, boolean citeable,
-            String assetMimeType) {
+    public ArchiveEntryCollectionRef(String id, boolean citeable) {
         if (citeable) {
             _cid = id;
         } else {
             _assetId = id;
         }
-        _assetMimeType = assetMimeType;
+        setCountMembers(true);
+    }
+    
+    @Override
+    public boolean supportsPaging() {
+        return true;
     }
 
     public String assetId() {
         return _assetId;
-    }
-
-    public String assetMimeType() {
-        return _assetMimeType;
     }
 
     public String citeableId() {
