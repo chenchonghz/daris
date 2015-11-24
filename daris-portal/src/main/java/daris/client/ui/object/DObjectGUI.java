@@ -62,18 +62,20 @@ public class DObjectGUI implements ObjectGUI {
             Resource.INSTANCE.refreshGreen16().getSafeUri().asString(), 16, 16);
     public static final arc.gui.image.Image ICON_RELOAD_BLUE = new arc.gui.image.Image(
             Resource.INSTANCE.refreshBlue16().getSafeUri().asString(), 16, 16);
-    public static final Image ICON_CREATE = new Image(Resource.INSTANCE.add16()
-            .getSafeUri().asString(), 16, 16);
-    public static final Image ICON_DOWNLOAD = new Image(Resource.INSTANCE
-            .download16().getSafeUri().asString(), 16, 16);
-    public static final Image ICON_EDIT = new Image(Resource.INSTANCE.edit16()
-            .getSafeUri().asString(), 16, 16);
-    public static final Image ICON_SEND = new Image(Resource.INSTANCE
-            .forward16().getSafeUri().asString(), 16, 16);
-    public static final Image ICON_DICOM_SEND = new Image(Resource.INSTANCE
-            .send16().getSafeUri().asString(), 16, 16);
-    public static final Image ICON_DICOM_INGEST = new Image(Resource.INSTANCE
-            .upload16().getSafeUri().asString(), 16, 16);
+    public static final Image ICON_CREATE = new Image(
+            Resource.INSTANCE.add16().getSafeUri().asString(), 16, 16);
+    public static final Image ICON_DOWNLOAD = new Image(
+            Resource.INSTANCE.download16().getSafeUri().asString(), 16, 16);
+    public static final Image ICON_SHARE = new Image(
+            Resource.INSTANCE.share16().getSafeUri().asString(), 16, 16);
+    public static final Image ICON_EDIT = new Image(
+            Resource.INSTANCE.edit16().getSafeUri().asString(), 16, 16);
+    public static final Image ICON_SEND = new Image(
+            Resource.INSTANCE.forward16().getSafeUri().asString(), 16, 16);
+    public static final Image ICON_DICOM_SEND = new Image(
+            Resource.INSTANCE.send16().getSafeUri().asString(), 16, 16);
+    public static final Image ICON_DICOM_INGEST = new Image(
+            Resource.INSTANCE.upload16().getSafeUri().asString(), 16, 16);
     public static final Image ICON_ADD_TO_SHOPPINGCART = new Image(
             Resource.INSTANCE.shoppingcart24().getSafeUri().asString(), 16, 16);
     public static final arc.gui.image.Image ICON_SEARCH = new arc.gui.image.Image(
@@ -136,7 +138,8 @@ public class DObjectGUI implements ObjectGUI {
         ro.setForEdit(forEdit);
         ro.reset();
         if (ro.resolved()) {
-            dd.display(ro, DObjectDetails.detailsFor(ro.referent(), mode).gui());
+            dd.display(ro,
+                    DObjectDetails.detailsFor(ro.referent(), mode).gui());
         } else {
             ro.reset();
             ObjectResolveHandler<DObject> rh = new ObjectResolveHandler<DObject>() {
@@ -144,8 +147,8 @@ public class DObjectGUI implements ObjectGUI {
                 public void resolved(DObject oo) {
 
                     if (oo != null) {
-                        dd.display(ro, DObjectDetails.detailsFor(oo, mode)
-                                .gui());
+                        dd.display(ro,
+                                DObjectDetails.detailsFor(oo, mode).gui());
                     }
                 }
             };
@@ -199,18 +202,19 @@ public class DObjectGUI implements ObjectGUI {
                         if (DObject.Type.subject == type
                                 || DObject.Type.ex_method == type
                                 || DObject.Type.study == type) {
-                            m.add(new DicomIngestAction(fs, oo, target.window()));
+                            m.add(new DicomIngestAction(fs, oo,
+                                    target.window()));
                         }
                         if (type == DObject.Type.study) {
-                            m.add(new PrimaryDataSetCreateAction(fs, oo, target
-                                    .window()));
+                            m.add(new PrimaryDataSetCreateAction(fs, oo,
+                                    target.window()));
                             m.add(new DerivedDataSetCreateAction(fs, oo, null,
                                     target.window()));
                         } else if (type == DObject.Type.dataset) {
                             m.add(new DerivedDataSetCreateAction(fs,
                                     new DObjectRef(IDUtil.getParentId(oo.id()),
-                                            oo.proute(), false, false, -1), oo,
-                                    target.window()));
+                                            oo.proute(), false, false, -1),
+                                    oo, target.window()));
                         }
                         if (m.entries() != null && !m.entries().isEmpty()) {
                             new ActionMenu(m).showAt(target.absoluteLeft(),
@@ -248,8 +252,8 @@ public class DObjectGUI implements ObjectGUI {
          * edit
          */
         if (ro.id() != null) {
-            menu.add(new ActionInterfaceEntry(ICON_EDIT, new DObjectEditAction(
-                    ro, w)));
+            menu.add(new ActionInterfaceEntry(ICON_EDIT,
+                    new DObjectEditAction(ro, w)));
         }
 
         /*
@@ -261,10 +265,12 @@ public class DObjectGUI implements ObjectGUI {
             menu.add(new ActionInterfaceEntry(ICON_CREATE,
                     new DerivedDataSetCreateAction(null, ro, null, w)));
         } else if (ro.isDataSet()) {
-            menu.add(new ActionInterfaceEntry(ICON_CREATE,
-                    new DerivedDataSetCreateAction(null, new DObjectRef(IDUtil
-                            .getParentId(ro.id()), ro.proute(), false, false,
-                            -1), ro, w)));
+            menu.add(
+                    new ActionInterfaceEntry(ICON_CREATE,
+                            new DerivedDataSetCreateAction(null,
+                                    new DObjectRef(IDUtil.getParentId(ro.id()),
+                                            ro.proute(), false, false, -1),
+                                    ro, w)));
         } else {
             menu.add(new ActionInterfaceEntry(ICON_CREATE,
                     new DObjectCreateAction(ro, w)));
@@ -289,11 +295,11 @@ public class DObjectGUI implements ObjectGUI {
                         new ObjectMemberExportForm(ro).show(w,
                                 new ActionListener() {
 
-                                    @Override
-                                    public void executed(boolean succeeded) {
-                                        // DO NOTHING
-                                    }
-                                });
+                            @Override
+                            public void executed(boolean succeeded) {
+                                // DO NOTHING
+                            }
+                        });
                     }
                 }));
 
@@ -337,6 +343,19 @@ public class DObjectGUI implements ObjectGUI {
                 menu.add(aeDownloadContent);
             }
             /*
+             * Share URL
+             */
+            if (!ro.isProject()) {
+                menu.add(new ActionEntry(ICON_SHARE, "Generate Sharable Link",
+                        new Action() {
+
+                            @Override
+                            public void execute() {
+                                new UrlShareForm(ro).showDialog(w);
+                            }
+                        }));
+            }
+            /*
              * add to shopping cart
              */
             menu.add(new ActionInterfaceEntry(ICON_TAG, new TagAction(ro, w)));
@@ -348,38 +367,34 @@ public class DObjectGUI implements ObjectGUI {
                             ActiveShoppingCart.addContents(ro, true,
                                     new Action() {
 
-                                        @Override
-                                        public void execute() {
-                                            ActiveShoppingCart
-                                                    .get(new ObjectResolveHandler<ShoppingCartRef>() {
+                                @Override
+                                public void execute() {
+                                    ActiveShoppingCart.get(
+                                            new ObjectResolveHandler<ShoppingCartRef>() {
 
-                                                        @Override
-                                                        public void resolved(
-                                                                ShoppingCartRef asc) {
-                                                            MessageBox
-                                                                    .display(
-                                                                            MessageBox.Type.info,
-                                                                            "Shopping cart "
-                                                                                    + asc.id(),
-                                                                            ro.referentTypeName()
-                                                                                    + " "
-                                                                                    + ro.id()
-                                                                                    + " has been added to shopping cart "
-                                                                                    + asc.id()
-                                                                                    + ".",
-                                                                            3);
-                                                        }
-                                                    });
+                                        @Override
+                                        public void resolved(
+                                                ShoppingCartRef asc) {
+                                            MessageBox.display(
+                                                    MessageBox.Type.info,
+                                                    "Shopping cart " + asc.id(),
+                                                    ro.referentTypeName() + " "
+                                                            + ro.id()
+                                                            + " has been added to shopping cart "
+                                                            + asc.id() + ".",
+                                                    3);
                                         }
                                     });
+                                }
+                            });
                         }
                     }));
 
             /*
              * search project
              */
-            final DObjectRef project = ro.isProject() ? ro : new DObjectRef(
-                    IDUtil.getProjectId(ro.id()));
+            final DObjectRef project = ro.isProject() ? ro
+                    : new DObjectRef(IDUtil.getProjectId(ro.id()));
             menu.add(new ActionEntry(ICON_SEARCH, "Search...",
                     "Search for DaRIS/PSSD objects.", new Action() {
 
@@ -395,8 +410,8 @@ public class DObjectGUI implements ObjectGUI {
              */
             if (ro.isProject() || ro.isSubject() || ro.isExMethod()
                     || ro.isStudy() || ro.isDataSet()) {
-                String label = "Delete " + ro.referentTypeName() + " "
-                        + ro.id() + "...";
+                String label = "Delete " + ro.referentTypeName() + " " + ro.id()
+                        + "...";
                 String description = "Delete " + ro.referentTypeName() + " "
                         + ro.id();
                 final ActionEntry aeDestroy = new ActionEntry(ICON_DESTROY,
@@ -413,28 +428,25 @@ public class DObjectGUI implements ObjectGUI {
                                                 + " and all its descendants?",
                                         new ActionListener() {
 
-                                            @Override
-                                            public void executed(
-                                                    boolean succeeded) {
-                                                if (succeeded) {
-                                                    new DObjectDestroy(ro)
-                                                            .send(new ObjectMessageResponse<Null>() {
+                                    @Override
+                                    public void executed(boolean succeeded) {
+                                        if (succeeded) {
+                                            new DObjectDestroy(ro).send(
+                                                    new ObjectMessageResponse<Null>() {
 
-                                                                @Override
-                                                                public void responded(
-                                                                        Null r) {
-                                                                    MessageBox
-                                                                            .info("Deleted",
-                                                                                    ro.referentTypeName()
-                                                                                            + " "
-                                                                                            + ro.id()
-                                                                                            + " has been deleted.",
-                                                                                    4);
-                                                                }
-                                                            });
+                                                @Override
+                                                public void responded(Null r) {
+                                                    MessageBox.info("Deleted",
+                                                            ro.referentTypeName()
+                                                                    + " "
+                                                                    + ro.id()
+                                                                    + " has been deleted.",
+                                                            4);
                                                 }
-                                            }
-                                        });
+                                            });
+                                        }
+                                    }
+                                });
 
                             }
                         });
@@ -464,60 +476,56 @@ public class DObjectGUI implements ObjectGUI {
 
                             @Override
                             public void execute() {
-                                Dialog.confirm(
-                                        "Delete processed datasets in "
-                                                + ro.referentTypeName() + " "
-                                                + ro.id(),
+                                Dialog.confirm("Delete processed datasets in "
+                                        + ro.referentTypeName() + " " + ro.id(),
                                         "Are you sure you want to delete all the processed datasets in "
                                                 + ro.referentTypeName() + " "
                                                 + ro.id() + "?",
                                         new ActionListener() {
 
-                                            @Override
-                                            public void executed(
-                                                    boolean succeeded) {
-                                                if (succeeded) {
-                                                    new DataSetProcessedDestroy(
-                                                            ro)
-                                                            .send(new ObjectMessageResponse<XmlElement>() {
+                                    @Override
+                                    public void executed(boolean succeeded) {
+                                        if (succeeded) {
+                                            new DataSetProcessedDestroy(ro)
+                                                    .send(new ObjectMessageResponse<XmlElement>() {
 
-                                                                @Override
-                                                                public void responded(
-                                                                        XmlElement re) {
-                                                                    int destroyed = 0;
-                                                                    int failed = 0;
-                                                                    try {
-                                                                        destroyed = re
-                                                                                .intValue();
-                                                                        failed = re
-                                                                                .intValue(
-                                                                                        "@failed",
-                                                                                        0);
-                                                                    } catch (Throwable e) {
-                                                                        e.printStackTrace(System.out);
-                                                                    }
-                                                                    StringBuilder sb = new StringBuilder();
-                                                                    sb.append(destroyed);
-                                                                    sb.append(" processed datasets have been deleted.");
-                                                                    if (failed > 0) {
-                                                                        sb.append(" There are still "
-                                                                                + failed
-                                                                                + " processed data sets in ");
-                                                                        sb.append(ro
-                                                                                .referentTypeName()
-                                                                                + " "
-                                                                                + ro.id());
-                                                                        sb.append(" that you do not have privilege to delete.");
-                                                                    }
-                                                                    MessageBox
-                                                                            .info("Deleted",
-                                                                                    sb.toString(),
-                                                                                    4);
-                                                                }
-                                                            });
+                                                @Override
+                                                public void responded(
+                                                        XmlElement re) {
+                                                    int destroyed = 0;
+                                                    int failed = 0;
+                                                    try {
+                                                        destroyed = re
+                                                                .intValue();
+                                                        failed = re.intValue(
+                                                                "@failed", 0);
+                                                    } catch (Throwable e) {
+                                                        e.printStackTrace(
+                                                                System.out);
+                                                    }
+                                                    StringBuilder sb = new StringBuilder();
+                                                    sb.append(destroyed);
+                                                    sb.append(
+                                                            " processed datasets have been deleted.");
+                                                    if (failed > 0) {
+                                                        sb.append(
+                                                                " There are still "
+                                                                        + failed
+                                                                        + " processed data sets in ");
+                                                        sb.append(ro
+                                                                .referentTypeName()
+                                                                + " "
+                                                                + ro.id());
+                                                        sb.append(
+                                                                " that you do not have privilege to delete.");
+                                                    }
+                                                    MessageBox.info("Deleted",
+                                                            sb.toString(), 4);
                                                 }
-                                            }
-                                        });
+                                            });
+                                        }
+                                    }
+                                });
                             }
                         });
                 aeDestroyProcessed.disable();
@@ -542,19 +550,17 @@ public class DObjectGUI implements ObjectGUI {
                                 new StudySendForm((DObjectRef) o).show(w,
                                         new ActionListener() {
 
-                                            @Override
-                                            public void executed(
-                                                    boolean succeeded) {
-                                                if (succeeded) {
-                                                    MessageBox
-                                                            .info("Sending study",
-                                                                    "Started sending study "
-                                                                            + ((DObjectRef) o)
-                                                                                    .id(),
-                                                                    3);
-                                                }
-                                            }
-                                        });
+                                    @Override
+                                    public void executed(boolean succeeded) {
+                                        if (succeeded) {
+                                            MessageBox.info("Sending study",
+                                                    "Started sending study "
+                                                            + ((DObjectRef) o)
+                                                                    .id(),
+                                                    3);
+                                        }
+                                    }
+                                });
                                 ;
                             }
                         }));
@@ -569,14 +575,15 @@ public class DObjectGUI implements ObjectGUI {
             /*
              * refresh (current object)
              */
-            menu.add(new ActionEntry(ICON_RELOAD_GREEN, "Refresh "
-                    + ro.referentTypeName() + " " + ro.id(), new Action() {
+            menu.add(new ActionEntry(ICON_RELOAD_GREEN,
+                    "Refresh " + ro.referentTypeName() + " " + ro.id(),
+                    new Action() {
 
-                @Override
-                public void execute() {
-                    DObjectBrowser.get(false).reloadSelected();
-                }
-            }));
+                        @Override
+                        public void execute() {
+                            DObjectBrowser.get(false).reloadSelected();
+                        }
+                    }));
         }
 
         menu.addSeparator();
@@ -597,8 +604,8 @@ public class DObjectGUI implements ObjectGUI {
     }
 
     @Override
-    public Menu memberActionMenu(Window w, Object o,
-            SelectedObjectSet selected, boolean readOnly) {
+    public Menu memberActionMenu(Window w, Object o, SelectedObjectSet selected,
+            boolean readOnly) {
         return null;
     }
 

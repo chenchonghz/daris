@@ -229,7 +229,7 @@ public interface Resource extends ClientBundle {
 
     @Source("resource/16folder_grey_open.png")
     ImageResource folderGreyOpen16();
-    
+
     @Source("resource/16folder_options.png")
     ImageResource folderOptions16();
 
@@ -250,7 +250,7 @@ public interface Resource extends ClientBundle {
 
     @Source("resource/16folder_yellow_open.png")
     ImageResource folderYellowOpen16();
-    
+
     @Source("resource/16forward.png")
     ImageResource forward16();
 
@@ -355,7 +355,7 @@ public interface Resource extends ClientBundle {
 
     @Source("resource/16pause.png")
     ImageResource pause16();
-    
+
     @Source("resource/16pdf.png")
     ImageResource pdf16();
 
@@ -382,7 +382,7 @@ public interface Resource extends ClientBundle {
 
     @Source("resource/16question_mark.png")
     ImageResource question16();
-    
+
     @Source("resource/32question.png")
     ImageResource question32();
 
@@ -443,6 +443,9 @@ public interface Resource extends ClientBundle {
     @Source("resource/16settings.gif")
     ImageResource settings16();
 
+    @Source("resource/16share.png")
+    ImageResource share16();
+
     @Source("resource/24shoppingcart.png")
     ImageResource shoppingcart24();
 
@@ -457,7 +460,7 @@ public interface Resource extends ClientBundle {
 
     @Source("resource/16stop.gif")
     ImageResource stop16();
-    
+
     @Source("resource/16stop.png")
     ImageResource stop16a();
 
