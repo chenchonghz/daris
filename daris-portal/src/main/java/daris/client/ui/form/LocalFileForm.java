@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import com.google.gwt.user.client.ui.Widget;
+
 import arc.gui.InterfaceComponent;
 import arc.gui.gwt.colour.RGB;
 import arc.gui.gwt.dnd.DropCheck;
@@ -28,24 +30,23 @@ import arc.mf.client.util.IsValid;
 import arc.mf.client.util.MustBeValid;
 import arc.mf.client.util.StateChangeListener;
 import arc.mf.client.util.Validity;
-
-import com.google.gwt.user.client.ui.Widget;
-
 import daris.client.Resource;
-import daris.client.ui.dti.file.LocalFileSelectDialog;
-import daris.client.ui.dti.file.LocalFileSelectTarget;
+import daris.client.ui.dti.file.LocalFileSelector;
 import daris.client.util.ByteUtil;
 
-public class LocalFileForm extends ContainerWidget implements InterfaceComponent, MustBeValid {
+public class LocalFileForm extends ContainerWidget
+        implements InterfaceComponent, MustBeValid {
 
-    public static final String FILE_ICON = Resource.INSTANCE.file16().getSafeUri().asString();
-    public static final String DIRECTORY_ICON = Resource.INSTANCE.folderViolet16().getSafeUri().asString();
+    public static final String FILE_ICON = Resource.INSTANCE.file16()
+            .getSafeUri().asString();
+    public static final String DIRECTORY_ICON = Resource.INSTANCE
+            .folderViolet16().getSafeUri().asString();
 
     private List<StateChangeListener> _changeListeners;
 
     private List<LocalFile> _files;
     private boolean _multiple;
-    private LocalFileSelectTarget _target;
+    private LocalFile.Filter _filter;
 
     private VerticalPanel _vp;
     private ListGrid<LocalFile> _fileGrid;
@@ -54,13 +55,14 @@ public class LocalFileForm extends ContainerWidget implements InterfaceComponent
     private ActionEntry _aeRemove;
     private ActionEntry _aeClear;
 
-    public LocalFileForm(LocalFileSelectTarget target, boolean multiple) {
+    public LocalFileForm(LocalFile.Filter target, boolean multiple) {
         this(target, multiple, null);
     }
 
-    public LocalFileForm(LocalFileSelectTarget target, boolean multiple, List<LocalFile> files) {
+    public LocalFileForm(LocalFile.Filter target, boolean multiple,
+            List<LocalFile> files) {
 
-        _target = target;
+        _filter = target;
         _multiple = multiple;
 
         _vp = new VerticalPanel();
@@ -71,21 +73,21 @@ public class LocalFileForm extends ContainerWidget implements InterfaceComponent
         MenuToolBar actionMenuToolBar = new MenuToolBar();
         actionMenuToolBar.setHeight(28);
         actionMenuToolBar.setWidth100();
-        
+
         _aeAdd = new ActionEntry("Add a local file ...", new Action() {
             @Override
             public void execute() {
-                LocalFileSelectDialog dlg = new LocalFileSelectDialog(_target, null, null,
-                        new LocalFileSelectDialog.FileSelectionHandler() {
+                LocalFileSelector dlg = new LocalFileSelector(_filter,
+                        new LocalFileSelector.FileSelectionHandler() {
 
-                            @Override
-                            public void fileSelected(LocalFile file) {
-                                boolean added = addFile(file);
-                                if (added) {
-                                    updateFileGrid(true);
-                                }
-                            }
-                        });
+                    @Override
+                    public void selected(LocalFile file) {
+                        boolean added = addFile(file);
+                        if (added) {
+                            updateFileGrid(true);
+                        }
+                    }
+                });
                 dlg.show(_vp.window());
             }
         });
@@ -130,18 +132,19 @@ public class LocalFileForm extends ContainerWidget implements InterfaceComponent
         _fileGrid.setEmptyMessage("");
         _fileGrid.setLoadingMessage("loading...");
         _fileGrid.setCursorSize(1000);
-        _fileGrid.addColumnDefn("path", "File", "File", new WidgetFormatter<LocalFile, String>() {
+        _fileGrid.addColumnDefn("path", "File", "File",
+                new WidgetFormatter<LocalFile, String>() {
 
-            @Override
-            public BaseWidget format(LocalFile f, String path) {
-                String icon = f.isFile() ? FILE_ICON : DIRECTORY_ICON;
-                HTML html = new HTML("<div><img src=\"" + icon
-                        + "\" style=\"width:16px;height:16px;vertical-align:middle\"><span style=\"\">&nbsp;" + path
-                        + "</span></div>");
-                html.setFontSize(11);
-                return html;
-            }
-        }).setWidth(300);
+                    @Override
+                    public BaseWidget format(LocalFile f, String path) {
+                        String icon = f.isFile() ? FILE_ICON : DIRECTORY_ICON;
+                        HTML html = new HTML("<div><img src=\"" + icon
+                                + "\" style=\"width:16px;height:16px;vertical-align:middle\"><span style=\"\">&nbsp;"
+                                + path + "</span></div>");
+                        html.setFontSize(11);
+                        return html;
+                    }
+                }).setWidth(300);
         _fileGrid.addColumnDefn("type", "Type");
         _fileGrid.addColumnDefn("size", "Size");
         _fileGrid.setBorder(1, new RGB(0xdd, 0xdd, 0xdd));
@@ -160,7 +163,8 @@ public class LocalFileForm extends ContainerWidget implements InterfaceComponent
             }
 
             @Override
-            public void drop(BaseWidget target, List<Object> files, DropListener dl) {
+            public void drop(BaseWidget target, List<Object> files,
+                    DropListener dl) {
                 boolean added = addFiles(files);
                 if (added) {
                     updateFileGrid(true);
@@ -280,7 +284,7 @@ public class LocalFileForm extends ContainerWidget implements InterfaceComponent
     }
 
     public void setFiles(List<LocalFile> files, boolean fireChangeEvent) {
-        _files = filterFiles(files, _target, _multiple);
+        _files = filterFiles(files, _filter, _multiple);
         updateFileGrid(fireChangeEvent);
     }
 
@@ -328,10 +332,10 @@ public class LocalFileForm extends ContainerWidget implements InterfaceComponent
         if (_files.contains(file)) {
             return false;
         }
-        if (_target == LocalFileSelectTarget.FILE && !file.isFile()) {
+        if (_filter == LocalFile.Filter.FILES && !file.isFile()) {
             return false;
         }
-        if (_target == LocalFileSelectTarget.DIRECTORY && !file.isDirectory()) {
+        if (_filter == LocalFile.Filter.DIRECTORIES && !file.isDirectory()) {
             return false;
         }
         if (!_multiple) {
@@ -344,11 +348,14 @@ public class LocalFileForm extends ContainerWidget implements InterfaceComponent
         if (_files.isEmpty()) {
             _fileGrid.setData(null, false);
         } else {
-            List<ListGridEntry<LocalFile>> es = new Vector<ListGridEntry<LocalFile>>(_files.size());
+            List<ListGridEntry<LocalFile>> es = new Vector<ListGridEntry<LocalFile>>(
+                    _files.size());
             for (LocalFile f : _files) {
                 ListGridEntry<LocalFile> e = new ListGridEntry<LocalFile>(f);
                 e.set("name", f.name());
-                e.set("size", f.isFile() ? ByteUtil.humanReadableByteCount(f.length(), true) : "");
+                e.set("size", f.isFile()
+                        ? ByteUtil.humanReadableByteCount(f.length(), true)
+                        : "");
                 e.set("path", f.path());
                 e.set("type", f.isDirectory() ? "directory" : "file");
                 es.add(e);
@@ -360,13 +367,14 @@ public class LocalFileForm extends ContainerWidget implements InterfaceComponent
         }
     }
 
-    private static List<LocalFile> filterFiles(List<LocalFile> files, LocalFileSelectTarget target, boolean multiple) {
+    private static List<LocalFile> filterFiles(List<LocalFile> files,
+            LocalFile.Filter filter, boolean multiple) {
 
         List<LocalFile> rfiles = new ArrayList<LocalFile>();
         if (files == null || files.isEmpty()) {
             return rfiles;
         }
-        if (target == LocalFileSelectTarget.ANY) {
+        if (filter == LocalFile.Filter.ANY) {
             if (multiple) {
                 rfiles.addAll(files);
             } else {
@@ -375,8 +383,8 @@ public class LocalFileForm extends ContainerWidget implements InterfaceComponent
             return rfiles;
         }
         for (LocalFile f : files) {
-            if ((target == LocalFileSelectTarget.DIRECTORY && f.isDirectory())
-                    || (target == LocalFileSelectTarget.FILE && f.isFile())) {
+            if ((filter == LocalFile.Filter.DIRECTORIES && f.isDirectory())
+                    || (filter == LocalFile.Filter.FILES && f.isFile())) {
                 rfiles.add(f);
                 if (!multiple) {
                     break;

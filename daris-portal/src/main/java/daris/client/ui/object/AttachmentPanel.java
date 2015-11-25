@@ -3,6 +3,10 @@ package daris.client.ui.object;
 import java.util.List;
 import java.util.Vector;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Widget;
+
 import arc.gui.InterfaceComponent;
 import arc.gui.gwt.widget.ContainerWidget;
 import arc.gui.gwt.widget.menu.MenuButton;
@@ -12,11 +16,6 @@ import arc.mf.client.util.IsValid;
 import arc.mf.client.util.MustBeValid;
 import arc.mf.client.util.StateChangeListener;
 import arc.mf.client.util.Validity;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Widget;
-
 import daris.client.Resource;
 import daris.client.model.object.DObject;
 import daris.client.model.object.DObjectRef;

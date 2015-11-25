@@ -1,5 +1,9 @@
 package daris.client.ui.sc;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Widget;
+
 import arc.gui.ValidatedInterfaceComponent;
 import arc.gui.form.Field;
 import arc.gui.form.FieldDefinition;
@@ -18,15 +22,9 @@ import arc.mf.client.file.LocalFile;
 import arc.mf.dtype.BooleanType;
 import arc.mf.dtype.ConstantType;
 import arc.mf.object.ObjectResolveHandler;
-
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Widget;
-
 import daris.client.cookies.ShoppingCartCookies;
 import daris.client.model.file.LocalHomeDirectory;
-import daris.client.ui.dti.file.LocalFileSelectDialog;
-import daris.client.ui.dti.file.LocalFileSelectTarget;
+import daris.client.ui.dti.file.LocalFileSelector;
 
 public class DTIDownloadOptionsForm extends ValidatedInterfaceComponent {
 
@@ -53,7 +51,8 @@ public class DTIDownloadOptionsForm extends ValidatedInterfaceComponent {
         _form = new Form();
         _form.setBooleanAs(BooleanAs.CHECKBOX);
         Field<Boolean> useDTIField = new Field<Boolean>(new FieldDefinition(
-                "download via Arcitecta Desktop Integration applet", BooleanType.DEFAULT_TRUE_FALSE, null, null, 1, 1));
+                "download via Arcitecta Desktop Integration applet",
+                BooleanType.DEFAULT_TRUE_FALSE, null, null, 1, 1));
         useDTIField.setInitialValue(ShoppingCartCookies.useDTI(), false);
         useDTIField.addListener(new FormItemListener<Boolean>() {
 
@@ -70,15 +69,18 @@ public class DTIDownloadOptionsForm extends ValidatedInterfaceComponent {
             }
 
             @Override
-            public void itemPropertyChanged(FormItem<Boolean> f, Property property) {
+            public void itemPropertyChanged(FormItem<Boolean> f,
+                    Property property) {
 
             }
         });
         _form.add(useDTIField);
         if (ShoppingCartCookies.useDTI()) {
-            Field<Boolean> extractArchiveField = new Field<Boolean>(new FieldDefinition("extract archive",
-                    BooleanType.DEFAULT_TRUE_FALSE, null, null, 1, 1));
-            extractArchiveField.setInitialValue(ShoppingCartCookies.dtiDecompress(), false);
+            Field<Boolean> extractArchiveField = new Field<Boolean>(
+                    new FieldDefinition("extract archive",
+                            BooleanType.DEFAULT_TRUE_FALSE, null, null, 1, 1));
+            extractArchiveField.setInitialValue(
+                    ShoppingCartCookies.dtiDecompress(), false);
             extractArchiveField.addListener(new FormItemListener<Boolean>() {
 
                 @Override
@@ -87,15 +89,18 @@ public class DTIDownloadOptionsForm extends ValidatedInterfaceComponent {
                 }
 
                 @Override
-                public void itemPropertyChanged(FormItem<Boolean> f, Property property) {
+                public void itemPropertyChanged(FormItem<Boolean> f,
+                        Property property) {
 
                 }
             });
             _form.add(extractArchiveField);
 
-            Field<Boolean> overwriteField = new Field<Boolean>(new FieldDefinition("overwrite if exists",
-                    BooleanType.DEFAULT_TRUE_FALSE, null, null, 1, 1));
-            overwriteField.setInitialValue(ShoppingCartCookies.dtiOverwrite(), false);
+            Field<Boolean> overwriteField = new Field<Boolean>(
+                    new FieldDefinition("overwrite if exists",
+                            BooleanType.DEFAULT_TRUE_FALSE, null, null, 1, 1));
+            overwriteField.setInitialValue(ShoppingCartCookies.dtiOverwrite(),
+                    false);
             overwriteField.addListener(new FormItemListener<Boolean>() {
 
                 @Override
@@ -104,7 +109,8 @@ public class DTIDownloadOptionsForm extends ValidatedInterfaceComponent {
                 }
 
                 @Override
-                public void itemPropertyChanged(FormItem<Boolean> f, Property property) {
+                public void itemPropertyChanged(FormItem<Boolean> f,
+                        Property property) {
 
                 }
             });
@@ -123,22 +129,24 @@ public class DTIDownloadOptionsForm extends ValidatedInterfaceComponent {
             hp.setWidth100();
             _dstDirForm = new Form();
             _dstDirForm.setWidth100();
-            final Field<String> dstDirField = new Field<String>(new FieldDefinition("destination directory",
-                    ConstantType.DEFAULT, null, null, 1, 1));
+            final Field<String> dstDirField = new Field<String>(
+                    new FieldDefinition("destination directory",
+                            ConstantType.DEFAULT, null, null, 1, 1));
             FieldRenderOptions opts = new FieldRenderOptions();
             opts.setWidth100();
             dstDirField.setRenderOptions(opts);
             dstDirField.setInitialValue(ShoppingCartCookies.dtiDstDir(), false);
             if (ShoppingCartCookies.dtiDstDir() == null) {
-                LocalHomeDirectory.downloads(new ObjectResolveHandler<DTIDirectory>() {
+                LocalHomeDirectory
+                        .downloads(new ObjectResolveHandler<DTIDirectory>() {
 
-                    @Override
-                    public void resolved(DTIDirectory dstDir) {
-                        if (dstDir != null) {
-                            dstDirField.setValue(dstDir.path());
-                        }
-                    }
-                });
+                            @Override
+                            public void resolved(DTIDirectory dstDir) {
+                                if (dstDir != null) {
+                                    dstDirField.setValue(dstDir.path());
+                                }
+                            }
+                        });
             }
             dstDirField.addListener(new FormItemListener<String>() {
 
@@ -148,7 +156,8 @@ public class DTIDownloadOptionsForm extends ValidatedInterfaceComponent {
                 }
 
                 @Override
-                public void itemPropertyChanged(FormItem<String> f, Property property) {
+                public void itemPropertyChanged(FormItem<String> f,
+                        Property property) {
 
                 }
             });
@@ -162,14 +171,15 @@ public class DTIDownloadOptionsForm extends ValidatedInterfaceComponent {
 
                 @Override
                 public void onClick(ClickEvent event) {
-                    LocalFileSelectDialog dlg = new LocalFileSelectDialog(LocalFileSelectTarget.DIRECTORY, null, null,
-                            new LocalFileSelectDialog.FileSelectionHandler() {
+                    LocalFileSelector dlg = new LocalFileSelector(
+                            LocalFile.Filter.DIRECTORIES,
+                            new LocalFileSelector.FileSelectionHandler() {
 
-                                @Override
-                                public void fileSelected(LocalFile file) {
-                                    dstDirField.setValue(file.path());
-                                }
-                            });
+                        @Override
+                        public void selected(LocalFile file) {
+                            dstDirField.setValue(file.path());
+                        }
+                    });
                     dlg.show(_sp.window());
                 }
             });

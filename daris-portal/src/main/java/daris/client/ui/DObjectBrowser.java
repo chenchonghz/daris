@@ -2,6 +2,11 @@ package daris.client.ui;
 
 import java.util.List;
 
+import com.google.gwt.dom.client.Style.FontWeight;
+import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+
 import arc.gui.gwt.object.ObjectDetailedView;
 import arc.gui.gwt.object.ObjectEventHandler;
 import arc.gui.gwt.object.ObjectNavigator;
@@ -31,12 +36,6 @@ import arc.mf.object.ObjectResolveHandler;
 import arc.mf.object.tree.Node;
 import arc.mf.object.tree.NodeListener;
 import arc.mf.session.Session;
-
-import com.google.gwt.dom.client.Style.FontWeight;
-import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-
 import daris.client.BrowserCheck;
 import daris.client.Resource;
 import daris.client.mf.pkg.PackageExists;
@@ -271,6 +270,7 @@ public class DObjectBrowser extends ContainerWidget implements DTIReadyListener 
                     @Override
                     public void execute() {
                         LocalFileBrowser.get().show(window());
+//                        LocalFileBrowser.get().show(window());
                     }
                 }, true));
         importMenu.setShowTitle(false);

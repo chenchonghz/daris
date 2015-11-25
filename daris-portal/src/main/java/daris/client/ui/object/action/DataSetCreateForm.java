@@ -2,6 +2,10 @@ package daris.client.ui.object.action;
 
 import java.util.List;
 
+import com.google.gwt.dom.client.Style.FontWeight;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.Widget;
+
 import arc.gui.ValidatedInterfaceComponent;
 import arc.gui.form.Field;
 import arc.gui.form.FieldDefinition;
@@ -36,11 +40,6 @@ import arc.mf.dtype.TextType;
 import arc.mf.model.asset.task.AssetImportTask;
 import arc.mf.object.ObjectMessageResponse;
 import arc.mf.object.ObjectResolveHandler;
-
-import com.google.gwt.dom.client.Style.FontWeight;
-import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.Widget;
-
 import daris.client.model.IDUtil;
 import daris.client.model.file.FileUtil;
 import daris.client.model.object.DObject;
@@ -50,7 +49,6 @@ import daris.client.model.task.ImportTask;
 import daris.client.model.type.TypeStringEnum;
 import daris.client.model.type.messages.TypesFromExt;
 import daris.client.ui.dti.DTITaskDialog;
-import daris.client.ui.dti.file.LocalFileSelectTarget;
 import daris.client.ui.form.LocalFileForm;
 import daris.client.ui.form.MetadataSetForm;
 import daris.client.ui.widget.MessageBox;
@@ -109,10 +107,10 @@ public abstract class DataSetCreateForm extends ValidatedInterfaceComponent
         addInterfaceFormItems(_interfaceForm);
         _interfaceForm.render();
         addMustBeValid(_interfaceForm);
-        _interfaceSP.setContent(new ScrollPanel(_interfaceForm,
-                ScrollPolicy.AUTO));
+        _interfaceSP
+                .setContent(new ScrollPanel(_interfaceForm, ScrollPolicy.AUTO));
 
-        _fileForm = new LocalFileForm(LocalFileSelectTarget.ANY, false,
+        _fileForm = new LocalFileForm(LocalFile.Filter.ANY, false,
                 _task.files());
         _fileForm.setWidth100();
         _fileForm.setPreferredHeight(0.35);
@@ -160,8 +158,8 @@ public abstract class DataSetCreateForm extends ValidatedInterfaceComponent
 
         Field<String> typeField = new Field<String>(new FieldDefinition("type",
                 new EnumerationType<String>(new TypeStringEnum()),
-                "MIME type of the dataset if different from the content.",
-                null, 0, 1));
+                "MIME type of the dataset if different from the content.", null,
+                0, 1));
         form.add(typeField);
 
         /*
@@ -171,22 +169,20 @@ public abstract class DataSetCreateForm extends ValidatedInterfaceComponent
          * 1 : 0, 1));
          */
         // Does not need to be mandatory for primary data sets
-        Field<String> nameField = new Field<String>(new FieldDefinition("name",
-                StringType.DEFAULT, "Name of the dataset.",
-                "Name of the dataset.", 0, 1));
+        Field<String> nameField = new Field<String>(
+                new FieldDefinition("name", StringType.DEFAULT,
+                        "Name of the dataset.", "Name of the dataset.", 0, 1));
 
         form.add(nameField);
 
-        Field<String> descriptionField = new Field<String>(new FieldDefinition(
-                "description", TextType.DEFAULT,
-                "Description about the dataset",
-                "Description about the dataset.", 0, 1));
+        Field<String> descriptionField = new Field<String>(
+                new FieldDefinition("description", TextType.DEFAULT,
+                        "Description about the dataset",
+                        "Description about the dataset.", 0, 1));
         form.add(descriptionField);
 
         FieldGroup methodFieldGroup = new FieldGroup(
-                new FieldDefinition(
-                        "method",
-                        DocType.DEFAULT,
+                new FieldDefinition("method", DocType.DEFAULT,
                         "Details about the ex-method for which this acquisition was made.",
                         null, 0, 1));
         final Field<String> methodIdField = new Field<String>(
@@ -195,7 +191,8 @@ public abstract class DataSetCreateForm extends ValidatedInterfaceComponent
         methodFieldGroup.add(methodIdField);
         final Field<String> methodStepField = new Field<String>(
                 new FieldDefinition("step", ConstantType.DEFAULT,
-                        "The execution step within the ex-method.", null, 1, 1));
+                        "The execution step within the ex-method.", null, 1,
+                        1));
         methodFieldGroup.add(methodStepField);
         if (_po != null && _po.isStudy()) {
             if (_po.referent() != null) {
@@ -237,10 +234,9 @@ public abstract class DataSetCreateForm extends ValidatedInterfaceComponent
                 "software", DocType.DEFAULT, null, null, 0, 1));
 
         // software name
-        Field<String> softwareNameField = new Field<String>(
-                new FieldDefinition("name", StringType.DEFAULT,
-                        "The name of the software.",
-                        "The name of the software.", 1, 1));
+        Field<String> softwareNameField = new Field<String>(new FieldDefinition(
+                "name", StringType.DEFAULT, "The name of the software.",
+                "The name of the software.", 1, 1));
         softwareFieldGroup.add(softwareNameField);
 
         // software version
@@ -267,10 +263,9 @@ public abstract class DataSetCreateForm extends ValidatedInterfaceComponent
                 "The argument for the command.", 0, Integer.MAX_VALUE));
 
         // argument name
-        Field<String> argumentNameField = new Field<String>(
-                new FieldDefinition("name", StringType.DEFAULT,
-                        "The name of argument.", "The name of the argument.",
-                        1, 1));
+        Field<String> argumentNameField = new Field<String>(new FieldDefinition(
+                "name", StringType.DEFAULT, "The name of argument.",
+                "The name of the argument.", 1, 1));
         argumentFieldGroup.add(argumentNameField);
 
         // argument value
@@ -351,19 +346,19 @@ public abstract class DataSetCreateForm extends ValidatedInterfaceComponent
                     public void status(Timer t, DTITask task) {
                         if (task != null) {
                             if (task.finished()) {
-                                MessageBox.display(MessageBox.Type.info,
-                                        "DTI Task " + task.id(),
-                                        "Task status: "
-                                                + task.status().toString()
-                                                        .toLowerCase(), 1);
+                                MessageBox
+                                        .display(MessageBox.Type.info,
+                                                "DTI Task " + task.id(),
+                                                "Task status: " + task.status()
+                                                        .toString()
+                                                        .toLowerCase(),
+                                                1);
                             }
                             if (task.status() == DTITask.State.COMPLETED) {
-                                MessageBox
-                                        .display(
-                                                MessageBox.Type.info,
-                                                "Import",
-                                                "Dataset has been imported successfully.",
-                                                3);
+                                MessageBox.display(MessageBox.Type.info,
+                                        "Import",
+                                        "Dataset has been imported successfully.",
+                                        3);
                             }
                         }
                     }
