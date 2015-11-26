@@ -17,6 +17,8 @@ import javafx.stage.Stage;
 
 public class MainApp extends Application {
 
+    public static final String APP = "daris-explorer";
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -108,9 +110,8 @@ public class MainApp extends Application {
             PSSDObjectEvents.initialize();
         }
     }
-    
-    
-    public static String css(){
+
+    public static String css() {
         return MainApp.class.getResource("/css/MainApp.css").toExternalForm();
     }
 

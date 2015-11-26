@@ -7,14 +7,18 @@ import arc.mf.event.Filter;
 import arc.mf.event.Subscriber;
 import arc.mf.event.SystemEvent;
 import arc.mf.event.SystemEventChannel;
+import daris.client.gui.object.DObjectMenu;
 import daris.client.model.object.DObjectRef;
 import daris.client.model.repository.RepositoryRef;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
 public class DObjectTreeView extends TreeView<DObjectRef>
         implements Subscriber {
+    private ContextMenu _contextMenu;
 
     public DObjectTreeView() {
         super(new DObjectTreeItem(new RepositoryRef()));
@@ -37,6 +41,16 @@ public class DObjectTreeView extends TreeView<DObjectRef>
                     }
                 });
         setShowRoot(true);
+        // TODO: 
+        _contextMenu = new ContextMenu(new MenuItem());
+        _contextMenu.setOnShowing(e -> {
+            DObjectRef o = DObjectTreeView.this.getSelectionModel()
+                    .getSelectedItem().getValue();
+            o.resolve(oo -> {
+                _contextMenu.getItems().setAll(DObjectMenu.menuItemsFor(oo));
+            });
+        });
+        setContextMenu(_contextMenu);
     }
 
     private DObjectTreeItem findItem(DObjectRef o) {

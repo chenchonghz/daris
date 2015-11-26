@@ -1,6 +1,5 @@
 package daris.client.gui;
 
-import arc.mf.desktop.HasScene;
 import daris.client.app.MainApp;
 import daris.client.gui.object.DObjectViewPane;
 import daris.client.gui.object.tree.DObjectTreeView;
@@ -8,7 +7,6 @@ import daris.client.util.OSUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -23,7 +21,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-public class MainWindow implements HasScene {
+public class MainWindow {
 
     private Scene _scene;
     private DObjectTreeView _nav;
@@ -74,7 +72,7 @@ public class MainWindow implements HasScene {
         borderPane.setTop(menuBar);
 
         StackPane navStackPane = new StackPane();
-        DObjectTreeView _nav = new DObjectTreeView();
+        _nav = new DObjectTreeView();
         navStackPane.getChildren().add(_nav);
 
         _dv = new DObjectViewPane();
@@ -104,16 +102,6 @@ public class MainWindow implements HasScene {
         stage.setMaximized(true);
         stage.setScene(_scene);
         stage.show();
-    }
-
-    @Override
-    public Node about() {
-        return null;
-    }
-
-    @Override
-    public Scene scene() {
-        return _scene;
     }
 
 }

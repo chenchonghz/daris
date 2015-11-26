@@ -9,4 +9,18 @@ public class Transcode {
         this.fromMimeType = fromMimeType;
         this.toMimeType = toMimeType;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o != null && (o instanceof Transcode)) {
+            Transcode t = (Transcode) o;
+            return t.fromMimeType == fromMimeType && t.toMimeType == toMimeType;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return fromMimeType.concat(toMimeType).hashCode();
+    }
 }
