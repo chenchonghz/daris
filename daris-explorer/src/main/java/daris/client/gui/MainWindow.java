@@ -24,12 +24,14 @@ import javafx.stage.Stage;
 public class MainWindow {
 
     private Scene _scene;
+    private BorderPane _borderPane;
     private DObjectTreeView _nav;
     private DObjectViewPane _dv;
+    private StatusPane _statusPane;
 
     public MainWindow() {
 
-        BorderPane borderPane = new BorderPane();
+        _borderPane = new BorderPane();
 
         MenuBar menuBar = new MenuBar();
 
@@ -68,8 +70,8 @@ public class MainWindow {
         darisMenu.getItems().add(exitItem);
 
         menuBar.getMenus().add(darisMenu);
-
-        borderPane.setTop(menuBar);
+        menuBar.setUseSystemMenuBar(true);
+        _borderPane.setTop(menuBar);
 
         StackPane navStackPane = new StackPane();
         _nav = new DObjectTreeView();
@@ -90,9 +92,13 @@ public class MainWindow {
         splitPane.setDividerPositions(0.3f);
         splitPane.getItems().setAll(navStackPane, _dv);
 
-        borderPane.setCenter(splitPane);
+        _borderPane.setCenter(splitPane);
+        
+        _statusPane = new StatusPane();
+        _statusPane.setMaxHeight(250);
+        _borderPane.setBottom(_statusPane);
 
-        _scene = new Scene(borderPane, 1280.0, 800.0, Color.WHITE);
+        _scene = new Scene(_borderPane, 1280.0, 800.0, Color.WHITE);
         _scene.getStylesheets().add(MainApp.css());
 
     }

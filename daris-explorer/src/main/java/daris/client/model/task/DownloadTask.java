@@ -7,6 +7,7 @@ import arc.archive.ArchiveExtractor;
 import arc.archive.ArchiveInput;
 import arc.archive.ArchiveRegistry;
 import arc.mf.client.ServerClient;
+import arc.mf.client.archive.Archive;
 import arc.mf.desktop.server.Session;
 import arc.mime.NamedMimeType;
 import arc.streams.LongInputStream;
@@ -17,7 +18,12 @@ import arc.utils.ProgressMonitor;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDoc.Element;
 import arc.xml.XmlStringWriter;
+import daris.client.model.CiteableIdUtils;
 import daris.client.model.object.DObjectRef;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.StringProperty;
 
 public class DownloadTask extends ObservableTask {
 
@@ -34,8 +40,58 @@ public class DownloadTask extends ObservableTask {
         _progress = new DownloadTaskProgress();
     }
 
+    public ObjectProperty<Double> progressProperty() {
+        return _progress.progressProperty;
+    }
+
+    public IntegerProperty totalObjectsProperty() {
+        return _progress.totalObjectsProperty;
+    }
+
+    public IntegerProperty processedObjectsProperty() {
+        return _progress.processedObjectsProperty;
+    }
+
+    public StringProperty objectsProgressMessageProperty() {
+        return _progress.objectsProgressMessageProperty;
+    }
+
+    public LongProperty totalSizeProperty() {
+        return _progress.totalSizeProperty;
+    }
+
+    public LongProperty processedSizeProperty() {
+        return _progress.processedSizeProperty;
+    }
+
+    public StringProperty sizeProgressMessageProperty() {
+        return _progress.sizeProgressMessageProperty;
+    }
+
+    public LongProperty receivedSizeProperty() {
+        return _progress.receivedSizeProperty;
+    }
+
+    public StringProperty messageProperty() {
+        return _progress.messageProperty;
+    }
+
+    public StringProperty currentObjectProperty() {
+        return _progress.currentObjectProperty;
+    }
+
+    public StringProperty currentOutputFileProperty() {
+        return _progress.currentOutputFileProperty;
+    }
+
     public void start() {
         DownloadTaskManager.get().addTask(this);
+    }
+
+    @Override
+    public boolean discard() {
+        DownloadTaskManager.get().removeTask(this);
+        return super.discard();
     }
 
     @Override
@@ -64,14 +120,12 @@ public class DownloadTask extends ObservableTask {
             try {
                 if (cid == null || !_options.recursive()) {
                     String mimeType = ae.value("type");
-                    long csize = ae.longValue("content/size");
                     if (ae.elementExists("content")) {
                         if (_options.hasTranscodeFor(mimeType)) {
                             transcodeContent(cxn, ae);
                         } else {
                             downloadContent(cxn, ae);
                         }
-                        _progress.incProcessedSize(csize);
                         _progress.incProcessedObjects();
                     }
                 } else {
@@ -91,14 +145,12 @@ public class DownloadTask extends ObservableTask {
                         if (caes != null) {
                             for (XmlDoc.Element cae : caes) {
                                 String mimeType = cae.value("type");
-                                long csize = cae.longValue("content/size");
                                 checkIfAborted();
                                 if (_options.hasTranscodeFor(mimeType)) {
                                     transcodeContent(cxn, cae);
                                 } else {
                                     downloadContent(cxn, cae);
                                 }
-                                _progress.incProcessedSize(csize);
                                 _progress.incProcessedObjects();
                             }
                         }
@@ -120,7 +172,7 @@ public class DownloadTask extends ObservableTask {
         String cid = ae.value("cid");
         String assetId = ae.value("@id");
         _progress.setMessage(
-                "transcoding asset " + (cid == null ? assetId : cid));
+                "downloading asset " + (cid == null ? assetId : cid));
         final String ctype = ae.value("content/type");
         final ProgressMonitor pm = new ProgressMonitor() {
             @Override
@@ -160,6 +212,7 @@ public class DownloadTask extends ObservableTask {
                     throws Throwable {
                 ProgressMonitoredInputStream pis = new ProgressMonitoredInputStream(
                         pm, is, true);
+                Archive.declareSupportForAllTypes();
                 if (ArchiveRegistry.isAnArchive(ctype)
                         && _options.decompress()) {
                     File outputDirectory = createOutputDirectoryFor(ae, null);
@@ -194,6 +247,8 @@ public class DownloadTask extends ObservableTask {
         };
         cxn.execute("asset.content.get", "<id>" + assetId + "</id>", null,
                 output);
+        _progress.setMessage(
+                "downloaded asset " + (cid == null ? assetId : cid));
     }
 
     private void transcodeContent(ServerClient.Connection cxn,
@@ -282,6 +337,9 @@ public class DownloadTask extends ObservableTask {
             }
         };
         cxn.execute("asset.transcode", w.document(), null, output);
+        _progress.setMessage(
+                "transcoded asset " + (cid == null ? assetId : cid));
+
     }
 
     private File createOutputFileFor(XmlDoc.Element ae, String mimeType,
@@ -296,14 +354,47 @@ public class DownloadTask extends ObservableTask {
         fileName = fileName.endsWith("." + fileExt) ? fileName
                 : (fileName + "." + fileExt);
         if (cid != null) {
-            sb.append(File.separatorChar);
-            sb.append(cid);
+            appendOutputDir(sb, cid);
         }
         sb.append(File.separatorChar);
         sb.append(fileName);
         File file = new File(sb.toString());
         file.getParentFile().mkdirs();
         return file;
+    }
+
+    private static void appendOutputDir(StringBuilder sb, String cid) {
+        if (CiteableIdUtils.isProjectCID(cid)) {
+            sb.append(File.separator);
+            sb.append(cid);
+            return;
+        }
+        String projectCid = CiteableIdUtils.getProjectCID(cid);
+        sb.append(File.separator);
+        sb.append(projectCid);
+        if (CiteableIdUtils.isSubjectCID(cid)) {
+            sb.append(File.separator);
+            sb.append(cid);
+            return;
+        }
+        String subjectCid = CiteableIdUtils.getSubjectCID(cid);
+        sb.append(File.separator);
+        sb.append(subjectCid);
+        if (CiteableIdUtils.isExMethodCID(cid)) {
+            return;
+        }
+        if (CiteableIdUtils.isStudyCID(cid)) {
+            sb.append(File.separator);
+            sb.append(cid);
+            return;
+        }
+        String studyCid = CiteableIdUtils.getStudyCID(cid);
+        sb.append(File.separator);
+        sb.append(studyCid);
+        if (CiteableIdUtils.isDataSetCID(cid)) {
+            sb.append(File.separator);
+            sb.append(cid);
+        }
     }
 
     private File createOutputDirectoryFor(XmlDoc.Element ae, String mimeType)
@@ -313,7 +404,11 @@ public class DownloadTask extends ObservableTask {
         String assetId = ae.value("@id");
         mimeType = mimeType == null ? ae.value("type") : mimeType;
         sb.append(File.separatorChar);
-        sb.append(cid == null ? assetId : cid);
+        if (cid == null) {
+            sb.append(assetId);
+        } else {
+            appendOutputDir(sb, cid);
+        }
         if (mimeType != null) {
             sb.append(File.separatorChar);
             sb.append(mimeType.replace('/', '_'));
@@ -340,10 +435,11 @@ public class DownloadTask extends ObservableTask {
             DownloadOptions options) throws Throwable {
         String cid = ae.value("cid");
         if (options.recursive() && cid != null) {
-            return cxn.execute("asset.query",
-                    "<where>(cid='" + cid + "' or cid starts with '" + cid
-                            + "') and asset has content</where><size>infinity</size><action>count</action>",
-                    null, null).intValue("value");
+            XmlDoc.Element re = cxn.execute("asset.query",
+                    "<where>((cid='" + cid + "') or (cid starts with '" + cid
+                            + "')) and (asset has content)</where><size>infinity</size><action>count</action>",
+                    null, null);
+            return re.intValue("value");
         } else {
             return 1;
         }

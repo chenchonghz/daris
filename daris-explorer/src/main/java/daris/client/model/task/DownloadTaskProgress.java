@@ -1,18 +1,17 @@
 package daris.client.model.task;
 
 import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 public class DownloadTaskProgress {
 
-    DoubleProperty progressProperty;
+    SimpleObjectProperty<Double> progressProperty;
 
     IntegerProperty totalObjectsProperty;
     private int _totalObjects;
@@ -20,11 +19,15 @@ public class DownloadTaskProgress {
     IntegerProperty processedObjectsProperty;
     private int _processedObjects;
 
+    StringProperty objectsProgressMessageProperty;
+
     LongProperty totalSizeProperty;
     private long _totalSize;
 
     LongProperty processedSizeProperty;
     private long _processedSize;
+
+    StringProperty sizeProgressMessageProperty;
 
     LongProperty receivedSizeProperty;
     private long _receivedSize;
@@ -36,8 +39,9 @@ public class DownloadTaskProgress {
     StringProperty currentOutputFileProperty;
 
     DownloadTaskProgress() {
-        this.progressProperty = new SimpleDoubleProperty(this, "progress");
-        this.progressProperty.set(0.0f);
+        this.progressProperty = new SimpleObjectProperty<Double>(this,
+                "progress");
+        this.progressProperty.set(0.0);
         this.totalObjectsProperty = new SimpleIntegerProperty(this,
                 "totalObjects");
         _totalObjects = 0;
@@ -46,6 +50,8 @@ public class DownloadTaskProgress {
                 "processedObjects");
         _processedObjects = 0;
         this.processedObjectsProperty.set(_processedObjects);
+        this.objectsProgressMessageProperty = new SimpleStringProperty(this,
+                "objectsProgressProperty");
         this.totalSizeProperty = new SimpleLongProperty(this, "totalSize");
         _totalSize = 0L;
         this.totalSizeProperty.set(_totalSize);
@@ -53,6 +59,8 @@ public class DownloadTaskProgress {
                 "processedSize");
         _processedSize = 0L;
         this.processedSizeProperty.set(_processedSize);
+        this.sizeProgressMessageProperty = new SimpleStringProperty(this,
+                "sizeProgressMessage");
         this.receivedSizeProperty = new SimpleLongProperty(this,
                 "receivedSize");
         _receivedSize = 0L;
@@ -71,8 +79,11 @@ public class DownloadTaskProgress {
     }
 
     public void setTotalObjects(int totalObjects) {
+        _totalObjects = totalObjects;
         Platform.runLater(() -> {
-            this.totalObjectsProperty.set(totalObjects);
+            this.totalObjectsProperty.set(_totalObjects);
+            this.objectsProgressMessageProperty
+                    .set(_processedObjects + "/" + _totalObjects);
         });
     }
 
@@ -80,17 +91,22 @@ public class DownloadTaskProgress {
         _processedObjects = processedObjects;
         Platform.runLater(() -> {
             this.processedObjectsProperty.set(_processedObjects);
+            this.objectsProgressMessageProperty
+                    .set(_processedObjects + "/" + _totalObjects);
         });
     }
 
     public void incProcessedObjects() {
-        setProcessedObjects(_processedObjects++);
+        _processedObjects++;
+        setProcessedObjects(_processedObjects);
     }
 
     public void setTotalSize(long totalSize) {
         _totalSize = totalSize;
         Platform.runLater(() -> {
             this.totalSizeProperty.set(_totalSize);
+            this.sizeProgressMessageProperty
+            .set(_processedSize + "/" + _totalSize);
         });
     }
 
@@ -98,6 +114,8 @@ public class DownloadTaskProgress {
         _processedSize = processedSize;
         Platform.runLater(() -> {
             this.processedSizeProperty.set(_processedSize);
+            this.sizeProgressMessageProperty
+                    .set(_processedSize + "/" + _totalSize);
         });
     }
 

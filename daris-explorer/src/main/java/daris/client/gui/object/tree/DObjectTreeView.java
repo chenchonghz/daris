@@ -41,13 +41,16 @@ public class DObjectTreeView extends TreeView<DObjectRef>
                     }
                 });
         setShowRoot(true);
-        // TODO: 
+        // TODO:
         _contextMenu = new ContextMenu(new MenuItem());
         _contextMenu.setOnShowing(e -> {
             DObjectRef o = DObjectTreeView.this.getSelectionModel()
                     .getSelectedItem().getValue();
             o.resolve(oo -> {
-                _contextMenu.getItems().setAll(DObjectMenu.menuItemsFor(oo));
+                ApplicationThread.execute(() -> {
+                    _contextMenu.getItems()
+                            .setAll(DObjectMenu.menuItemsFor(oo));
+                });
             });
         });
         setContextMenu(_contextMenu);

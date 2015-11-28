@@ -1,15 +1,12 @@
 package daris.client.model.task;
 
-import java.util.ArrayList;
-
+import arc.mf.client.agent.task.Task.State;
 import arc.mf.event.SystemEventChannel;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 public abstract class ObservableTaskManager<T extends ObservableTask> {
 
@@ -18,41 +15,46 @@ public abstract class ObservableTaskManager<T extends ObservableTask> {
 
     ObservableTaskManager() {
         _tasksProperty = new SimpleListProperty<T>(
-                FXCollections.observableList(new ArrayList<T>()));
+                FXCollections.observableArrayList());
         _currentTaskProperty = new SimpleObjectProperty<T>();
     }
 
-    void addTask(T task) {
+    synchronized void addTask(T task) {
         _tasksProperty.add(task);
         launchNextTask();
     }
 
-    void removeTask(T task) {
+    synchronized void removeTask(T task) {
         _tasksProperty.remove(task);
-        task.discard();
     }
 
-    public void addListener(
-            ChangeListener<? super ObservableList<T>> listener) {
-        _tasksProperty.addListener(listener);
+    public synchronized ListProperty<T> tasksProperty() {
+        return _tasksProperty;
     }
 
-    private void launchNextTask() {
+    private synchronized void launchNextTask() {
         if (_currentTaskProperty.get() != null) {
             return;
         }
         if (_tasksProperty.size() > 0) {
-            T task = _tasksProperty.get(0);
-            _currentTaskProperty.set(task);
-            task.addStateChangeListener(state -> {
-                if (state.finished()) {
-                    SystemEventChannel.checkNow();
-                    _currentTaskProperty.set(null);
-                    _tasksProperty.remove(task);
-                    launchNextTask();
+            for (T task : _tasksProperty) {
+                if (task.state() == State.INITIAL) {
+                    _currentTaskProperty.set(task);
+                    task.addStateChangeListener(state -> {
+                        if (state != State.INITIAL) {
+                            task.idProperty().set(task.id());
+                        }
+                        if (state.finished()) {
+                            SystemEventChannel.checkNow();
+                            _currentTaskProperty.set(null);
+                            // _tasksProperty.remove(task);
+                            launchNextTask();
+                        }
+                    });
+                    task.submit();
+                    break;
                 }
-            });
-            task.submit();
+            }
         }
     }
 }
