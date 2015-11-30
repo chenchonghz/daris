@@ -53,6 +53,11 @@ public class DObjectTreeView extends TreeView<DObjectRef>
                 });
             });
         });
+        _contextMenu.setOnHidden(e -> {
+            ApplicationThread.execute(() -> {
+                _contextMenu.getItems().setAll(new MenuItem());
+            });
+        });
         setContextMenu(_contextMenu);
     }
 
