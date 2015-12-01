@@ -2,10 +2,8 @@ package daris.client.model.task;
 
 import arc.mf.client.agent.modules.asset.AssetImportTask.FileState;
 import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -26,7 +24,7 @@ public class UploadTaskProgress {
     long _ignoredFiles = 0L;
     StringProperty processedFilesMessageProperty;
     StringProperty processedSizeMessageProperty;
-    DoubleProperty progressProperty;
+    ObjectProperty<Double> progressProperty;
     StringProperty messageProperty;
     StringProperty currentFilePathProperty;
     LongProperty currentFileSizeProperty;
@@ -66,8 +64,9 @@ public class UploadTaskProgress {
         this.processedSizeMessageProperty = new SimpleStringProperty(this,
                 "processedSizeMessage");
 
-        this.progressProperty = new SimpleDoubleProperty(this, "progress");
-        this.progressProperty.set(0.0f);
+        this.progressProperty = new SimpleObjectProperty<Double>(this,
+                "progress");
+        this.progressProperty.set(0.0);
 
         this.messageProperty = new SimpleStringProperty(this,
                 "messageProperty");
@@ -86,22 +85,18 @@ public class UploadTaskProgress {
         _totalFiles = totalFiles;
         Platform.runLater(() -> {
             this.totalFilesProperty.set(_totalFiles);
+            this.processedFilesMessageProperty
+                    .set(_processedFiles + "/" + _totalFiles);
         });
-    }
-
-    public void incTotalFiles(long inc) {
-        setTotalFiles(_totalFiles + inc);
     }
 
     public synchronized void setTotalSize(long totalSize) {
         _totalSize = totalSize;
         Platform.runLater(() -> {
             this.totalSizeProperty.set(_totalSize);
+            this.processedSizeMessageProperty
+                    .set(_processedSize + "/" + _totalSize);
         });
-    }
-
-    public void incTotalSize(long inc) {
-        setTotalSize(_totalSize + inc);
     }
 
     public synchronized void setProcessedFiles(long processedFiles) {
@@ -124,6 +119,7 @@ public class UploadTaskProgress {
             this.processedSizeProperty.set(_processedSize);
             this.processedSizeMessageProperty
                     .set(_processedSize + "/" + _totalSize);
+            this.setProgress(_processedSize / _totalSize);
         });
     }
 

@@ -1,8 +1,11 @@
 package daris.client.gui;
 
 import daris.client.gui.object.action.DownloadMonitorGUI;
+import daris.client.gui.object.action.UploadMonitorGUI;
 import daris.client.model.task.DownloadTask;
 import daris.client.model.task.DownloadTaskManager;
+import daris.client.model.task.UploadTask;
+import daris.client.model.task.UploadTaskManager;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Side;
 import javafx.scene.control.Tab;
@@ -45,8 +48,23 @@ public class StatusPane extends TitledPane {
                 });
 
         _uploadsTab = new Tab("Uploads");
-        // TODO
+        _uploadsTab.setContent(new UploadMonitorGUI().gui());
         _tp.getTabs().add(_uploadsTab);
+        UploadTaskManager.get().tasksProperty()
+                .addListener(new ListChangeListener<UploadTask>() {
+
+                    @Override
+                    public void onChanged(
+                            ListChangeListener.Change<? extends UploadTask> c) {
+                        while (c.next()) {
+                            if (c.wasAdded()) {
+                                StatusPane.this.setExpanded(true);
+                                showUploads();
+                                break;
+                            }
+                        }
+                    }
+                });
 
     }
 

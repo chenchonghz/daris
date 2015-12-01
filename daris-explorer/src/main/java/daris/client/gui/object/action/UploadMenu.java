@@ -1,6 +1,10 @@
 package daris.client.gui.object.action;
 
+import java.io.File;
+import java.util.List;
+
 import daris.client.model.dataset.DataSet;
+import daris.client.model.dicom.task.DicomIngestTask;
 import daris.client.model.exmethod.ExMethod;
 import daris.client.model.object.DObject;
 import daris.client.model.project.Project;
@@ -11,42 +15,47 @@ import javafx.scene.control.MenuItem;
 
 public class UploadMenu extends ContextMenu {
 
-    public UploadMenu(DObject o) {
-        if (canUploadDicomData(o)) {
+    private DObject _o;
+    private List<File> _fs;
+
+    public UploadMenu(DObject o, List<File> fs) {
+        _o = o;
+        _fs = fs;
+        if (canUploadDicomData(_o)) {
             StringBuilder sb = new StringBuilder();
             sb.append("Upload DICOM data to ");
-            sb.append(o.type().typeName());
+            sb.append(_o.type().typeName());
             sb.append(" ");
-            sb.append(o.citeableId());
+            sb.append(_o.citeableId());
             MenuItem item = new MenuItem(sb.toString());
             item.setOnAction(event -> {
-                // TODO
+                new DicomIngestTask(_o, _fs.get(0)).start();
             });
             getItems().add(item);
         }
-        if (canUploadPrimaryDataSet(o)) {
+        if (canUploadPrimaryDataSet(_o)) {
             StringBuilder sb = new StringBuilder();
             sb.append("Create primary dataset in ");
-            sb.append(o.type().typeName());
+            sb.append(_o.type().typeName());
             sb.append(" ");
-            sb.append(o.citeableId());
+            sb.append(_o.citeableId());
             MenuItem item = new MenuItem(sb.toString());
             item.setOnAction(event -> {
                 // TODO
             });
             getItems().add(item);
         }
-        if (canUploadDerivedDataSet(o)) {
+        if (canUploadDerivedDataSet(_o)) {
             StringBuilder sb = new StringBuilder();
             sb.append("Create derived dataset ");
-            if(o.type()==DObject.Type.STUDY){
+            if (_o.type() == DObject.Type.STUDY) {
                 sb.append("in ");
             } else {
                 sb.append("for ");
             }
-            sb.append(o.type().typeName());
+            sb.append(_o.type().typeName());
             sb.append(" ");
-            sb.append(o.citeableId());
+            sb.append(_o.citeableId());
             MenuItem item = new MenuItem(sb.toString());
             item.setOnAction(event -> {
                 // TODO

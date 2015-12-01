@@ -18,6 +18,8 @@ import arc.mf.client.util.FileImport;
 import arc.mf.desktop.server.Session;
 import arc.utils.FileUtil;
 import daris.client.settings.UploadSettings;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.StringProperty;
 
 public abstract class UploadTask extends ObservableTask
         implements FileSystemCompiler.Listener, Monitor {
@@ -38,6 +40,22 @@ public abstract class UploadTask extends ObservableTask
         _importOptions = new FileImport.Options();
         _progress = new UploadTaskProgress();
 
+    }
+
+    public StringProperty messageProperty() {
+        return _progress.messageProperty;
+    }
+
+    public ObjectProperty<Double> progressProperty() {
+        return _progress.progressProperty;
+    }
+
+    public StringProperty processedFilesMessageProperty() {
+        return _progress.processedFilesMessageProperty;
+    }
+
+    public StringProperty processedSizeMessageProperty() {
+        return _progress.processedSizeMessageProperty;
     }
 
     protected boolean managed() {
@@ -114,7 +132,10 @@ public abstract class UploadTask extends ObservableTask
         /*
          * retrieve the file compilation profile from the server.
          */
+        _progress
+                .setMessage("Retrieve file compilation profile from server...");
         Profile fcp = profile();
+        _progress.setMessage("Retrieved file compilation profile.");
         /*
          * create file import task
          */
@@ -139,6 +160,7 @@ public abstract class UploadTask extends ObservableTask
         ServerClient.Connection cxn = Session.connection();
         try {
             fi.execute(cxn);
+            _progress.setProgress(1.0f);
         } finally {
             cxn.close();
         }
@@ -150,39 +172,45 @@ public abstract class UploadTask extends ObservableTask
             return;
         }
         for (final FileStatisticsTask stat : this._stats) {
-            _progress.incTotalFiles(stat.nbCanRead());
-            _progress.incTotalSize(stat.totalSize());
+            _progress.setTotalFiles(stat.total());
+            _progress.setTotalSize(stat.totalSize());
         }
     }
 
     @Override
     public void analyzing(Construct c, String path, long nbBytes) {
+        _progress.setMessage("analyzing " + path);
         _progress.setCurrentFile(path, nbBytes, FileState.ANALYZING);
     }
 
     @Override
     public void consumed(Construct c, String path, long nbBytes) {
+        _progress.setMessage("consumed " + path);
         _progress.incProcessedFiles();
     }
 
     @Override
     public void consuming(Construct c, String path, long nbBytes) {
+        _progress.setMessage("consuming " + path);
         _progress.setCurrentFile(path, nbBytes, FileState.CONSUMING);
         // _progress.setCurrentFileProcessedSize(0L);
     }
 
     @Override
     public void ignored(Construct c, String path) {
+        _progress.setMessage("ignored " + path);
         _progress.incIgnoredFiles();
     }
 
     @Override
     public void retry(Construct c, String path) {
+        _progress.setMessage("retry " + path);
         setState(State.RUNNING);
     }
 
     @Override
     public void retryWait(Construct c, String path, Throwable t) {
+        _progress.setMessage("retry wait " + path);
         failedWillRetry(t);
     }
 
@@ -192,6 +220,7 @@ public abstract class UploadTask extends ObservableTask
         _progress.incProcessedFiles();
         _progress.incProcessedSize(nbBytes);
         _progress.incSkippedFiles();
+        _progress.setMessage("skipped " + path);
         // _progress.incCurrentFileProcessedSize(nbBytes);
     }
 
@@ -203,6 +232,7 @@ public abstract class UploadTask extends ObservableTask
 
     @Override
     public void waiting(Construct c, String path, long nbBytes) {
+        _progress.setMessage("waiting " + path);
         _progress.setCurrentFile(path, nbBytes, FileState.WAITING);
     }
 

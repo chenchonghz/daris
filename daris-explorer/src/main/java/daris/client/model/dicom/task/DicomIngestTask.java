@@ -8,6 +8,7 @@ import java.util.Map;
 
 import arc.file.matching.Profile;
 import arc.xml.XmlStringWriter;
+import daris.client.model.object.DObject;
 import daris.client.model.object.DObjectRef;
 import daris.client.model.task.UploadFCP;
 import daris.client.model.task.UploadTask;
@@ -33,6 +34,10 @@ public class DicomIngestTask extends UploadTask {
     }
 
     public DicomIngestTask(DObjectRef parent, File dir) {
+        this(parent.citeableId(), Arrays.asList(dir));
+    }
+    
+    public DicomIngestTask(DObject parent, File dir) {
         this(parent.citeableId(), Arrays.asList(dir));
     }
 
@@ -89,6 +94,7 @@ public class DicomIngestTask extends UploadTask {
         }
         w.add("wait", _wait);
         w.pop();
+        setVariable("args", w.document());
         super.doExecute();
     }
 

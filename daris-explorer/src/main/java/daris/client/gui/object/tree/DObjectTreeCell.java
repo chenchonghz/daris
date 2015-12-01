@@ -1,5 +1,8 @@
 package daris.client.gui.object.tree;
 
+import java.io.File;
+import java.util.List;
+
 import daris.client.gui.object.action.UploadMenu;
 import daris.client.model.dataset.DataSet;
 import daris.client.model.exmethod.ExMethod;
@@ -11,6 +14,8 @@ import daris.client.model.subject.Subject;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.TreeCell;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 
 public class DObjectTreeCell extends TreeCell<DObjectRef> {
@@ -20,13 +25,13 @@ public class DObjectTreeCell extends TreeCell<DObjectRef> {
         super();
         setOnDragOver(event -> {
             if (event.getGestureSource() != DObjectTreeCell.this
-                    && event.getDragboard().hasFiles() && canDrop(object())) {
+                    && canDrop(event, object())) {
                 event.acceptTransferModes(TransferMode.ANY);
             }
             event.consume();
         });
         setOnDragEntered(event -> {
-            if (canDrop(object())) {
+            if (canDrop(event, object())) {
                 object().resolve(o -> {
                     if (canDrop(o)) {
                         DObjectTreeCell.this.getStyleClass()
@@ -37,7 +42,7 @@ public class DObjectTreeCell extends TreeCell<DObjectRef> {
             event.consume();
         });
         setOnDragExited(event -> {
-            if (canDrop(object())) {
+            if (canDrop(event, object())) {
                 object().resolve(o -> {
                     if (canDrop(o)) {
                         DObjectTreeCell.this.getStyleClass()
@@ -48,14 +53,20 @@ public class DObjectTreeCell extends TreeCell<DObjectRef> {
             event.consume();
         });
         setOnDragDropped(event -> {
-            object().resolve(o -> {
-                Platform.runLater(() -> {
-                    if (canDrop(o)) {
-                        new UploadMenu(o).show(DObjectTreeCell.this,
-                                event.getScreenX(), event.getSceneY());
-                    }
+            Dragboard db = event.getDragboard();
+            if (db.hasFiles()) {
+                final List<File> files = event.getDragboard().getFiles();
+                object().resolve(o -> {
+                    Platform.runLater(() -> {
+                        if (canDrop(o)) {
+                            new UploadMenu(o, files).show(DObjectTreeCell.this,
+                                    event.getScreenX(), event.getSceneY());
+                        }
+                    });
                 });
-            });
+            }
+            event.setDropCompleted(db.hasFiles());
+            event.consume();
         });
     }
 
@@ -66,8 +77,11 @@ public class DObjectTreeCell extends TreeCell<DObjectRef> {
         return getTreeItem().getValue();
     }
 
-    private static boolean canDrop(DObjectRef o) {
-        if (o == null) {
+    private static boolean canDrop(DragEvent event, DObjectRef o) {
+        if (event == null || o == null) {
+            return false;
+        }
+        if (!event.getDragboard().hasFiles()) {
             return false;
         }
         if (o.resolved() && o.isProject()
