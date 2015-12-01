@@ -40,6 +40,10 @@ public abstract class UploadTask extends ObservableTask
 
     }
 
+    protected boolean managed() {
+        return true;
+    }
+
     public UploadTask setName(String name) {
         _importOptions.setName(name);
         return this;
@@ -214,6 +218,22 @@ public abstract class UploadTask extends ObservableTask
         // DO NOTHING
         // but it is required to call updateProgress() method in the super
         // class.
+    }
+
+    public void start() {
+        if (managed()) {
+            UploadTaskManager.get().addTask(this);
+        } else {
+            submit();
+        }
+    }
+
+    @Override
+    public boolean discard() {
+        if (managed()) {
+            UploadTaskManager.get().removeTask(this);
+        }
+        return super.discard();
     }
 
 }

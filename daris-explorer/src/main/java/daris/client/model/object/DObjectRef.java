@@ -4,6 +4,9 @@ import arc.mf.client.ServerRoute;
 import arc.mf.client.util.Fuzzy;
 import arc.mf.client.xml.XmlWriterNe;
 import arc.mf.object.ObjectRef;
+import arc.mf.object.ObjectResolveHandler;
+import arc.mf.object.ObjectResolveRequest;
+import arc.mf.session.ServiceErrorHandler;
 import arc.xml.XmlDoc.Element;
 import daris.client.model.CiteableIdUtils;
 import daris.client.model.repository.RepositoryRef;
@@ -46,10 +49,19 @@ public class DObjectRef extends ObjectRef<DObject>
     public boolean resolved() {
         return _resolved && super.resolved();
     }
-    
+
     public void reset() {
         super.reset();
         _resolved = false;
+    }
+
+    @Override
+    protected ObjectResolveRequest<DObject> resolve(boolean lock,
+            ObjectResolveHandler<DObject> rh, ServiceErrorHandler seh) {
+        if (!resolved()) {
+            super.reset();
+        }
+        return super.resolve(lock, rh, seh);
     }
 
     public void setForEdit(boolean forEdit) {

@@ -24,3 +24,9 @@
     -fx-border-style: none none dotted none;
     -fx-border-color: #eeeeee;
 }
+
+.tree-cell-graphic-drag-entered {
+    -fx-border-width: 1;
+    -fx-border-style: dotted;
+    -fx-border-color: #3333ee;
+}

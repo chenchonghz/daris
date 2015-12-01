@@ -78,6 +78,7 @@ public class LogonDialog {
         _port = 80;
         _encrypt = false;
         _domain = null;
+        _provider = null;
         _user = null;
         _password = null;
 
@@ -88,6 +89,7 @@ public class LogonDialog {
             _port = settings.port() > 0 ? settings.port()
                     : (settings.encrypt() ? 443 : 80);
             _domain = settings.domain();
+            _provider = settings.provider();
             _user = settings.user();
         }
 
@@ -329,11 +331,14 @@ public class LogonDialog {
                 logon();
             }
         });
-        
+
         /*
          * initial show
          */
         updateGrid();
+        if (_domain != null) {
+            updateProviders(_domain);
+        }
 
         _stage = new Stage();
         _stage.initStyle(StageStyle.UTILITY);
@@ -352,7 +357,13 @@ public class LogonDialog {
         _gridPane.addRow(3, _portLabel, _portField);
         _gridPane.addRow(4, _domainLabel, _domainField);
         if (_providers != null && !_providers.isEmpty()) {
-            _providerCombo.setValue(_providers.get(0));
+            _providerCombo.getItems().setAll(_providers);
+            if (_provider != null && _providers.contains(_provider)) {
+                _providerCombo.setValue(_provider);
+            } else {
+                _provider = _providers.get(0);
+                _providerCombo.setValue(_provider);
+            }
             _gridPane.addRow(5, _providerLabel, _providerCombo);
             _gridPane.addRow(6, _userLabel, _userField);
             _gridPane.addRow(7, _passwordLabel, _passwordField);
@@ -366,10 +377,14 @@ public class LogonDialog {
         }
     }
 
-    private void updateProviders(String domain) {
-        if (domain == null || _host == null || _port <= 0) {
+    private void updateProviders(final String domain) {
+        if (domain == null || domain.isEmpty() || _host == null
+                || _host.isEmpty() || _port <= 0) {
             _providers = null;
             _provider = null;
+            ApplicationThread.execute(() -> {
+                updateGrid();
+            });
             return;
         }
         IdentityProviderList.resolve(_host, _port, _encrypt, domain,
@@ -388,17 +403,18 @@ public class LogonDialog {
         _logonButton.setDisable(true);
         new Thread(() -> {
             String provider = _provider == null ? null : _provider.id();
+            String user = _user;
             if (provider != null) {
                 int idx = _user.indexOf(":");
                 if (idx < 0) {
                     if (provider.contains(":")) {
                         provider = "[" + provider + "]";
                     }
-                    _user = provider.concat(":").concat(_user);
+                    user = provider.concat(":").concat(_user);
                 }
             }
             Session.logon(_encrypt ? Transport.HTTPS : Transport.HTTP, _host,
-                    _port, _domain, _user, _password,
+                    _port, _domain, user, _password,
                     new LogonResponseHandler() {
 
                 @Override
@@ -419,7 +435,7 @@ public class LogonDialog {
                         _stage.hide();
                     });
                     ConnectionSettings.add(new ConnectionSettings(_host, _port,
-                            _encrypt, _domain, _user));
+                            _encrypt, _domain, _provider, _user));
                     ConnectionSettings.save();
                     if (_rh != null) {
                         _rh.succeeded();
@@ -440,43 +456,43 @@ public class LogonDialog {
 
         if (_host == null || _host.trim().isEmpty()) {
             _statusLabel.setText("Missing host address.");
-            _hostCombo.requestFocus();
+            // _hostCombo.requestFocus();
             return false;
         }
 
         if (_transportCombo.getValue() == null) {
             _statusLabel.setText("Missing transport protocol.");
-            _transportCombo.requestFocus();
+            // _transportCombo.requestFocus();
             return false;
         }
 
         if (_port <= 0) {
             _statusLabel.setText("Missing server port.");
-            _portField.requestFocus();
+            // _portField.requestFocus();
             return false;
         }
 
         if (_domain == null || _domain.trim().isEmpty()) {
             _statusLabel.setText("Missing authentication domain name.");
-            _domainField.requestFocus();
+            // _domainField.requestFocus();
             return false;
         }
 
         if (_providers != null && _provider == null) {
             _statusLabel.setText("Missing identity provider.");
-            _providerCombo.requestFocus();
+            // _providerCombo.requestFocus();
             return false;
         }
 
         if (_user == null || _user.trim().isEmpty()) {
             _statusLabel.setText("Missing user name.");
-            _userField.requestFocus();
+            // _userField.requestFocus();
             return false;
         }
 
         if (_password == null || _password.trim().isEmpty()) {
             _statusLabel.setText("Missing password.");
-            _passwordField.requestFocus();
+            // _passwordField.requestFocus();
             return false;
         }
         _logonButton.setDisable(false);

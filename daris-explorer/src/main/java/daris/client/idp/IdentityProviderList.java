@@ -13,6 +13,12 @@ public class IdentityProviderList {
 
     public static void resolve(String host, int port, boolean encrypt,
             String domain, ObjectResolveHandler<List<IdentityProvider>> rh) {
+        if(host==null||port<0||domain==null||domain.isEmpty()){
+            if(rh!=null){
+                rh.resolved(null);
+            }
+            return;
+        }
         new Thread(() -> {
             RemoteServer server = new RemoteServer(host, port, true, encrypt);
             ServerClient.Connection cxn;

@@ -1,6 +1,7 @@
 package daris.client.idp;
 
 import arc.xml.XmlDoc;
+import arc.xml.XmlWriter;
 
 public class IdentityProvider {
 
@@ -43,6 +44,20 @@ public class IdentityProvider {
             }
         }
         return false;
+    }
+
+    public void saveXml(XmlWriter w) throws Throwable {
+        w.push("provider", new String[] { "id", _id });
+        if (_label != null) {
+            w.add("label", _label);
+        }
+        if (_shortName != null) {
+            w.add("shortname", _shortName);
+        }
+        if (_description != null) {
+            w.add("description", _description);
+        }
+        w.pop();
     }
 
 }

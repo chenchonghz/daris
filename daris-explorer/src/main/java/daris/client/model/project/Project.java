@@ -64,6 +64,14 @@ public class Project extends DObject {
         return Collections.unmodifiableList(_methods);
     }
 
+    public int numberOfMethods() {
+        return _methods == null ? 0 : _methods.size();
+    }
+
+    public boolean hasMethods() {
+        return _methods != null && !_methods.isEmpty();
+    }
+
     public List<ProjectMember> members() {
         if (_members == null) {
             return null;

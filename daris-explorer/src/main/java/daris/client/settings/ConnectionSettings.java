@@ -19,6 +19,7 @@ import arc.xml.XmlDoc;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlDocWriter;
 import arc.xml.XmlWriter;
+import daris.client.idp.IdentityProvider;
 
 public class ConnectionSettings {
 
@@ -30,6 +31,7 @@ public class ConnectionSettings {
     private int _port;
     private boolean _encrypt;
     private String _domain;
+    private IdentityProvider _provider;
     private String _user;
 
     private ConnectionSettings(XmlDoc.Element se) throws Throwable {
@@ -37,15 +39,19 @@ public class ConnectionSettings {
         _encrypt = se.booleanValue("https", false);
         _port = se.intValue("port", _encrypt ? 443 : 80);
         _domain = se.value("domain");
+        if (se.elementExists("provider")) {
+            _provider = new IdentityProvider(se.element("provider"));
+        }
         _user = se.value("user");
     }
 
     public ConnectionSettings(String host, int port, boolean encrypt,
-            String domain, String user) {
+            String domain, IdentityProvider provider, String user) {
         _host = host;
         _port = port;
         _encrypt = encrypt;
         _domain = domain;
+        _provider = provider;
         _user = user;
     }
 
@@ -69,12 +75,19 @@ public class ConnectionSettings {
         return _user;
     }
 
+    public IdentityProvider provider() {
+        return _provider;
+    }
+
     public void saveXml(XmlWriter w) throws Throwable {
         w.push("server");
         w.add("host", _host);
         w.add("port", _port);
         w.add("https", _encrypt);
         w.add("domain", _domain);
+        if (_provider != null) {
+            _provider.saveXml(w);
+        }
         w.add("user", _user);
         w.pop();
     }
