@@ -20,6 +20,7 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
@@ -58,6 +59,18 @@ public class DObjectTreeView extends TreeView<DObjectRef>
                 ApplicationThread.execute(() -> {
                     _contextMenu.getItems()
                             .setAll(DObjectMenu.menuItemsFor(oo));
+                    MenuItem refreshMenuItem = new MenuItem(
+                            DObjectMenu.menuItemTextFor("Refresh", o));
+                    refreshMenuItem.setOnAction(event -> {
+                        DObjectTreeItem item = findTreeItem(o);
+                        if (item != null) {
+                            item.refresh(true);
+                        }
+                    });
+                    if (!_contextMenu.getItems().isEmpty()) {
+                        _contextMenu.getItems().add(new SeparatorMenuItem());
+                    }
+                    _contextMenu.getItems().add(refreshMenuItem);
                 });
             });
         });
@@ -69,11 +82,7 @@ public class DObjectTreeView extends TreeView<DObjectRef>
         setContextMenu(_contextMenu);
         _filters = new ArrayList<arc.mf.event.Filter>(1);
         _filters.add(new arc.mf.event.Filter(PSSDObjectEvent.SYSTEM_EVENT_NAME,
-                null) {
-            public boolean equals(arc.mf.event.Filter f) {
-                return type().equals(f.type());
-            }
-        });
+                null));
         SystemEventChannel.add(this);
     }
 

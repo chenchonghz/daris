@@ -103,8 +103,13 @@ public class UploadTaskProgress {
         _processedFiles = processedFiles;
         Platform.runLater(() -> {
             this.processedFilesProperty.set(_processedFiles);
-            this.processedFilesMessageProperty
-                    .set(_processedFiles + "/" + _totalFiles);
+            if (_processedFiles > _totalFiles) {
+                this.processedFilesMessageProperty
+                        .set(_totalFiles + "/" + _totalFiles);
+            } else {
+                this.processedFilesMessageProperty
+                        .set(_processedFiles + "/" + _totalFiles);
+            }
         });
     }
 
@@ -117,8 +122,13 @@ public class UploadTaskProgress {
         _processedSize = processedSize;
         Platform.runLater(() -> {
             this.processedSizeProperty.set(_processedSize);
-            this.processedSizeMessageProperty
-                    .set(_processedSize + "/" + _totalSize);
+            if (_processedSize > _totalSize) {
+                this.processedSizeMessageProperty
+                        .set(_totalSize + "/" + _totalSize);
+            } else {
+                this.processedSizeMessageProperty
+                        .set(_processedSize + "/" + _totalSize);
+            }
             this.setProgress(_processedSize / _totalSize);
         });
     }
@@ -160,6 +170,12 @@ public class UploadTaskProgress {
         Platform.runLater(() -> {
             this.ignoredFilesProperty.set(_ignoredFiles);
         });
+    }
+
+    public void setCompleted() {
+        this.setProcessedFiles(_totalFiles);
+        this.setProcessedSize(_totalSize);
+        this.setProgress(1.0F);
     }
 
 }
