@@ -4,8 +4,8 @@ import daris.client.model.object.DObjectRef;
 
 public class MethodRef extends DObjectRef {
 
-    public MethodRef(Method obj) {
-        super(obj);
+    public MethodRef(Method obj, boolean resolved) {
+        super(obj, resolved);
     }
 
     public MethodRef(String route, String cid, String name,

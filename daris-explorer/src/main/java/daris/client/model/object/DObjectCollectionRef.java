@@ -75,7 +75,7 @@ public class DObjectCollectionRef extends OrderedCollectionRef<DObjectRef> {
 
     @Override
     protected DObjectRef instantiate(XmlDoc.Element xe) throws Throwable {
-        return new DObjectRef(DObject.create(xe));
+        return new DObjectRef(DObject.create(xe), false);
     }
 
     @Override

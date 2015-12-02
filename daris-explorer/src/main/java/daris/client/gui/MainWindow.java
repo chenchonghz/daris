@@ -3,6 +3,7 @@ package daris.client.gui;
 import daris.client.app.MainApp;
 import daris.client.gui.object.DObjectViewPane;
 import daris.client.gui.object.tree.DObjectTreeView;
+import daris.client.model.object.DObjectRef;
 import daris.client.util.OSUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -73,16 +74,19 @@ public class MainWindow {
         menuBar.setUseSystemMenuBar(true);
         _borderPane.setTop(menuBar);
 
-        StackPane navStackPane = new StackPane();
-        _nav = new DObjectTreeView();
-        navStackPane.getChildren().add(_nav);
-
         _dv = new DObjectViewPane();
 
-        _nav.getSelectionModel().selectedItemProperty()
-                .addListener((observable, oldValue, newValue) ->
+        StackPane navStackPane = new StackPane();
+        _nav = new DObjectTreeView() {
+            @Override
+            protected void selectedItemUpdated(DObjectRef o) {
+                _dv.displayObject(o);
+            }
+        };
+        navStackPane.getChildren().add(_nav);
 
-        {
+        _nav.getSelectionModel().selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
                     _dv.displayObject(
                             newValue == null ? null : newValue.getValue());
                 });
@@ -93,7 +97,7 @@ public class MainWindow {
         splitPane.getItems().setAll(navStackPane, _dv);
 
         _borderPane.setCenter(splitPane);
-        
+
         _statusPane = new StatusPane();
         _statusPane.setMaxHeight(250);
         _borderPane.setBottom(_statusPane);

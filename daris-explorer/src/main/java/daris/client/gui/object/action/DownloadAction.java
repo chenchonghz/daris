@@ -17,7 +17,7 @@ public class DownloadAction extends ActionInterface<DObject> {
     }
 
     public DownloadAction(Window w, DObject o) {
-        this(w, new DObjectRef(o));
+        this(w, new DObjectRef(o, true));
     }
 
     @Override

@@ -10,7 +10,7 @@ public class DObjectTree implements Tree {
     private DObjectTreeNode _root;
 
     public DObjectTree() {
-        _root = new DObjectTreeNode(new RepositoryRef());
+        _root = new DObjectTreeNode(RepositoryRef.get());
     }
 
     @Override

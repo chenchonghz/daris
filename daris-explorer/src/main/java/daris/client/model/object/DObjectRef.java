@@ -32,7 +32,7 @@ public class DObjectRef extends ObjectRef<DObject>
         _forEdit = forEdit;
     }
 
-    public DObjectRef(DObject obj) {
+    public DObjectRef(DObject obj, boolean resolved) {
         super(obj);
         _route = obj.route();
         _cid = obj.citeableId();
@@ -40,6 +40,7 @@ public class DObjectRef extends ObjectRef<DObject>
         _description = obj.description();
         _numberOfChildren = obj.numberOfChildren();
         _forEdit = obj.hasMetadataForEdit();
+        _resolved = resolved;
     }
 
     public DObjectRef(String cid, int numberOfChildren) {
@@ -214,6 +215,17 @@ public class DObjectRef extends ObjectRef<DObject>
 
     public boolean isDataSet() {
         return CiteableIdUtils.isDataSetCID(_cid);
+    }
+
+    public DObjectRef parent() {
+        if (_cid == null) {
+            return null;
+        }
+        if (isProject()) {
+            return RepositoryRef.get();
+        } else {
+            return new DObjectRef(CiteableIdUtils.getParentCID(_cid), -1);
+        }
     }
 
 }

@@ -7,7 +7,16 @@ import daris.client.model.object.DObjectRef;
 
 public class RepositoryRef extends DObjectRef {
 
-    public RepositoryRef() {
+    private static RepositoryRef _instance;
+
+    public static RepositoryRef get() {
+        if (_instance == null) {
+            _instance = new RepositoryRef();
+        }
+        return _instance;
+    }
+
+    private RepositoryRef() {
         super(null, -1);
     }
 

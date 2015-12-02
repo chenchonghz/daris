@@ -28,7 +28,7 @@ public class DObjectChildrenRef extends ObjectRef<List<DObjectRef>> {
             if (oes != null && !oes.isEmpty()) {
                 List<DObjectRef> os = new ArrayList<DObjectRef>();
                 for (XmlDoc.Element oe : oes) {
-                    os.add(new DObjectRef(DObject.create(oe)));
+                    os.add(new DObjectRef(DObject.create(oe), false));
                 }
                 return os;
             }

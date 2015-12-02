@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import arc.mf.desktop.ui.util.ApplicationThread;
+import arc.utils.ObjectUtil;
 import daris.client.model.CiteableIdUtils;
 import daris.client.model.object.DObjectChildrenRef;
 import daris.client.model.object.DObjectRef;
@@ -132,6 +133,17 @@ public class DObjectTreeItem extends TreeItem<DObjectRef> {
             return CiteableIdUtils.getLastPart(object.citeableId())
                     + (object.name() == null ? "" : (": " + object.name()));
         }
+    }
+
+    boolean containsChild(DObjectRef o) {
+        ObservableList<TreeItem<DObjectRef>> children = getChildren();
+        for (TreeItem<DObjectRef> item : children) {
+            DObjectRef co = item.getValue();
+            if (ObjectUtil.equals(co.citeableId(), o.citeableId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     void refresh(boolean refreshChildren) {

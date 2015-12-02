@@ -38,21 +38,14 @@ public class PSSDObjectEvent extends SystemEvent {
         if (!type().equals(f.type())) {
             return false;
         }
-        switch (_action) {
-        case CREATE:
-        case DESTROY:
-            if (f.object() == null) {
-                // local object type: repository
-                // event object type = project?
-                return CiteableIdUtils.isProjectCID(object());
-            } else {
+        if (f.object() == null) {
+            return true;
+        } else {
+            if (_action == Action.CREATE) {
                 return CiteableIdUtils.isDirectParent(f.object(), object());
+            } else {
+                return ObjectUtil.equals(f.object(), object());
             }
-        case MODIFY:
-        case MEMBERS:
-            return ObjectUtil.equals(f.object(), object());
-        default:
-            return ObjectUtil.equals(f.object(), object());
         }
     }
 
