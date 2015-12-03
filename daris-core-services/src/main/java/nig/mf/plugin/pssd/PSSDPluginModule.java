@@ -179,6 +179,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcCollectionMembers());
         _services.add(new SvcCollectionMemberList());
         _services.add(new SvcCollectionMemberCount());
+        _services.add(new SvcCollectionArchiveCreate());
         _services.add(new SvcObjectCidChange());
         _services.add(new SvcObjectExists());
         _services.add(new SvcObjectType());
