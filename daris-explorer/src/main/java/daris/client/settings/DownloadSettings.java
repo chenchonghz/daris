@@ -10,6 +10,7 @@ import arc.xml.XmlDoc;
 import arc.xml.XmlWriter;
 import daris.client.model.task.DownloadCollisionPolicy;
 import daris.client.model.task.DownloadOptions;
+import daris.client.model.task.DownloadOptions.Parts;
 import daris.client.model.transcode.Transcode;
 
 public class DownloadSettings {
@@ -29,6 +30,7 @@ public class DownloadSettings {
     private boolean _alwaysAsk = true;
     private boolean _recursive = true;
     private boolean _decompress = false;
+    private Parts _parts = Parts.all;
     private Map<String, Transcode> _transcodes = null;
     private DownloadCollisionPolicy _collisionPolicy;
     private String _directory = getDefaultDirectory();
@@ -37,6 +39,7 @@ public class DownloadSettings {
         _alwaysAsk = de.booleanValue("alwasy-ask", true);
         _recursive = de.booleanValue("recursive", true);
         _decompress = de.booleanValue("decompress", false);
+        _parts = Parts.fromString(de.value("parts"), Parts.all);
         _collisionPolicy = DownloadCollisionPolicy.fromString(
                 de.value("collision-policy"),
                 DownloadCollisionPolicy.OVERWRITE);
@@ -64,6 +67,10 @@ public class DownloadSettings {
 
     public boolean decompress() {
         return _decompress;
+    }
+
+    public Parts parts() {
+        return _parts;
     }
 
     public DownloadCollisionPolicy collisionPolicy() {
@@ -110,6 +117,7 @@ public class DownloadSettings {
         w.add("always-ask", _alwaysAsk);
         w.add("recursive", _recursive);
         w.add("decompress", _decompress);
+        w.add("parts", _parts);
         w.add("collision-policy", _collisionPolicy);
         w.add("directory", _directory);
         w.pop();

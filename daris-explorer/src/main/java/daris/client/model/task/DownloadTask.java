@@ -1,7 +1,12 @@
 package daris.client.model.task;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import arc.archive.ArchiveExtractor;
 import arc.archive.ArchiveInput;
@@ -20,6 +25,7 @@ import arc.xml.XmlDoc.Element;
 import arc.xml.XmlStringWriter;
 import daris.client.model.CiteableIdUtils;
 import daris.client.model.object.DObjectRef;
+import daris.client.model.task.DownloadOptions.Parts;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
@@ -119,15 +125,9 @@ public class DownloadTask extends ObservableTask {
             String assetId = ae.value("@id");
             try {
                 if (cid == null || !_options.recursive()) {
-                    String mimeType = ae.value("type");
-                    if (ae.elementExists("content")) {
-                        if (_options.hasTranscodeFor(mimeType)) {
-                            transcodeContent(cxn, ae);
-                        } else {
-                            downloadContent(cxn, ae);
-                        }
-                        _progress.incProcessedObjects();
-                    }
+                    checkIfAborted();
+                    downloadObject(cxn, ae);
+                    _progress.incProcessedObjects();
                 } else {
                     int idx = 1;
                     int size = 100;
@@ -135,8 +135,9 @@ public class DownloadTask extends ObservableTask {
                     XmlDoc.Element re = null;
                     while (remaining > 0) {
                         re = cxn.execute("asset.query",
-                                "<where>cid starts with '" + cid
-                                        + "' and asset has content</where><count>true</count><idx>"
+                                "<where>cid='" + cid + "' or cid starts with '"
+                                        + cid
+                                        + "'</where><count>true</count><idx>"
                                         + idx + "</idx><size>" + size
                                         + "</size><action>get-meta</action>",
                                 null, null);
@@ -144,26 +145,185 @@ public class DownloadTask extends ObservableTask {
                         List<XmlDoc.Element> caes = re.elements("asset");
                         if (caes != null) {
                             for (XmlDoc.Element cae : caes) {
-                                String mimeType = cae.value("type");
                                 checkIfAborted();
-                                if (_options.hasTranscodeFor(mimeType)) {
-                                    transcodeContent(cxn, cae);
-                                } else {
-                                    downloadContent(cxn, cae);
-                                }
+                                downloadObject(cxn, cae);
                                 _progress.incProcessedObjects();
                             }
                         }
                         idx += size;
                     }
                 }
-                _progress.setProgress(1.0f);
+                new Timer().schedule(new TimerTask() {
+
+                    @Override
+                    public void run() {
+                        _progress.setCompleted();
+                    }
+                }, 1000L);
             } finally {
                 cxn.execute("asset.unlock", "<id>" + assetId + "</id>", null,
                         null);
             }
         } finally {
             cxn.close();
+        }
+    }
+
+    private void downloadObject(ServerClient.Connection cxn, XmlDoc.Element ae)
+            throws Throwable {
+        if (_options.parts() != Parts.content) {
+            downloadMeta(cxn, ae);
+        }
+        if (_options.parts() != Parts.meta) {
+            String mimeType = ae.value("type");
+            if (ae.elementExists("content")) {
+                if (_options.hasTranscodeFor(mimeType)) {
+                    transcodeContent(cxn, ae);
+                } else {
+                    downloadContent(cxn, ae);
+                }
+            }
+        }
+    }
+
+    private static File createContentDir(String rootDir, XmlDoc.Element ae)
+            throws Throwable {
+        StringBuilder contentDirPath = new StringBuilder(
+                directoryPathFor(rootDir, ae));
+        String type = ae.value("type");
+        if (type != null) {
+            contentDirPath.append("/").append(type.replace('/', '_'));
+        }
+        File contentDir = new File(contentDirPath.toString());
+        contentDir.mkdirs();
+        return contentDir;
+    }
+
+    private static File createTranscodedDir(String rootDir, XmlDoc.Element ae,
+            String type) throws Throwable {
+        StringBuilder transcodedDirPath = new StringBuilder(
+                directoryPathFor(rootDir, ae));
+        if (type != null) {
+            transcodedDirPath.append("/").append(type.replace('/', '_'));
+        }
+        File transcodedDir = new File(transcodedDirPath.toString());
+        transcodedDir.mkdirs();
+        return transcodedDir;
+    }
+
+    private static File createMetaFile(String rootDir, XmlDoc.Element ae)
+            throws Throwable {
+        String cid = ae.value("cid");
+        String assetId = ae.value("@id");
+
+        File dir = new File(directoryPathFor(rootDir, ae));
+        dir.mkdirs();
+
+        String fileName = new StringBuilder(cid == null ? assetId : cid)
+                .append(".meta.xml").toString();
+        File file = new File(dir, fileName);
+        return file;
+    }
+
+    private static File createContentFile(String rootDir, XmlDoc.Element ae)
+            throws Throwable {
+
+        String cid = ae.value("cid");
+        String assetId = ae.value("@id");
+        String ext = ae.value("content/type/@ext");
+        String fileName = ae.value("meta/daris:pssd-filename/original");
+        if (fileName == null) {
+            fileName = cid == null ? assetId : cid;
+            if (ext != null) {
+                fileName = fileName + "." + ext;
+            }
+        }
+
+        File dir = new File(directoryPathFor(rootDir, ae));
+        dir.mkdirs();
+
+        File file = new File(dir, fileName);
+        return file;
+    }
+
+    private static File createTranscodedFile(String rootDir, XmlDoc.Element ae,
+            String type, String ext) throws Throwable {
+        String cid = ae.value("cid");
+        String assetId = ae.value("@id");
+        StringBuilder fileName = new StringBuilder(cid == null ? assetId : cid);
+        if (type != null) {
+            fileName.append("_").append(type.replace('/', '_'));
+        }
+        if (ext != null) {
+            fileName.append(".").append(ext);
+        }
+
+        File dir = new File(directoryPathFor(rootDir, ae));
+        dir.mkdirs();
+
+        File file = new File(dir, fileName.toString());
+        return file;
+    }
+
+    private static String directoryPathFor(String rootDir, XmlDoc.Element ae)
+            throws Throwable {
+        StringBuilder dirPath = new StringBuilder(rootDir);
+        String cid = ae.value("cid");
+        String assetId = ae.value("@id");
+        if (cid == null) {
+            return dirPath.append("/").append(assetId).toString();
+        }
+        String projectCID = CiteableIdUtils.getProjectCID(cid);
+        dirPath.append("/");
+        dirPath.append(projectCID);
+        if (CiteableIdUtils.isProjectCID(cid)) {
+            return dirPath.toString();
+        }
+
+        String subjectCID = CiteableIdUtils.getSubjectCID(cid);
+        dirPath.append("/");
+        dirPath.append(subjectCID);
+        if (CiteableIdUtils.isSubjectCID(cid)
+                || CiteableIdUtils.isExMethodCID(cid)) {
+            return dirPath.toString();
+        }
+
+        String studyCID = CiteableIdUtils.getStudyCID(cid);
+        dirPath.append("/");
+        dirPath.append(studyCID);
+        if (CiteableIdUtils.isStudyCID(cid)) {
+            return dirPath.toString();
+        }
+
+        dirPath.append("/");
+        dirPath.append(cid);
+        return dirPath.toString();
+    }
+
+    private void downloadMeta(ServerClient.Connection cxn, XmlDoc.Element ae)
+            throws Throwable {
+        File file = createMetaFile(_options.directory(), ae);
+        String cid = ae.value("cid");
+        String assetId = ae.value("@id");
+        XmlDoc.Element e;
+        if (cid == null) {
+            e = cxn.execute("asset.get", "<id>" + assetId + "</id>", null, null)
+                    .element("asset");
+        } else {
+            e = cxn.execute("om.pssd.object.describe", "<id>" + cid + "</id>",
+                    null, null).element("object");
+        }
+        writeXmlToFile(e, file);
+    }
+
+    private static void writeXmlToFile(XmlDoc.Element xe, File file)
+            throws Throwable {
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
+        try {
+            os.write(xe.toString().getBytes("UTF-8"));
+            os.flush();
+        } finally {
+            os.close();
         }
     }
 
@@ -215,7 +375,8 @@ public class DownloadTask extends ObservableTask {
                 Archive.declareSupportForAllTypes();
                 if (ArchiveRegistry.isAnArchive(ctype)
                         && _options.decompress()) {
-                    File outputDirectory = createOutputDirectoryFor(ae, null);
+                    File outputDirectory = createContentDir(
+                            _options.directory(), ae);
                     ArchiveInput ai = ArchiveRegistry.createInput(
                             new NonCloseInputStream(pis),
                             new NamedMimeType(ctype));
@@ -240,7 +401,8 @@ public class DownloadTask extends ObservableTask {
                     });
                     ArchiveInput.discardToEndOfStream(pis);
                 } else {
-                    File outputFile = createOutputFileFor(ae, null, null);
+                    File outputFile = createContentFile(_options.directory(),
+                            ae);
                     StreamCopy.copy(pis, outputFile);
                 }
             }
@@ -305,7 +467,8 @@ public class DownloadTask extends ObservableTask {
                 ProgressMonitoredInputStream pis = new ProgressMonitoredInputStream(
                         pm, is, true);
                 if (_options.decompress()) {
-                    File outputDirectory = createOutputDirectoryFor(ae, toType);
+                    File outputDirectory = createTranscodedDir(
+                            _options.directory(), ae, toType);
                     ArchiveInput ai = ArchiveRegistry.createInput(
                             new NonCloseInputStream(pis),
                             new NamedMimeType("application/arc-archive"));
@@ -330,8 +493,8 @@ public class DownloadTask extends ObservableTask {
                     });
                     ArchiveInput.discardToEndOfStream(pis);
                 } else {
-                    File outputFile = createOutputFileFor(ae, "application/zip",
-                            "zip");
+                    File outputFile = createTranscodedFile(_options.directory(),
+                            ae, toType, "zip");
                     StreamCopy.copy(pis, outputFile);
                 }
             }
@@ -340,82 +503,6 @@ public class DownloadTask extends ObservableTask {
         _progress.setMessage(
                 "transcoded asset " + (cid == null ? assetId : cid));
 
-    }
-
-    private File createOutputFileFor(XmlDoc.Element ae, String mimeType,
-            String fileExt) throws Throwable {
-        StringBuilder sb = new StringBuilder(_options.directory());
-        String cid = ae.value("cid");
-        String assetId = ae.value("@id");
-        mimeType = mimeType == null ? ae.value("type") : mimeType;
-        fileExt = fileExt == null ? ae.value("content/type/@ext") : fileExt;
-        String fileName = ae.value("meta/daris:pssd-filename/original");
-        fileName = fileName == null ? (cid == null ? assetId : cid) : fileName;
-        fileName = fileName.endsWith("." + fileExt) ? fileName
-                : (fileName + "." + fileExt);
-        if (cid != null) {
-            appendOutputDir(sb, cid);
-        }
-        sb.append(File.separatorChar);
-        sb.append(fileName);
-        File file = new File(sb.toString());
-        file.getParentFile().mkdirs();
-        return file;
-    }
-
-    private static void appendOutputDir(StringBuilder sb, String cid) {
-        if (CiteableIdUtils.isProjectCID(cid)) {
-            sb.append(File.separator);
-            sb.append(cid);
-            return;
-        }
-        String projectCid = CiteableIdUtils.getProjectCID(cid);
-        sb.append(File.separator);
-        sb.append(projectCid);
-        if (CiteableIdUtils.isSubjectCID(cid)) {
-            sb.append(File.separator);
-            sb.append(cid);
-            return;
-        }
-        String subjectCid = CiteableIdUtils.getSubjectCID(cid);
-        sb.append(File.separator);
-        sb.append(subjectCid);
-        if (CiteableIdUtils.isExMethodCID(cid)) {
-            return;
-        }
-        if (CiteableIdUtils.isStudyCID(cid)) {
-            sb.append(File.separator);
-            sb.append(cid);
-            return;
-        }
-        String studyCid = CiteableIdUtils.getStudyCID(cid);
-        sb.append(File.separator);
-        sb.append(studyCid);
-        if (CiteableIdUtils.isDataSetCID(cid)) {
-            sb.append(File.separator);
-            sb.append(cid);
-        }
-    }
-
-    private File createOutputDirectoryFor(XmlDoc.Element ae, String mimeType)
-            throws Throwable {
-        StringBuilder sb = new StringBuilder(_options.directory());
-        String cid = ae.value("cid");
-        String assetId = ae.value("@id");
-        mimeType = mimeType == null ? ae.value("type") : mimeType;
-        sb.append(File.separatorChar);
-        if (cid == null) {
-            sb.append(assetId);
-        } else {
-            appendOutputDir(sb, cid);
-        }
-        if (mimeType != null) {
-            sb.append(File.separatorChar);
-            sb.append(mimeType.replace('/', '_'));
-        }
-        File dir = new File(sb.toString());
-        dir.mkdirs();
-        return dir;
     }
 
     private long calcTotalSize(ServerClient.Connection cxn, XmlDoc.Element ae,
@@ -436,8 +523,8 @@ public class DownloadTask extends ObservableTask {
         String cid = ae.value("cid");
         if (options.recursive() && cid != null) {
             XmlDoc.Element re = cxn.execute("asset.query",
-                    "<where>((cid='" + cid + "') or (cid starts with '" + cid
-                            + "')) and (asset has content)</where><size>infinity</size><action>count</action>",
+                    "<where>cid='" + cid + "' or cid starts with '" + cid
+                            + "'</where><size>infinity</size><action>count</action>",
                     null, null);
             return re.intValue("value");
         } else {

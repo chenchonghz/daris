@@ -78,6 +78,7 @@ public abstract class DObjectView<T extends DObject> extends TabPane {
         if (object instanceof Repository) {
             treeTableView.addEntry("Description Asset ID", object.assetId());
         } else {
+            treeTableView.addEntry("Object Type", object.type().typeName());
             treeTableView.addEntry("Citeable ID", object.citeableId());
             treeTableView.addEntry("Asset ID", object.assetId());
         }

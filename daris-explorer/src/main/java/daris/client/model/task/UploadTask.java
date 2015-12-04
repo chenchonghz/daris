@@ -162,13 +162,13 @@ public abstract class UploadTask extends ObservableTask
         ServerClient.Connection cxn = Session.connection();
         try {
             fi.execute(cxn);
-            new Timer().schedule(new TimerTask(){
+            new Timer().schedule(new TimerTask() {
 
                 @Override
                 public void run() {
                     _progress.setCompleted();
-                }}, 1000L);;
-            
+                }
+            }, 1000L);
         } finally {
             cxn.close();
         }

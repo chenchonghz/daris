@@ -14,8 +14,27 @@ import daris.client.settings.UserSettingsRef;
 
 public class DownloadOptions {
 
+    public static enum Parts {
+        meta, content, all;
+        public static Parts fromString(String s, Parts defaultValue) {
+            if (s != null) {
+                if (s.equalsIgnoreCase(meta.name())) {
+                    return meta;
+                }
+                if (s.equalsIgnoreCase(content.name())) {
+                    return content;
+                }
+                if (s.equalsIgnoreCase(all.name())) {
+                    return all;
+                }
+            }
+            return defaultValue;
+        }
+    }
+
     private boolean _recursive;
     private boolean _decompress;
+    private Parts _parts;
     private Map<String, Transcode> _transcodes;
     private DownloadCollisionPolicy _collisionPolicy;
     private String _directory;
@@ -23,6 +42,7 @@ public class DownloadOptions {
     public DownloadOptions() {
         _recursive = false;
         _decompress = false;
+        _parts = Parts.all;
         _transcodes = new HashMap<String, Transcode>();
         _collisionPolicy = DownloadCollisionPolicy.OVERWRITE;
         _directory = DownloadSettings.getDefaultDirectory();
@@ -31,6 +51,7 @@ public class DownloadOptions {
     public DownloadOptions(DownloadSettings settings) {
         _recursive = settings.recursive();
         _decompress = settings.decompress();
+        _parts = settings.parts();
         if (settings.hasTranscodes()) {
             Set<Transcode> transcodes = settings.transcodes();
             for (Transcode transcode : transcodes) {
@@ -39,6 +60,14 @@ public class DownloadOptions {
         }
         _collisionPolicy = settings.collisionPolicy();
         _directory = settings.directory();
+    }
+
+    public Parts parts() {
+        return _parts;
+    }
+
+    public void setParts(Parts parts) {
+        _parts = parts;
     }
 
     public boolean recursive() {

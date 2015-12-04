@@ -158,4 +158,9 @@ public class DownloadTaskProgress {
         });
     }
 
+    public void setCompleted() {
+        this.setProcessedObjects(_totalObjects);
+        this.setProcessedSize(_totalSize);
+        this.setProgress(1.0F);
+    }
 }
