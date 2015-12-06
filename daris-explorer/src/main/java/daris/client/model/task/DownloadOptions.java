@@ -34,17 +34,17 @@ public class DownloadOptions {
 
     private boolean _recursive;
     private boolean _decompress;
+    private boolean _overwrite;
     private Parts _parts;
     private Map<String, Transcode> _transcodes;
-    private DownloadCollisionPolicy _collisionPolicy;
     private String _directory;
 
     public DownloadOptions() {
-        _recursive = false;
-        _decompress = false;
+        _recursive = true;
+        _decompress = true;
         _parts = Parts.all;
         _transcodes = new HashMap<String, Transcode>();
-        _collisionPolicy = DownloadCollisionPolicy.OVERWRITE;
+        _overwrite = true;
         _directory = DownloadSettings.getDefaultDirectory();
     }
 
@@ -58,7 +58,7 @@ public class DownloadOptions {
                 addTranscode(transcode);
             }
         }
-        _collisionPolicy = settings.collisionPolicy();
+        _overwrite = settings.overwrite();
         _directory = settings.directory();
     }
 
@@ -143,13 +143,13 @@ public class DownloadOptions {
         return this;
     }
 
-    public DownloadCollisionPolicy collisionPolicy() {
-        return _collisionPolicy;
+    public boolean overwrite() {
+        return _overwrite;
     }
 
-    public DownloadOptions setCollisionPolicy(
-            DownloadCollisionPolicy collisionPolicy) {
-        _collisionPolicy = collisionPolicy;
+    public DownloadOptions setOverwrite(
+            boolean overwrite) {
+        _overwrite = overwrite;
         return this;
     }
 
@@ -180,5 +180,10 @@ public class DownloadOptions {
                 rh.resolved(new DownloadOptions(settings.downloadSettings()));
             }
         });
+    }
+
+    public void addTranscode(String from, String to) {
+        addTranscode(new Transcode(from, to));
+        
     }
 }

@@ -1,5 +1,6 @@
 package daris.client.app;
 
+import arc.mf.client.archive.Archive;
 import arc.mf.client.util.UnhandledException;
 import arc.mf.client.util.UnhandledExceptionHandler;
 import arc.mf.desktop.server.LogonResponseHandler;
@@ -108,6 +109,7 @@ public class MainApp extends Application {
             SystemEventChannel.subscribe();
             ServerEvents.initialize();
             PSSDObjectEvents.initialize();
+            Archive.declareSupportForAllTypes();
         }
     }
 

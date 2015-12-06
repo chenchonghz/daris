@@ -8,7 +8,6 @@ import java.util.Set;
 
 import arc.xml.XmlDoc;
 import arc.xml.XmlWriter;
-import daris.client.model.task.DownloadCollisionPolicy;
 import daris.client.model.task.DownloadOptions;
 import daris.client.model.task.DownloadOptions.Parts;
 import daris.client.model.transcode.Transcode;
@@ -32,17 +31,15 @@ public class DownloadSettings {
     private boolean _decompress = false;
     private Parts _parts = Parts.all;
     private Map<String, Transcode> _transcodes = null;
-    private DownloadCollisionPolicy _collisionPolicy;
+    private boolean _overwrite;
     private String _directory = getDefaultDirectory();
 
     public DownloadSettings(XmlDoc.Element de) throws Throwable {
         _alwaysAsk = de.booleanValue("alwasy-ask", true);
         _recursive = de.booleanValue("recursive", true);
         _decompress = de.booleanValue("decompress", false);
+        _overwrite = de.booleanValue("overwrite", true);
         _parts = Parts.fromString(de.value("parts"), Parts.all);
-        _collisionPolicy = DownloadCollisionPolicy.fromString(
-                de.value("collision-policy"),
-                DownloadCollisionPolicy.OVERWRITE);
         _directory = de.stringValue("directory", getDefaultDirectory());
         if (!(new File(_directory).exists())) {
             _directory = getDefaultDirectory();
@@ -53,7 +50,7 @@ public class DownloadSettings {
         _alwaysAsk = true;
         _recursive = true;
         _decompress = false;
-        _collisionPolicy = DownloadCollisionPolicy.OVERWRITE;
+        _overwrite = true;
         _directory = getDefaultDirectory();
     }
 
@@ -73,8 +70,8 @@ public class DownloadSettings {
         return _parts;
     }
 
-    public DownloadCollisionPolicy collisionPolicy() {
-        return _collisionPolicy;
+    public boolean overwrite() {
+        return _overwrite;
     }
 
     public String directory() {
@@ -118,7 +115,7 @@ public class DownloadSettings {
         w.add("recursive", _recursive);
         w.add("decompress", _decompress);
         w.add("parts", _parts);
-        w.add("collision-policy", _collisionPolicy);
+        w.add("overwrite", _overwrite);
         w.add("directory", _directory);
         w.pop();
     }
@@ -126,13 +123,13 @@ public class DownloadSettings {
     public void set(DownloadOptions downloadOptions) {
         _recursive = downloadOptions.recursive();
         _decompress = downloadOptions.decompress();
+        _overwrite = downloadOptions.overwrite();
         if (downloadOptions.hasTranscodes()) {
             Set<Transcode> transcodes = downloadOptions.transcodes();
             for (Transcode transcode : transcodes) {
                 addTranscode(transcode);
             }
         }
-        _collisionPolicy = downloadOptions.collisionPolicy();
         _directory = downloadOptions.directory();
     }
 

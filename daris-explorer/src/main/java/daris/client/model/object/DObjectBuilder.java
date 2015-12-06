@@ -1,8 +1,17 @@
 package daris.client.model.object;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.StringProperty;
+
 public interface DObjectBuilder {
 
-    void setName(String name);
+    ReadOnlyObjectProperty<DObject> parentProperty();
 
-    void setDescrption(String description);
+    StringProperty nameProperty();
+
+    StringProperty descriptionProperty();
+    
+    StringProperty typeProperty();
+    
+    StringProperty contentTypeProperty();
 }

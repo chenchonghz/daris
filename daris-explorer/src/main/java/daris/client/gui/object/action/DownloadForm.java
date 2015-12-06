@@ -1,12 +1,13 @@
 package daris.client.gui.object.action;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 import arc.gui.ValidatedInterfaceComponent;
 import arc.mf.client.util.ActionListener;
 import arc.mf.client.util.AsynchronousAction;
 import daris.client.model.object.DObjectRef;
-import daris.client.model.task.DownloadCollisionPolicy;
 import daris.client.model.task.DownloadOptions;
 import daris.client.model.task.DownloadTask;
 import daris.client.settings.DownloadSettings;
@@ -34,15 +35,16 @@ public class DownloadForm extends ValidatedInterfaceComponent
         implements AsynchronousAction {
 
     private DObjectRef _obj;
+    private DownloadOptions _options;
+    private Map<String, List<String>> _availableTranscodes;
     private GridPane _grid;
-    private CheckBox _recursiveCheckBox;
-    private CheckBox _decompressCheckBox;
-    private ComboBox<DownloadCollisionPolicy> _collisionPolicyComboBox;
-    private TextField _directoryTextField;
-    private Button _directoryChooserButton;
 
-    public DownloadForm(DObjectRef obj) {
+    public DownloadForm(DObjectRef obj,
+            Map<String, List<String>> availableTranscodes) {
         _obj = obj;
+        _options = new DownloadOptions();
+        _availableTranscodes = availableTranscodes;
+
         _grid = new GridPane();
         _grid.setAlignment(Pos.CENTER);
         _grid.setHgap(5);
@@ -59,46 +61,110 @@ public class DownloadForm extends ValidatedInterfaceComponent
         _grid.getColumnConstraints().add(cc);
 
         int rowIndex = 0;
-        Label recursiveLabel = new Label("Recursive:");
-        _recursiveCheckBox = new CheckBox();
-        _recursiveCheckBox.setAllowIndeterminate(false);
-        _recursiveCheckBox.setSelected(_obj.isDataSet() ? false : true);
-        _recursiveCheckBox.setDisable(_obj.isDataSet());
-        _grid.addRow(rowIndex++, recursiveLabel, _recursiveCheckBox);
 
+        /*
+         * parts?
+         */
+        Label partsLabel = new Label("Parts");
+        ComboBox<DownloadOptions.Parts> partsCombo = new ComboBox<DownloadOptions.Parts>();
+        partsCombo.getItems().setAll(DownloadOptions.Parts.values());
+        partsCombo.getSelectionModel().select(_options.parts());
+        partsCombo.getSelectionModel().selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    _options.setParts(newValue);
+                });
+        _grid.addRow(rowIndex++, partsLabel, partsCombo);
+
+        /*
+         * recursive?
+         */
+        if (_obj.isDataSet()) {
+            _options.setRecursive(false);
+        } else {
+            Label recursiveLabel = new Label("Recursive:");
+            CheckBox recursiveCheckBox = new CheckBox();
+            recursiveCheckBox.setAllowIndeterminate(false);
+            recursiveCheckBox.setSelected(_options.recursive());
+            recursiveCheckBox.selectedProperty()
+                    .addListener((observable, oldValue, newValue) -> {
+                        _options.setRecursive(newValue);
+                    });
+            _grid.addRow(rowIndex++, recursiveLabel, recursiveCheckBox);
+        }
+
+        /*
+         * transcodes?
+         */
+        if (_availableTranscodes != null && !_availableTranscodes.isEmpty()) {
+            for (String from : _availableTranscodes.keySet()) {
+                Label transcodeLabel = new Label(
+                        "Transcode from: " + from + " to:");
+                ComboBox<String> transcodeCombo = new ComboBox<String>();
+                transcodeCombo.getItems().add("none");
+                transcodeCombo.getItems()
+                        .addAll(_availableTranscodes.get(from));
+                transcodeCombo.getSelectionModel().select(0);
+                transcodeCombo.getSelectionModel().selectedItemProperty()
+                        .addListener((observable, oldValue, newValue) -> {
+                            if ("none".equals(newValue)) {
+                                _options.removeTranscode(from);
+                            } else {
+                                _options.addTranscode(from, newValue);
+                            }
+                        });
+                _grid.addRow(rowIndex++, transcodeLabel, transcodeCombo);
+            }
+        }
+
+        /*
+         * decompress?
+         */
         Label decompressLabel = new Label("Decompress:");
-        _decompressCheckBox = new CheckBox();
-        _decompressCheckBox.setAllowIndeterminate(false);
-        _decompressCheckBox.setSelected(true);
-        _grid.addRow(rowIndex++, decompressLabel, _decompressCheckBox);
+        CheckBox decompressCheckBox = new CheckBox();
+        decompressCheckBox.setAllowIndeterminate(false);
+        decompressCheckBox.setSelected(_options.decompress());
+        decompressCheckBox.selectedProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    _options.setDecompress(newValue);
+                });
+        _grid.addRow(rowIndex++, decompressLabel, decompressCheckBox);
 
-        Label collisionPolicyLabel = new Label("If file exists?");
-        _collisionPolicyComboBox = new ComboBox<DownloadCollisionPolicy>();
-        _collisionPolicyComboBox.getItems()
-                .addAll(DownloadCollisionPolicy.values());
-        _collisionPolicyComboBox.setValue(DownloadCollisionPolicy.OVERWRITE);
-        _grid.addRow(rowIndex++, collisionPolicyLabel,
-                _collisionPolicyComboBox);
+        /*
+         * overwrite
+         */
+        Label overwriteLabel = new Label("Overwrite");
+        CheckBox overwriteCheckBox = new CheckBox();
+        overwriteCheckBox.setAllowIndeterminate(false);
+        overwriteCheckBox.setSelected(_options.overwrite());
+        overwriteCheckBox.selectedProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    _options.setOverwrite(newValue);
+                });
+        _grid.addRow(rowIndex++, overwriteLabel, overwriteCheckBox);
 
         Label directoryLabel = new Label("Download to directory:");
         HBox directoryHBox = new HBox();
-        _directoryTextField = new TextField();
-        _directoryTextField.setMinWidth(200.0);
-        _directoryTextField.setText(DownloadSettings.getDefaultDirectory());
-        _directoryTextField.setDisable(true);
-        directoryHBox.getChildren().add(_directoryTextField);
-        _directoryChooserButton = new Button("Change...");
-        _directoryChooserButton.setOnAction(event -> {
+        final TextField directoryTextField = new TextField();
+        directoryTextField.setMinWidth(250.0);
+        directoryTextField.setText(DownloadSettings.getDefaultDirectory());
+        directoryTextField.setDisable(true);
+        directoryTextField.textProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    _options.setDirectory(newValue);
+                });
+        directoryHBox.getChildren().add(directoryTextField);
+        Button directoryChooserButton = new Button("Change...");
+        directoryChooserButton.setOnAction(event -> {
             DirectoryChooser dirChooser = new DirectoryChooser();
             dirChooser.setInitialDirectory(
                     new File(DownloadSettings.getDefaultDirectory()));
             dirChooser.setTitle("Select download directory");
             File dir = dirChooser.showDialog(gui().getScene().getWindow());
             if (dir != null) {
-                _directoryTextField.setText(dir.getAbsolutePath());
+                directoryTextField.setText(dir.getAbsolutePath());
             }
         });
-        directoryHBox.getChildren().add(_directoryChooserButton);
+        directoryHBox.getChildren().add(directoryChooserButton);
         _grid.addRow(rowIndex++, directoryLabel, directoryHBox);
 
     }
@@ -110,12 +176,7 @@ public class DownloadForm extends ValidatedInterfaceComponent
 
     @Override
     public void execute(ActionListener al) {
-        DownloadOptions options = new DownloadOptions();
-        options.setRecursive(_recursiveCheckBox.isSelected());
-        options.setDecompress(_decompressCheckBox.isSelected());
-        options.setCollisionPolicy(_collisionPolicyComboBox.getValue());
-        options.setDirectory(_directoryTextField.getText());
-        new DownloadTask(_obj, options).start();
+        new DownloadTask(_obj, _options).start();
         al.executed(true);
     }
 

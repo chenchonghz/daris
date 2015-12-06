@@ -1,5 +1,8 @@
 package daris.client.model.task;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
@@ -106,7 +109,7 @@ public class DownloadTaskProgress {
         Platform.runLater(() -> {
             this.totalSizeProperty.set(_totalSize);
             this.sizeProgressMessageProperty
-            .set(_processedSize + "/" + _totalSize);
+                    .set(_processedSize + "/" + _totalSize);
         });
     }
 
@@ -159,8 +162,13 @@ public class DownloadTaskProgress {
     }
 
     public void setCompleted() {
-        this.setProcessedObjects(_totalObjects);
-        this.setProcessedSize(_totalSize);
-        this.setProgress(1.0F);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                setProcessedObjects(_totalObjects);
+                setProcessedSize(_totalSize);
+                setProgress(1.0F);
+            }
+        }, 1000L);
     }
 }

@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import arc.file.matching.Construct;
 import arc.file.matching.FileSystemCompiler;
@@ -162,13 +160,7 @@ public abstract class UploadTask extends ObservableTask
         ServerClient.Connection cxn = Session.connection();
         try {
             fi.execute(cxn);
-            new Timer().schedule(new TimerTask() {
-
-                @Override
-                public void run() {
-                    _progress.setCompleted();
-                }
-            }, 1000L);
+            _progress.setCompleted();
         } finally {
             cxn.close();
         }

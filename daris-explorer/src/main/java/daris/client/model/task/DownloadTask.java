@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import arc.archive.ArchiveExtractor;
 import arc.archive.ArchiveInput;
@@ -153,13 +151,7 @@ public class DownloadTask extends ObservableTask {
                         idx += size;
                     }
                 }
-                new Timer().schedule(new TimerTask() {
-
-                    @Override
-                    public void run() {
-                        _progress.setCompleted();
-                    }
-                }, 1000L);
+                _progress.setCompleted();
             } finally {
                 cxn.execute("asset.unlock", "<id>" + assetId + "</id>", null,
                         null);
@@ -384,8 +376,8 @@ public class DownloadTask extends ObservableTask {
                             .setMessage("Extracting archive content from asset "
                                     + (cid == null ? assetId : cid));
                     ArchiveExtractor.extract(ai, outputDirectory, true,
-                            _options.collisionPolicy() == DownloadCollisionPolicy.OVERWRITE,
-                            false, new ArchiveExtractor.Terminator() {
+                            _options.overwrite(), false,
+                            new ArchiveExtractor.Terminator() {
 
                         @Override
                         public void checkIfTerminatedProcessed(
@@ -417,6 +409,7 @@ public class DownloadTask extends ObservableTask {
             XmlDoc.Element ae) throws Throwable {
         String cid = ae.value("cid");
         String assetId = ae.value("@id");
+        long csize = ae.longValue("content/size");
         _progress.setMessage(
                 "transcoding asset " + (cid == null ? assetId : cid));
         String type = ae.value("type");
@@ -454,9 +447,7 @@ public class DownloadTask extends ObservableTask {
 
             @Override
             public void update(final long itemProgress) {
-                if (!_options.decompress()) {
-                    _progress.incReceivedSize(itemProgress);
-                }
+                _progress.incReceivedSize(itemProgress);
             }
         };
 
@@ -466,6 +457,7 @@ public class DownloadTask extends ObservableTask {
                     throws Throwable {
                 ProgressMonitoredInputStream pis = new ProgressMonitoredInputStream(
                         pm, is, true);
+                Archive.declareSupportForAllTypes();
                 if (_options.decompress()) {
                     File outputDirectory = createTranscodedDir(
                             _options.directory(), ae, toType);
@@ -476,8 +468,8 @@ public class DownloadTask extends ObservableTask {
                             "Extracting transcoded content from asset "
                                     + (cid == null ? assetId : cid));
                     ArchiveExtractor.extract(ai, outputDirectory, true,
-                            _options.collisionPolicy() == DownloadCollisionPolicy.OVERWRITE,
-                            false, new ArchiveExtractor.Terminator() {
+                            _options.overwrite(), false,
+                            new ArchiveExtractor.Terminator() {
 
                         @Override
                         public void checkIfTerminatedProcessed(
@@ -500,6 +492,7 @@ public class DownloadTask extends ObservableTask {
             }
         };
         cxn.execute("asset.transcode", w.document(), null, output);
+        _progress.incProcessedSize(csize);
         _progress.setMessage(
                 "transcoded asset " + (cid == null ? assetId : cid));
 

@@ -1,5 +1,8 @@
 package daris.client.model.task;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import arc.mf.client.agent.modules.asset.AssetImportTask.FileState;
 import javafx.application.Platform;
 import javafx.beans.property.LongProperty;
@@ -173,9 +176,14 @@ public class UploadTaskProgress {
     }
 
     public void setCompleted() {
-        this.setProcessedFiles(_totalFiles);
-        this.setProcessedSize(_totalSize);
-        this.setProgress(1.0F);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                setProcessedFiles(_totalFiles);
+                setProcessedSize(_totalSize);
+                setProgress(1.0F);
+            }
+        }, 1000L);
     }
 
 }
