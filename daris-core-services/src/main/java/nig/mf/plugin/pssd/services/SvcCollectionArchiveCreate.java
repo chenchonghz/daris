@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -115,7 +116,9 @@ public class SvcCollectionArchiveCreate extends PluginService {
         transcode.add(new Interface.Element("to", StringType.DEFAULT,
                 "The mime type of the output asset/object.", 1, 1));
         _defn.add(transcode);
-
+        _defn.add(new Interface.Element("include-attachments",
+                BooleanType.DEFAULT,
+                "Include attachment assets. Defaults to true.", 0, 1));
     }
 
     @Override
@@ -138,6 +141,8 @@ public class SvcCollectionArchiveCreate extends PluginService {
             XmlWriter w) throws Throwable {
         String cid = args.value("cid");
         String where = args.value("where");
+        final boolean includeAttachments = args
+                .booleanValue("include-attachments", true);
         final ArchiveFormat format = ArchiveFormat
                 .fromString(args.value("format"), ArchiveFormat.zip);
         final Parts parts = Parts.fromString(args.value("parts"), Parts.all);
@@ -211,7 +216,8 @@ public class SvcCollectionArchiveCreate extends PluginService {
                                 PluginTask.setCurrentThreadActivity(
                                         "Processing object " + cide.value());
                                 addToArchive(executor(), cide, parts,
-                                        decompress, transcodes, ao);
+                                        decompress, transcodes,
+                                        includeAttachments, ao);
                                 PluginTask.clearCurrentThreadActivity();
                                 PluginTask
                                         .threadTaskCompletedOneOf(totalObjects);
@@ -257,12 +263,23 @@ public class SvcCollectionArchiveCreate extends PluginService {
 
     private static void addToArchive(ServiceExecutor executor, Element cide,
             Parts parts, boolean decompress,
-            SortedMap<String, String> transcodes, ArchiveOutput ao)
-                    throws Throwable {
+            SortedMap<String, String> transcodes, boolean includeAttachments,
+            ArchiveOutput ao) throws Throwable {
         XmlDoc.Element ae = executor.execute("asset.get",
                 "<args><id>" + cide.value("@id") + "</id></args>", null, null)
                 .element("asset");
         String cid = ae.value("cid");
+        if (includeAttachments) {
+            Collection<String> attachments = ae
+                    .values("related[@type='attachment']/to");
+            if (attachments != null && !attachments.isEmpty()) {
+                for (String attachment : attachments) {
+                    PluginTask.setCurrentThreadActivity("Adding attachment "
+                            + attachment + " of object " + cid);
+                    addAttachmentToArchive(executor, ae, attachment, ao);
+                }
+            }
+        }
         if (parts != Parts.content) {
             PluginTask.setCurrentThreadActivity(
                     "Adding metadata of object " + cid);
@@ -289,6 +306,43 @@ public class SvcCollectionArchiveCreate extends PluginService {
                 addContentToArchive(executor, ae, ao);
             }
         }
+    }
+
+    private static void addAttachmentToArchive(ServiceExecutor executor,
+            XmlDoc.Element ae, String attachmentAssetId, ArchiveOutput ao)
+                    throws Throwable {
+        String cid = ae.value("cid");
+        StringBuilder path = new StringBuilder(
+                directoryPathFor(ae, false, null));
+        path.append("/");
+        path.append(cid);
+        path.append(".attachments");
+        XmlDoc.Element aae = executor.execute("asset.get",
+                "<args><id>" + attachmentAssetId + "</id></args>", null, null)
+                .element("asset");
+        if (!aae.elementExists("content")) {
+            return;
+        }
+        String fileName = aae.value("name");
+        if (fileName == null) {
+            fileName = aae.value("@id");
+            String ext = aae.value("content/type/@ext");
+            if (ext != null) {
+                fileName = fileName + "." + ext;
+            }
+        }
+        /*
+         * the archive entry name
+         */
+        String entryName = path.toString() + "/" + fileName;
+        /*
+         * 
+         */
+        String assetId = aae.value("@id");
+        String ctype = aae.value("content/type");
+        long csize = aae.longValue("content/size");
+        addAssetContentToArchive(executor, assetId, ctype, csize, entryName,
+                ao);
     }
 
     private static void transcodeContentToArchive(ServiceExecutor executor,
@@ -352,16 +406,27 @@ public class SvcCollectionArchiveCreate extends PluginService {
                 fileName = fileName + "." + ext;
             }
         }
+        String assetId = ae.value("@id");
         /*
          * the archive entry name
          */
         String entryName = dirPath + "/" + fileName;
         /*
+         * 
+         */
+        addAssetContentToArchive(executor, assetId, ctype, csize, entryName,
+                ao);
+    }
+
+    private static void addAssetContentToArchive(ServiceExecutor executor,
+            String assetId, String ctype, long csize, String entryName,
+            ArchiveOutput ao) throws Throwable {
+        /*
          * retrieve the content (InputStream)
          */
         PluginService.Outputs outputs = new PluginService.Outputs(1);
         executor.execute("asset.content.get",
-                "<args><id>" + ae.value("@id") + "</id></args>", null, outputs);
+                "<args><id>" + assetId + "</id></args>", null, outputs);
         PluginService.Output output = outputs.output(0);
         /*
          * add to the archive

@@ -2,6 +2,7 @@ package nig.mf.plugin.pssd.services;
 
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.ServiceExecutor;
+import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.CiteableIdType;
 import arc.mf.plugin.dtype.StringType;
 import arc.xml.XmlDoc.Element;
@@ -18,6 +19,9 @@ public class SvcCollectionContentSizeSum extends PluginService {
         _defn = new Interface();
         _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT,
                 "The citeable id of the root/parent object."));
+        _defn.add(new Interface.Element("include-attachments",
+                BooleanType.DEFAULT,
+                "Include the attachment assets. Defaults to true.", 0, 1));
         _defn.add(new Interface.Element("where", StringType.DEFAULT,
                 "the query to filter/find the objects to be included.", 0, 1));
     }
@@ -42,21 +46,35 @@ public class SvcCollectionContentSizeSum extends PluginService {
             throws Throwable {
         String cid = args.value("cid");
         String where = args.value("where");
-        long totalSize = sumContentSize(executor(), cid, where);
+        boolean includeAttachments = args.booleanValue("include-attachments",
+                true);
+        long totalSize = sumContentSize(executor(), cid, where,
+                includeAttachments);
         w.add("size", totalSize);
     }
 
     public static long sumContentSize(ServiceExecutor executor, String cid,
-            String where) throws Throwable {
-        StringBuilder sb = new StringBuilder(
+            String where, boolean includeAttachments) throws Throwable {
+        XmlDocMaker dm = new XmlDocMaker("args");
+        StringBuilder sb1 = new StringBuilder(
                 "(cid='" + cid + "' or cid starts with '" + cid + "')");
         if (where != null) {
-            sb.append(" and (");
-            sb.append(where);
-            sb.append(")");
+            sb1.append(" and (");
+            sb1.append(where);
+            sb1.append(")");
         }
-        XmlDocMaker dm = new XmlDocMaker("args");
-        dm.add("where", sb.toString());
+        if (!includeAttachments) {
+            dm.add("where", sb1.toString());
+        } else {
+            String query = sb1.toString();
+            StringBuilder sb2 = new StringBuilder();
+            sb2.append("(");
+            sb2.append(query);
+            sb2.append(") or (related to{attached-to} (");
+            sb2.append(query);
+            sb2.append("))");
+            dm.add("where", sb2.toString());
+        }
         dm.add("action", "sum");
         dm.add("xpath", "content/size");
         long totalSize = executor.execute("asset.query", dm.root())
