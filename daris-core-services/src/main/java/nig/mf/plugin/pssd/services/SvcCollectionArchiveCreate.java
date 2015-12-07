@@ -1,11 +1,13 @@
 package nig.mf.plugin.pssd.services;
 
 import java.io.ByteArrayInputStream;
+import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.zip.GZIPOutputStream;
 
 import arc.archive.ArchiveInput;
 import arc.archive.ArchiveOutput;
@@ -34,7 +36,7 @@ public class SvcCollectionArchiveCreate extends PluginService {
     public static final long GIGABYTE = 1073741824L;
 
     public static enum ArchiveFormat {
-        aar, zip, tar;
+        aar, zip, tgz;
         public static ArchiveFormat fromString(String s,
                 ArchiveFormat defaultValue) {
             if (s != null) {
@@ -42,8 +44,8 @@ public class SvcCollectionArchiveCreate extends PluginService {
                     return aar;
                 } else if (s.equalsIgnoreCase(zip.name())) {
                     return zip;
-                } else if (s.equalsIgnoreCase(tar.name())) {
-                    return tar;
+                } else if (s.equalsIgnoreCase(tgz.name())) {
+                    return tgz;
                 }
             }
             return defaultValue;
@@ -55,14 +57,14 @@ public class SvcCollectionArchiveCreate extends PluginService {
             } else if (this == zip) {
                 return "application/zip";
             } else {
-                return "application/x-tar";
+                return "application/x-gzip";
             }
         }
 
         public long maxSize() {
             if (this == zip) {
                 return GIGABYTE * 4 - 1;
-            } else if (this == tar) {
+            } else if (this == tgz) {
                 return GIGABYTE * 8 - 1;
             } else {
                 return Long.MAX_VALUE;
@@ -195,10 +197,14 @@ public class SvcCollectionArchiveCreate extends PluginService {
             public void run() {
                 try {
                     int totalObjects = cides.size();
+                    String mimeType = format == ArchiveFormat.tgz
+                            ? "application/x-tar" : format.mimeType();
+                    OutputStream os = format == ArchiveFormat.tgz
+                            ? new GZIPOutputStream(pos) : pos;
                     try {
                         PluginTask.threadTaskBeginSetOf(totalObjects);
-                        ArchiveOutput ao = ArchiveRegistry.createOutput(pos,
-                                format.mimeType(), 6, null);
+                        ArchiveOutput ao = ArchiveRegistry.createOutput(os,
+                                mimeType, 6, null);
                         try {
                             for (XmlDoc.Element cide : cides) {
                                 PluginTask.checkIfThreadTaskAborted();
@@ -215,6 +221,9 @@ public class SvcCollectionArchiveCreate extends PluginService {
                         }
                         PluginTask.threadTaskCompleted();
                     } finally {
+                        if (os != pos) {
+                            os.close();
+                        }
                         pos.close();
                     }
                 } catch (Throwable e) {
