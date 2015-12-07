@@ -8,6 +8,7 @@ import java.util.SortedSet;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.ServiceExecutor;
 import arc.mf.plugin.dtype.CiteableIdType;
+import arc.mf.plugin.dtype.StringType;
 import arc.xml.XmlDoc.Element;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
@@ -22,6 +23,8 @@ public class SvcCollectionTranscodeList extends PluginService {
         _defn = new Interface();
         _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT,
                 "The citeable id of the root/parent object.", 1, 1));
+        _defn.add(new Interface.Element("where", StringType.DEFAULT,
+                "the query to filter/find the objects to be included.", 0, 1));
     }
 
     @Override
@@ -43,8 +46,10 @@ public class SvcCollectionTranscodeList extends PluginService {
     public void execute(Element args, Inputs inputs, Outputs outputs,
             XmlWriter w) throws Throwable {
         String cid = args.value("cid");
+        String where = args.value("where");
         SortedSet<String> types = SvcCollectionTypeList.listTypes(executor(),
-                cid, "asset has content");
+                cid, where == null ? "asset has content"
+                        : ("(" + where + ") and asset has content"));
         if (types != null) {
             for (String type : types) {
                 List<String> transcodeToTypes = transcodeToTypesFor(executor(),
