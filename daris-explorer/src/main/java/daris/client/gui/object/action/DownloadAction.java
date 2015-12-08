@@ -13,7 +13,7 @@ public class DownloadAction extends ActionInterface<DObject> {
     private DObjectRef _o;
 
     public DownloadAction(Window w, DObjectRef o) {
-        super(o.referentTypeName(), null, w, 600, 320);
+        super(o.referentTypeName() + " " + o.citeableId(), null, w, 600, 320);
         _o = o;
     }
 
@@ -23,8 +23,8 @@ public class DownloadAction extends ActionInterface<DObject> {
 
     @Override
     public void createInterface(final InterfaceCreateHandler ch) {
-        new CollectionTranscodeList(_o).send(transcodes->{
-            ch.created(new DownloadForm(_o, transcodes));    
+        new CollectionTranscodeList(_o).send(transcodes -> {
+            ch.created(new DownloadForm(_o, transcodes));
         });
     }
 

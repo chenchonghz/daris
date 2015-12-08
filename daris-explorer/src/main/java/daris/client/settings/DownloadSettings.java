@@ -28,8 +28,9 @@ public class DownloadSettings {
 
     private boolean _alwaysAsk = true;
     private boolean _recursive = true;
-    private boolean _decompress = false;
     private Parts _parts = Parts.all;
+    private boolean _includeAttachments = true;
+    private boolean _decompress = false;
     private Map<String, Transcode> _transcodes = null;
     private boolean _overwrite;
     private String _directory = getDefaultDirectory();
@@ -37,9 +38,10 @@ public class DownloadSettings {
     public DownloadSettings(XmlDoc.Element de) throws Throwable {
         _alwaysAsk = de.booleanValue("alwasy-ask", true);
         _recursive = de.booleanValue("recursive", true);
+        _parts = Parts.fromString(de.value("parts"), Parts.all);
+        _includeAttachments = de.booleanValue("include-attachments", true);
         _decompress = de.booleanValue("decompress", false);
         _overwrite = de.booleanValue("overwrite", true);
-        _parts = Parts.fromString(de.value("parts"), Parts.all);
         _directory = de.stringValue("directory", getDefaultDirectory());
         if (!(new File(_directory).exists())) {
             _directory = getDefaultDirectory();
@@ -68,6 +70,10 @@ public class DownloadSettings {
 
     public Parts parts() {
         return _parts;
+    }
+
+    public boolean includeAttachments() {
+        return _includeAttachments;
     }
 
     public boolean overwrite() {
@@ -113,8 +119,9 @@ public class DownloadSettings {
         w.push("download");
         w.add("always-ask", _alwaysAsk);
         w.add("recursive", _recursive);
-        w.add("decompress", _decompress);
         w.add("parts", _parts);
+        w.add("include-attachments", _includeAttachments);
+        w.add("decompress", _decompress);
         w.add("overwrite", _overwrite);
         w.add("directory", _directory);
         w.pop();
@@ -122,6 +129,8 @@ public class DownloadSettings {
 
     public void set(DownloadOptions downloadOptions) {
         _recursive = downloadOptions.recursive();
+        _parts = downloadOptions.parts();
+        _includeAttachments = downloadOptions.includeAttachments();
         _decompress = downloadOptions.decompress();
         _overwrite = downloadOptions.overwrite();
         if (downloadOptions.hasTranscodes()) {

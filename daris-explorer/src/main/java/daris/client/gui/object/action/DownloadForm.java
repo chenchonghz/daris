@@ -76,6 +76,20 @@ public class DownloadForm extends ValidatedInterfaceComponent
         _grid.addRow(rowIndex++, partsLabel, partsCombo);
 
         /*
+         * include attachments?
+         */
+        Label includeAttachmentsLabel = new Label("Include attachments");
+        CheckBox includeAttachmentsCheckBox = new CheckBox();
+        includeAttachmentsCheckBox.setAllowIndeterminate(false);
+        includeAttachmentsCheckBox.setSelected(_options.includeAttachments());
+        includeAttachmentsCheckBox.selectedProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    _options.setIncludeAttachments(newValue);
+                });
+        _grid.addRow(rowIndex++, includeAttachmentsLabel,
+                includeAttachmentsCheckBox);
+
+        /*
          * recursive?
          */
         if (_obj.isDataSet()) {

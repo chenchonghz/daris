@@ -33,18 +33,20 @@ public class DownloadOptions {
     }
 
     private boolean _recursive;
+    private Parts _parts;
+    private boolean _includeAttachments;
     private boolean _decompress;
     private boolean _overwrite;
-    private Parts _parts;
     private Map<String, Transcode> _transcodes;
     private String _directory;
 
     public DownloadOptions() {
         _recursive = true;
-        _decompress = true;
         _parts = Parts.all;
-        _transcodes = new HashMap<String, Transcode>();
+        _includeAttachments = true;
+        _decompress = true;
         _overwrite = true;
+        _transcodes = new HashMap<String, Transcode>();
         _directory = DownloadSettings.getDefaultDirectory();
     }
 
@@ -66,8 +68,18 @@ public class DownloadOptions {
         return _parts;
     }
 
-    public void setParts(Parts parts) {
+    public DownloadOptions setParts(Parts parts) {
         _parts = parts;
+        return this;
+    }
+
+    public boolean includeAttachments() {
+        return _includeAttachments;
+    }
+
+    public DownloadOptions setIncludeAttachments(boolean includeAttachments) {
+        _includeAttachments = includeAttachments;
+        return this;
     }
 
     public boolean recursive() {
@@ -147,8 +159,7 @@ public class DownloadOptions {
         return _overwrite;
     }
 
-    public DownloadOptions setOverwrite(
-            boolean overwrite) {
+    public DownloadOptions setOverwrite(boolean overwrite) {
         _overwrite = overwrite;
         return this;
     }
@@ -184,6 +195,6 @@ public class DownloadOptions {
 
     public void addTranscode(String from, String to) {
         addTranscode(new Transcode(from, to));
-        
+
     }
 }

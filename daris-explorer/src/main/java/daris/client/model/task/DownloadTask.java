@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.List;
 
 import arc.archive.ArchiveExtractor;
@@ -163,6 +164,20 @@ public class DownloadTask extends ObservableTask {
 
     private void downloadObject(ServerClient.Connection cxn, XmlDoc.Element ae)
             throws Throwable {
+        String cid = ae.value("cid");
+        if (_options.includeAttachments()) {
+            Collection<String> attachments = ae
+                    .values("related[@type='attachment']/to");
+            if (attachments != null && !attachments.isEmpty()) {
+                File attachmentDir = new File(
+                        directoryPathFor(_options.directory(), ae) + "/" + cid
+                                + ".attachments");
+                attachmentDir.mkdirs();
+                for (String attachment : attachments) {
+                    downloadAttachment(cxn, attachmentDir, attachment);
+                }
+            }
+        }
         if (_options.parts() != Parts.content) {
             downloadMeta(cxn, ae);
         }
@@ -176,6 +191,67 @@ public class DownloadTask extends ObservableTask {
                 }
             }
         }
+    }
+
+    private void downloadAttachment(ServerClient.Connection cxn, final File dir,
+            String attachmentAssetId) throws Throwable {
+        XmlDoc.Element ae = cxn.execute("asset.get",
+                "<id>" + attachmentAssetId + "</id>", null, null)
+                .element("asset");
+        _progress.setMessage(
+                "downloading attachment asset " + attachmentAssetId);
+
+        final ProgressMonitor pm = new ProgressMonitor() {
+            @Override
+            public boolean abort() {
+                return false;
+            }
+
+            @Override
+            public void begin(final int task, final long itemTotal) {
+            }
+
+            @Override
+            public void beginMultiPart(final int task, final long total) {
+            }
+
+            @Override
+            public void end(final int task) {
+            }
+
+            @Override
+            public void endMultiPart(final int task) {
+            }
+
+            @Override
+            public void update(final long itemProgress) {
+                _progress.incProcessedSize(itemProgress);
+                _progress.incReceivedSize(itemProgress);
+            }
+        };
+
+        ServerClient.OutputConsumer output = new ServerClient.OutputConsumer() {
+            @Override
+            protected void consume(Element re, LongInputStream is)
+                    throws Throwable {
+                ProgressMonitoredInputStream pis = new ProgressMonitoredInputStream(
+                        pm, is, true);
+                String fileName = ae.value("name");
+                if (fileName == null) {
+                    fileName = attachmentAssetId;
+                    String ext = ae.value("content/type/@ext");
+                    if (ext != null) {
+                        fileName = fileName + "." + ext;
+                    }
+                }
+                File attachmentFile = new File(dir, fileName);
+                StreamCopy.copy(pis, attachmentFile);
+            }
+        };
+        cxn.execute("asset.content.get", "<id>" + attachmentAssetId + "</id>",
+                null, output);
+        _progress
+                .setMessage("downloaded attachment asset " + attachmentAssetId);
     }
 
     private static File createContentDir(String rootDir, XmlDoc.Element ae)
@@ -502,10 +578,13 @@ public class DownloadTask extends ObservableTask {
             DownloadOptions options) throws Throwable {
         String cid = ae.value("cid");
         if (options.recursive() && cid != null) {
-            return cxn.execute("asset.query",
-                    "<where>cid='" + cid + "' or cid starts with '" + cid
-                            + "'</where><size>infinity</size><action>sum</action><xpath>content/size</xpath>",
-                    null, null).longValue("value");
+            return cxn
+                    .execute("daris.collection.content.size.sum",
+                            "<cid>" + cid + "</cid><include-attachments>"
+                                    + Boolean.toString(
+                                            options.includeAttachments())
+                            + "</include-attachments>", null, null)
+                    .longValue("size");
         } else {
             return ae.longValue("content/size", 0);
         }
