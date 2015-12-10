@@ -11,6 +11,7 @@ import arc.mf.client.xml.XmlStringWriter;
 import arc.mf.object.ObjectRef;
 import arc.mf.object.lock.LockToken;
 import daris.client.model.IDUtil;
+import daris.client.model.collection.DObjectCollectionRef;
 import daris.client.model.exmethod.ExMethod;
 import daris.client.model.object.messages.DObjectLockToken;
 import daris.client.model.project.Project;

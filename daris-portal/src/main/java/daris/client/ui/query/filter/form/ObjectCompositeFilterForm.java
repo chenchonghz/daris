@@ -17,7 +17,7 @@ import arc.mf.object.CollectionResolveHandler;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import daris.client.model.object.DObjectCollectionRef;
+import daris.client.model.collection.DObjectCollectionRef;
 import daris.client.model.object.DObjectRef;
 import daris.client.model.project.ProjectEnumDataSource;
 import daris.client.model.query.filter.CompositeFilter.Member;

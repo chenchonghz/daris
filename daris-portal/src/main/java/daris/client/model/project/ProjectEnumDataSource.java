@@ -12,7 +12,7 @@ import arc.mf.dtype.EnumerationType.Value;
 import arc.mf.object.CollectionResolveHandler;
 import arc.mf.session.ServiceResponseHandler;
 import arc.mf.session.Session;
-import daris.client.model.object.DObjectCollectionRef;
+import daris.client.model.collection.DObjectCollectionRef;
 import daris.client.model.object.DObjectRef;
 
 public class ProjectEnumDataSource implements DynamicEnumerationDataSource<DObjectRef> {

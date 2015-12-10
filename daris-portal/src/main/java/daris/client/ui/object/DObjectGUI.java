@@ -44,6 +44,7 @@ import daris.client.model.query.filter.pssd.ObjectQuery;
 import daris.client.model.sc.ActiveShoppingCart;
 import daris.client.model.sc.ShoppingCartRef;
 import daris.client.ui.DObjectBrowser;
+import daris.client.ui.collection.CollectionShareForm;
 import daris.client.ui.object.action.DObjectCreateAction;
 import daris.client.ui.object.action.DObjectEditAction;
 import daris.client.ui.object.action.DerivedDataSetCreateAction;
@@ -351,7 +352,7 @@ public class DObjectGUI implements ObjectGUI {
 
                             @Override
                             public void execute() {
-                                new UrlShareForm(ro).showDialog(w);
+                                new CollectionShareForm(ro).showDialog(w);
                             }
                         }));
             }

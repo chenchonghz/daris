@@ -251,7 +251,7 @@ public class SvcObjectDestroy extends PluginService {
                             .intValue("value") == 0) {
                         executor.execute("asset.namespace.destroy",
                                 "<args><namespace>" + ns
-                                        + "</namespace></args>", null, null);
+                                        + "</namespace><force>true</force></args>", null, null);
                     }
                 }
                 // Generate system event
