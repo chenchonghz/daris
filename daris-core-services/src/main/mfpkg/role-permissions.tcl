@@ -54,6 +54,8 @@ grantRoleReadAccessServices   daris:pssd.model.user \
       asset.namespace.describe \
       asset.path.generate \
       asset.transcode.describe \
+      authentication.domain.* \
+      authentication.user.* \
       citeable.named.id.describe \
       citeable.name.list \
       dictionary.contains \
