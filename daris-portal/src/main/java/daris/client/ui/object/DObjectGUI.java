@@ -347,14 +347,15 @@ public class DObjectGUI implements ObjectGUI {
              * Share URL
              */
             if (!ro.isProject()) {
-                menu.add(new ActionEntry(ICON_SHARE, "Generate Sharable Link",
-                        new Action() {
-
-                            @Override
-                            public void execute() {
-                                new CollectionShareForm(ro).showDialog(w);
-                            }
-                        }));
+                // TODO: re-enable this when the underlying service/servlet is fixed. 
+//                menu.add(new ActionEntry(ICON_SHARE, "Generate Sharable Link",
+//                        new Action() {
+//
+//                            @Override
+//                            public void execute() {
+//                                new CollectionShareForm(ro).showDialog(w);
+//                            }
+//                        }));
             }
             /*
              * add to shopping cart
