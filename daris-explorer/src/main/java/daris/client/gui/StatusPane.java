@@ -1,7 +1,7 @@
 package daris.client.gui;
 
-import daris.client.gui.object.action.DownloadMonitorGUI;
-import daris.client.gui.object.action.UploadMonitorGUI;
+import daris.client.gui.object.action.DownloadManagerGUI;
+import daris.client.gui.object.action.UploadManagerGUI;
 import daris.client.model.task.DownloadTask;
 import daris.client.model.task.DownloadTaskManager;
 import daris.client.model.task.UploadTask;
@@ -18,6 +18,7 @@ public class StatusPane extends TitledPane {
     private TabPane _tp;
     private Tab _downloadsTab;
     private Tab _uploadsTab;
+    private Tab _backgroundServiceTab;
 
     public StatusPane() {
         setText("Transfers");
@@ -25,11 +26,11 @@ public class StatusPane extends TitledPane {
 
         _tp = new TabPane();
         _tp.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-        _tp.setSide(Side.LEFT);
+        _tp.setSide(Side.TOP);
         setContent(_tp);
 
         _downloadsTab = new Tab("Downloads");
-        _downloadsTab.setContent(new DownloadMonitorGUI().gui());
+        _downloadsTab.setContent(new DownloadManagerGUI().gui());
         _tp.getTabs().add(_downloadsTab);
         DownloadTaskManager.get().tasksProperty()
                 .addListener(new ListChangeListener<DownloadTask>() {
@@ -48,7 +49,7 @@ public class StatusPane extends TitledPane {
                 });
 
         _uploadsTab = new Tab("Uploads");
-        _uploadsTab.setContent(new UploadMonitorGUI().gui());
+        _uploadsTab.setContent(new UploadManagerGUI().gui());
         _tp.getTabs().add(_uploadsTab);
         UploadTaskManager.get().tasksProperty()
                 .addListener(new ListChangeListener<UploadTask>() {
@@ -65,7 +66,10 @@ public class StatusPane extends TitledPane {
                         }
                     }
                 });
-
+        
+        _backgroundServiceTab = new Tab("Background Services");
+        // TODO
+        _tp.getTabs().add(_backgroundServiceTab);
     }
 
     public void showDownloads() {

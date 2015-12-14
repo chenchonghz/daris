@@ -195,7 +195,8 @@ public class SvcCollectionArchiveCreate extends PluginService {
         /*
          * initialize service output
          */
-        PipedInputStream pis = new PipedInputStream();
+        final Boolean completed = false;
+        final PipedInputStream pis = new PipedInputStream();
         final PipedOutputStream pos = new PipedOutputStream(pis);
         PluginThread.executeAsync(SERVICE_NAME, new Runnable() {
             @Override
@@ -231,6 +232,7 @@ public class SvcCollectionArchiveCreate extends PluginService {
                             os.close();
                         }
                         pos.close();
+                        pis.close();
                     }
                 } catch (Throwable e) {
                     e.printStackTrace(System.out);

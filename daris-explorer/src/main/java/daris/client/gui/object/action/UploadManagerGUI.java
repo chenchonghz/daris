@@ -3,9 +3,10 @@ package daris.client.gui.object.action;
 import arc.gui.InterfaceComponent;
 import arc.mf.client.agent.task.Task;
 import arc.mf.client.agent.task.Task.State;
-import daris.client.model.task.DownloadTask;
-import daris.client.model.task.DownloadTaskManager;
+import daris.client.model.task.UploadTask;
+import daris.client.model.task.UploadTaskManager;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
@@ -17,14 +18,14 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.ProgressBarTableCell;
 import javafx.util.StringConverter;
 
-public class DownloadMonitorGUI implements InterfaceComponent {
+public class UploadManagerGUI implements InterfaceComponent {
 
-    private TableView<DownloadTask> _table;
+    private TableView<UploadTask> _table;
 
-    public DownloadMonitorGUI() {
-        _table = new TableView<DownloadTask>();
-        _table.setPlaceholder(new Label("No downloads."));
-        TableColumn<DownloadTask, String> idColumn = new TableColumn<DownloadTask, String>(
+    public UploadManagerGUI() {
+        _table = new TableView<UploadTask>();
+        _table.setPlaceholder(new Label("No uploads."));
+        TableColumn<UploadTask, String> idColumn = new TableColumn<UploadTask, String>(
                 "ID");
         idColumn.setCellValueFactory(param -> {
             StringProperty idStringProperty = new SimpleStringProperty();
@@ -57,7 +58,17 @@ public class DownloadMonitorGUI implements InterfaceComponent {
         idColumn.setStyle("-fx-alignment: CENTER;");
         _table.getColumns().add(idColumn);
 
-        TableColumn<DownloadTask, Task.State> stateColumn = new TableColumn<DownloadTask, Task.State>(
+        TableColumn<UploadTask, String> typeColumn = new TableColumn<UploadTask, String>(
+                "Type");
+        typeColumn.setCellValueFactory(param -> {
+            return new ReadOnlyStringWrapper(param.getValue().type());
+        });
+        typeColumn.setMinWidth(120.0);
+        typeColumn.setMaxWidth(160.0);
+        typeColumn.setStyle("-fx-alignment: CENTER-LEFT;");
+        _table.getColumns().add(typeColumn);
+
+        TableColumn<UploadTask, Task.State> stateColumn = new TableColumn<UploadTask, Task.State>(
                 "State");
         stateColumn.setCellValueFactory(param -> {
             return param.getValue().stateProperty();
@@ -67,7 +78,7 @@ public class DownloadMonitorGUI implements InterfaceComponent {
         stateColumn.setStyle("-fx-alignment: CENTER;");
         _table.getColumns().add(stateColumn);
 
-        TableColumn<DownloadTask, String> messageColumn = new TableColumn<DownloadTask, String>(
+        TableColumn<UploadTask, String> messageColumn = new TableColumn<UploadTask, String>(
                 "Message");
         messageColumn.setCellValueFactory(param -> {
             return param.getValue().messageProperty();
@@ -76,7 +87,7 @@ public class DownloadMonitorGUI implements InterfaceComponent {
         messageColumn.setMinWidth(350.0);
         messageColumn.setStyle("-fx-alignment: CENTER-LEFT;");
         _table.getColumns().add(messageColumn);
-        TableColumn<DownloadTask, Double> progressColumn = new TableColumn<DownloadTask, Double>(
+        TableColumn<UploadTask, Double> progressColumn = new TableColumn<UploadTask, Double>(
                 "Progress");
         progressColumn.setCellValueFactory(param -> {
             return param.getValue().progressProperty();
@@ -87,37 +98,27 @@ public class DownloadMonitorGUI implements InterfaceComponent {
         progressColumn.setStyle("-fx-alignment: CENTER;");
         _table.getColumns().add(progressColumn);
 
-        TableColumn<DownloadTask, String> objectsProgressMessageColumn = new TableColumn<DownloadTask, String>(
-                "Processed Objects");
-        objectsProgressMessageColumn.setCellValueFactory(param -> {
-            return param.getValue().objectsProgressMessageProperty();
+        TableColumn<UploadTask, String> processedFilesMessageColumn = new TableColumn<UploadTask, String>(
+                "Processed Files");
+        processedFilesMessageColumn.setCellValueFactory(param -> {
+            return param.getValue().processedFilesMessageProperty();
         });
-        objectsProgressMessageColumn.setMinWidth(135.0);
-        objectsProgressMessageColumn.setMaxWidth(135.0);
-        objectsProgressMessageColumn.setStyle("-fx-alignment: CENTER;");
-        _table.getColumns().add(objectsProgressMessageColumn);
+        processedFilesMessageColumn.setMinWidth(135.0);
+        processedFilesMessageColumn.setMaxWidth(135.0);
+        processedFilesMessageColumn.setStyle("-fx-alignment: CENTER;");
+        _table.getColumns().add(processedFilesMessageColumn);
 
-        TableColumn<DownloadTask, String> sizeProgressMessageColumn = new TableColumn<DownloadTask, String>(
+        TableColumn<UploadTask, String> processedSizeMessageColumn = new TableColumn<UploadTask, String>(
                 "Processed Size");
-        sizeProgressMessageColumn.setCellValueFactory(param -> {
-            return param.getValue().sizeProgressMessageProperty();
+        processedSizeMessageColumn.setCellValueFactory(param -> {
+            return param.getValue().processedSizeMessageProperty();
         });
-        sizeProgressMessageColumn.setMinWidth(150.0);
-        sizeProgressMessageColumn.setMaxWidth(250.0);
-        sizeProgressMessageColumn.setStyle("-fx-alignment: CENTER;");
-        _table.getColumns().add(sizeProgressMessageColumn);
+        processedSizeMessageColumn.setMinWidth(150.0);
+        processedSizeMessageColumn.setMaxWidth(250.0);
+        processedSizeMessageColumn.setStyle("-fx-alignment: CENTER;");
+        _table.getColumns().add(processedSizeMessageColumn);
 
-        TableColumn<DownloadTask, Number> receivedSizeColumn = new TableColumn<DownloadTask, Number>(
-                "Received(Bytes)");
-        receivedSizeColumn.setCellValueFactory(param -> {
-            return param.getValue().receivedSizeProperty();
-        });
-        receivedSizeColumn.setMinWidth(125);
-        receivedSizeColumn.setMaxWidth(150);
-        receivedSizeColumn.setStyle("-fx-alignment: CENTER-RIGHT;");
-        _table.getColumns().add(receivedSizeColumn);
-
-        TableColumn<DownloadTask, Task.State> actionButtonColumn = new TableColumn<DownloadTask, Task.State>(
+        TableColumn<UploadTask, Task.State> actionButtonColumn = new TableColumn<UploadTask, Task.State>(
                 "Action");
         actionButtonColumn.setCellValueFactory(param -> {
             return param.getValue().stateProperty();
@@ -129,7 +130,7 @@ public class DownloadMonitorGUI implements InterfaceComponent {
         actionButtonColumn.setMaxWidth(80);
         actionButtonColumn.setStyle("-fx-alignment: CENTER;");
         _table.getColumns().add(actionButtonColumn);
-        _table.itemsProperty().bind(DownloadTaskManager.get().tasksProperty());
+        _table.itemsProperty().bind(UploadTaskManager.get().tasksProperty());
     }
 
     @Override
@@ -137,15 +138,15 @@ public class DownloadMonitorGUI implements InterfaceComponent {
         return _table;
     }
 
-    private class ActionButtonCell extends TableCell<DownloadTask, Task.State> {
+    private class ActionButtonCell extends TableCell<UploadTask, Task.State> {
         private Button _button;
 
         ActionButtonCell() {
             _button = new Button();
         }
 
-        private DownloadTask getTaskObject() {
-            return (DownloadTask) getTableRow().getItem();
+        private UploadTask getTaskObject() {
+            return (UploadTask) getTableRow().getItem();
         }
 
         @Override
