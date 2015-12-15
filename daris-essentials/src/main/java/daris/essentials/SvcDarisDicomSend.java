@@ -13,9 +13,17 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import nig.dicom.util.DicomFileCheck;
-
 import org.apache.commons.io.FileUtils;
+
+import com.pixelmed.dicom.Attribute;
+import com.pixelmed.dicom.AttributeList;
+import com.pixelmed.dicom.AttributeTag;
+import com.pixelmed.dicom.FileMetaInformation;
+import com.pixelmed.dicom.SetOfDicomFiles;
+import com.pixelmed.dicom.TagFromName;
+import com.pixelmed.dicom.TransferSyntax;
+import com.pixelmed.network.MultipleInstanceTransferStatusHandler;
+import com.pixelmed.network.StorageSOPClassSCU;
 
 import arc.archive.ArchiveExtractor;
 import arc.archive.ArchiveInput;
@@ -34,17 +42,9 @@ import arc.mime.NamedMimeType;
 import arc.streams.SizedInputStream;
 import arc.streams.StreamCopy;
 import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
-
-import com.pixelmed.dicom.Attribute;
-import com.pixelmed.dicom.AttributeList;
-import com.pixelmed.dicom.AttributeTag;
-import com.pixelmed.dicom.FileMetaInformation;
-import com.pixelmed.dicom.SetOfDicomFiles;
-import com.pixelmed.dicom.TagFromName;
-import com.pixelmed.dicom.TransferSyntax;
-import com.pixelmed.network.MultipleInstanceTransferStatusHandler;
-import com.pixelmed.network.StorageSOPClassSCU;
+import nig.dicom.util.DicomFileCheck;
 
 public class SvcDarisDicomSend extends PluginService {
 
@@ -59,27 +59,32 @@ public class SvcDarisDicomSend extends PluginService {
         _defn = new Interface();
 
         _defn.add(new Interface.Element("id", AssetType.DEFAULT,
-                "The asset id of the dicom patient/study/series to be sent.",
-                0, 1));
+                "The asset id of the dicom patient/study/series to be sent.", 0,
+                1));
 
         _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT,
                 "The citeable id of the dicom patient/study/series to be sent.",
                 0, 1));
 
-        Interface.Element from = new Interface.Element("from",
-                XmlDocType.DEFAULT, "Settings of the sender.", 1, 1);
-        from.add(new Interface.Element("ae-title", StringType.DEFAULT,
-                "The AE title of the sender.", 1, 1));
+        _defn.add(new Interface.Element("where", StringType.DEFAULT,
+                "A query to find the DICOM datasets/series to send.", 0, 1));
+
+        Interface.Element from = new Interface.Element("calling-ae",
+                XmlDocType.DEFAULT,
+                "The details about calling application entity.", 1, 1);
+        from.add(new Interface.Element("title", StringType.DEFAULT,
+                "The title of the calling application entity.", 1, 1));
         _defn.add(from);
 
-        Interface.Element to = new Interface.Element("to", XmlDocType.DEFAULT,
-                "Settings of the receiver", 1, 1);
+        Interface.Element to = new Interface.Element("called-ae",
+                XmlDocType.DEFAULT,
+                "The details about called application entity.", 1, 1);
         to.add(new Interface.Element("host", StringType.DEFAULT,
-                "The receiver's host address.", 1, 1));
+                "The host address of the called application entity.", 1, 1));
         to.add(new Interface.Element("port", new IntegerType(0, 65535),
-                "The receiver's dicom service port number.", 1, 1));
-        to.add(new Interface.Element("ae-title", StringType.DEFAULT,
-                "The receiver's AE title.", 1, 1));
+                "The port number of the called application entity.", 1, 1));
+        to.add(new Interface.Element("title", StringType.DEFAULT,
+                "The title of the called application entity.", 1, 1));
         _defn.add(to);
 
         Interface.Element override = new Interface.Element("override",
@@ -87,20 +92,16 @@ public class SvcDarisDicomSend extends PluginService {
         Interface.Element ee = new Interface.Element("element",
                 XmlDocType.DEFAULT, "The dicom element to override", 0,
                 Integer.MAX_VALUE);
-        ee.add(new Interface.Attribute("group", new StringType(Pattern
-                .compile("[0-9a-fA-F]{4}")),
+        ee.add(new Interface.Attribute("group",
+                new StringType(Pattern.compile("[0-9a-fA-F]{4}")),
                 "The group tag of the dicom element.", 1));
-        ee.add(new Interface.Attribute("element", new StringType(Pattern
-                .compile("[0-9a-fA-F]{4}")),
+        ee.add(new Interface.Attribute("element",
+                new StringType(Pattern.compile("[0-9a-fA-F]{4}")),
                 "The element tag of the dicom element.", 1));
-        ee.add(new Interface.Attribute(
-                "anonymize",
-                BooleanType.DEFAULT,
+        ee.add(new Interface.Attribute("anonymize", BooleanType.DEFAULT,
                 "Anonymize the element. Defaults to false. If it is set to true, the element value will be ignored.",
                 0));
-        ee.add(new Interface.Element(
-                "value",
-                StringType.DEFAULT,
+        ee.add(new Interface.Element("value", StringType.DEFAULT,
                 "The new value of the dicom element. Only required if anonymize is false.",
                 0, 1));
         override.add(ee);
@@ -139,19 +140,21 @@ public class SvcDarisDicomSend extends PluginService {
 
     private static void addDicomPaitent(ServiceExecutor executor,
             Set<String> datasetIds, XmlDoc.Element patientAsset)
-            throws Throwable {
+                    throws Throwable {
         Collection<String> studyIds = patientAsset
                 .values("related[@type='has']/to");
         for (String studyId : studyIds) {
-            XmlDoc.Element studyAsset = executor.execute("asset.get",
-                    "<args><id>" + studyId + "</id></args>", null, null)
+            XmlDoc.Element studyAsset = executor
+                    .execute("asset.get",
+                            "<args><id>" + studyId + "</id></args>", null, null)
                     .element("asset");
             addDicomStudy(executor, datasetIds, studyAsset);
         }
     }
 
     private static void addDicomStudy(ServiceExecutor executor,
-            Set<String> datasetIds, XmlDoc.Element studyAsset) throws Throwable {
+            Set<String> datasetIds, XmlDoc.Element studyAsset)
+                    throws Throwable {
         if (studyAsset.elementExists("related[@type='contains']/to")) {
             datasetIds
                     .addAll(studyAsset.values("related[@type='contains']/to"));
@@ -161,10 +164,10 @@ public class SvcDarisDicomSend extends PluginService {
     private static void addPssdDicomStudy(ServiceExecutor executor,
             Set<String> datasetIds, String studyCid) throws Throwable {
         Collection<String> ids = executor
-                .execute(
-                        "asset.query",
+                .execute("asset.query",
                         "<args><size>infinity</size><where>asset has content and mf-dicom-series has value and cid in '"
-                                + studyCid + "'</where></args>", null, null)
+                                + studyCid + "'</where></args>",
+                        null, null)
                 .values("id");
         if (ids != null && !ids.isEmpty()) {
             datasetIds.addAll(ids);
@@ -174,10 +177,10 @@ public class SvcDarisDicomSend extends PluginService {
     private static void addPssdDicomSubject(ServiceExecutor executor,
             Set<String> datasetIds, String subjectCid) throws Throwable {
         Collection<String> ids = executor
-                .execute(
-                        "asset.query",
+                .execute("asset.query",
                         "<args><size>infinity</size><where>asset has content and mf-dicom-series has value and cid starts with '"
-                                + subjectCid + "'</where></args>", null, null)
+                                + subjectCid + "'</where></args>",
+                        null, null)
                 .values("id");
         if (ids != null && !ids.isEmpty()) {
             datasetIds.addAll(ids);
@@ -192,9 +195,8 @@ public class SvcDarisDicomSend extends PluginService {
             for (XmlDoc.Element ee : ees) {
                 String group = ee.value("@group");
                 String element = ee.value("@element");
-                AttributeTag tag = new AttributeTag(
-                        Integer.parseInt(group, 16), Integer.parseInt(element,
-                                16));
+                AttributeTag tag = new AttributeTag(Integer.parseInt(group, 16),
+                        Integer.parseInt(element, 16));
                 if (ee.booleanValue("@anonymize", false)) {
                     map.put(tag, " ");
                 } else {
@@ -240,16 +242,16 @@ public class SvcDarisDicomSend extends PluginService {
         }
         MimeType mtype = new NamedMimeType(ctype);
         if (ArchiveRegistry.isAnArchive(mtype)) {
-            ArchiveInput ai = ArchiveRegistry.createInput(new SizedInputStream(
-                    output.stream(), csize), mtype);
+            ArchiveInput ai = ArchiveRegistry.createInput(
+                    new SizedInputStream(output.stream(), csize), mtype);
             try {
                 ArchiveExtractor.extract(ai, dir, false, true, false);
             } finally {
                 ai.close();
             }
         } else {
-            File of = new File(dir, cext == null ? assetId
-                    : (assetId + "." + cext));
+            File of = new File(dir,
+                    cext == null ? assetId : (assetId + "." + cext));
             InputStream is = output.stream();
             try {
                 StreamCopy.copy(is, of);
@@ -263,7 +265,7 @@ public class SvcDarisDicomSend extends PluginService {
 
     private static void editDicomFile(File f,
             Map<AttributeTag, String> overriddenValues, String fromAET)
-            throws Throwable {
+                    throws Throwable {
         AttributeList list = new AttributeList();
         list.read(f);
         Attribute mediaStorageSOPClassUIDAttr = list
@@ -319,7 +321,7 @@ public class SvcDarisDicomSend extends PluginService {
 
     private static void editDicomFiles(File dir,
             Map<AttributeTag, String> overriddenValues, String fromAET)
-            throws Throwable {
+                    throws Throwable {
         List<File> files = new Vector<File>();
         listFilesRecursively(dir, files);
         for (File f : files) {
@@ -373,96 +375,132 @@ public class SvcDarisDicomSend extends PluginService {
         }
     }
 
-    @Override
-    public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w)
-            throws Throwable {
-
-        String id = args.value("id");
-        String cid = args.value("cid");
-        if (id == null && cid == null) {
-            throw new Exception("Either id or cid is required. Found none.");
-        }
-        if (id != null && cid != null) {
-            throw new Exception("Either id or cid is required. Found both.");
-        }
-        String fromAET = args.value("from/ae-title");
-        String toAET = args.value("to/ae-title");
-        String toHost = args.value("to/host");
-        int toPort = args.intValue("to/port");
-        Map<AttributeTag, String> override = null;
-        if (args.elementExists("override")) {
-            override = parseOverriddenElements(args.element("override"));
-        }
-        XmlDoc.Element ae = null;
-        if (cid == null) {
-            ae = executor().execute("asset.get",
-                    "<args><id>" + id + "</id></args>", null, null).element(
-                    "asset");
-            cid = ae.value("cid");
-        } else {
-            ae = executor().execute("asset.get",
-                    "<args><cid>" + cid + "</cid></args>", null, null).element(
-                    "asset");
-            id = ae.value("@id");
-        }
+    private static void addByAssetMeta(ServiceExecutor executor,
+            XmlDoc.Element ae, Set<String> datasetAssetIds) throws Throwable {
         if (!ae.elementExists("meta/mf-dicom-patient")
                 && !ae.elementExists("meta/mf-dicom-study")
                 && !ae.elementExists("meta/mf-dicom-series")
                 && !"om.pssd.subject".equals(ae.value("model"))) {
-            throw new Exception(
-                    "asset "
-                            + id
-                            + " is not a valid dicom patient/study/series or a daris pssd subject.");
+            // Not a DICOM object.
+            return;
         }
-        /*
-         * add data sets
-         */
-        Set<String> datasetIds = new TreeSet<String>();
-        PluginTask.setCurrentThreadActivity("Adding dicom series(dataset)...");
-        PluginTask.checkIfThreadTaskAborted();
+        String id = ae.value("@id");
+        String cid = ae.value("cid");
         if (ae.elementExists("meta/mf-dicom-series")) {
-            datasetIds.add(id);
+            datasetAssetIds.add(id);
         } else if (ae.elementExists("meta/mf-dicom-study")) {
             if (ae.elementExists("related[@type='contains']/to")) {
-                addDicomStudy(executor(), datasetIds, ae);
+                addDicomStudy(executor, datasetAssetIds, ae);
             } else if (cid != null) {
-                addPssdDicomStudy(executor(), datasetIds, cid);
+                addPssdDicomStudy(executor, datasetAssetIds, cid);
             }
         } else if (ae.elementExists("meta/mf-dicom-patient")) {
             if (ae.elementExists("related[@type='has']/to")) {
-                addDicomPaitent(executor(), datasetIds, ae);
+                addDicomPaitent(executor, datasetAssetIds, ae);
             } else if (cid != null) {
-                addPssdDicomSubject(executor(), datasetIds, cid);
+                addPssdDicomSubject(executor, datasetAssetIds, cid);
             }
         } else if ("om.pssd.subject".equals(ae.value("model")) && cid != null) {
-            addPssdDicomSubject(executor(), datasetIds, cid);
+            addPssdDicomSubject(executor, datasetAssetIds, cid);
         }
-        if (datasetIds.isEmpty()) {
-            throw new Exception("No dicom series(dataset) is found in asset.");
+    }
+
+    private static void addByAssetId(ServiceExecutor executor, String assetId,
+            Set<String> datasetAssetIds) throws Throwable {
+        XmlDoc.Element ae = executor.execute("asset.get",
+                "<args><id>" + assetId + "</id></args>", null, null)
+                .element("asset");
+        addByAssetMeta(executor, ae, datasetAssetIds);
+    }
+
+    private static void addByCiteableId(ServiceExecutor executor,
+            String citeableId, Set<String> datasetAssetIds) throws Throwable {
+        XmlDoc.Element ae = executor.execute("asset.get",
+                "<args><cid>" + citeableId + "</cid></args>", null, null)
+                .element("asset");
+        addByAssetMeta(executor, ae, datasetAssetIds);
+    }
+
+    private static void addByQuery(ServiceExecutor executor, String where,
+            Set<String> datasetAssetIds) throws Throwable {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(").append(where).append(
+                ") and asset has content and mf-dicom-series has value");
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("where", where);
+        dm.add("size", "infinity");
+        Collection<String> ids = executor.execute("asset.query", dm.root())
+                .values("id");
+        if (ids != null && !ids.isEmpty()) {
+            datasetAssetIds.addAll(ids);
+        }
+    }
+
+    @Override
+    public void execute(XmlDoc.Element args, Inputs in, Outputs out,
+            XmlWriter w) throws Throwable {
+        /*
+         * parse arguments
+         */
+        String id = args.value("id");
+        String cid = args.value("cid");
+        String where = args.value("where");
+        if (id == null && cid == null && where == null) {
+            throw new Exception("Argument: id, cid or where is required.");
+        }
+        String callingAETitle = args.value("calling-ae/title");
+        String calledAETitle = args.value("called-ae/title");
+        String calledAEHost = args.value("called-ae/host");
+        int calledAEPort = args.intValue("called-ae/port");
+        Map<AttributeTag, String> override = null;
+        if (args.elementExists("override")) {
+            override = parseOverriddenElements(args.element("override"));
+        }
+
+        /*
+         * add DICOM datasets
+         */
+        Set<String> datasetAssetIds = new TreeSet<String>();
+        PluginTask.setCurrentThreadActivity("Adding DICOM datasets/series...");
+        if (id != null) {
+            PluginTask.checkIfThreadTaskAborted();
+            addByAssetId(executor(), id, datasetAssetIds);
+        }
+        if (cid != null) {
+            PluginTask.checkIfThreadTaskAborted();
+            addByCiteableId(executor(), cid, datasetAssetIds);
+        }
+        if (where != null) {
+            PluginTask.checkIfThreadTaskAborted();
+            addByQuery(executor(), where, datasetAssetIds);
+        }
+        if (datasetAssetIds.isEmpty()) {
+            // No DICOM dataset/series found.
+            return;
         }
 
         /*
          * extract dicom files
          */
-        PluginTask.setCurrentThreadActivity("Extracting dicom files...");
+        PluginTask.setCurrentThreadActivity("Extracting DICOM files...");
         PluginTask.checkIfThreadTaskAborted();
 
         File dir = PluginTask.createTemporaryDirectory();
         try {
-            for (String datasetId : datasetIds) {
-                PluginTask
-                        .setCurrentThreadActivity("Extracting dicom files from asset "
-                                + datasetId + "...");
+            for (String datasetAssetId : datasetAssetIds) {
+                PluginTask.setCurrentThreadActivity(
+                        "Extracting dicom files from asset " + datasetAssetId
+                                + "...");
                 PluginTask.checkIfThreadTaskAborted();
-                File assetDir = new File(dir, datasetId);
+                File assetDir = new File(dir, datasetAssetId);
                 assetDir.mkdir();
-                extractAssetContent(executor(), datasetId, assetDir);
+                extractAssetContent(executor(), datasetAssetId, assetDir);
                 if (override != null && !override.isEmpty()) {
-                    PluginTask
-                            .setCurrentThreadActivity("Editting dicom files from asset "
-                                    + datasetId + "...");
+                    PluginTask.setCurrentThreadActivity(
+                            "Editting dicom files from asset " + datasetAssetId
+                                    + "...");
                     PluginTask.checkIfThreadTaskAborted();
-                    editDicomFiles(assetDir, override, fromAET);
+                    editDicomFiles(assetDir, override, callingAETitle);
                 }
             }
             SetOfDicomFiles dicomFiles = listDicomFilesRecursively(dir);
@@ -470,15 +508,16 @@ public class SvcDarisDicomSend extends PluginService {
             PluginTask.checkIfThreadTaskAborted();
             PluginTask.setCurrentThreadActivity("Sending dicom data...");
             final int[] result = new int[4];
-            new StorageSOPClassSCU(toHost, toPort, toAET, fromAET, dicomFiles,
-                    0, new MultipleInstanceTransferStatusHandler() {
+            new StorageSOPClassSCU(calledAEHost, calledAEPort, calledAETitle,
+                    callingAETitle, dicomFiles, 0,
+                    new MultipleInstanceTransferStatusHandler() {
 
                         @Override
-                        public void updateStatus(int nRemaining,
-                                int nCompleted, int nFailed, int nWarning,
+                        public void updateStatus(int nRemaining, int nCompleted,
+                                int nFailed, int nWarning,
                                 String sopInstanceUID) {
-                            PluginTask.threadTaskCompletedMultipleOf(
-                                    nCompleted, nRemaining + nCompleted);
+                            PluginTask.threadTaskCompletedMultipleOf(nCompleted,
+                                    nRemaining + nCompleted);
                             result[0] = nRemaining;
                             result[1] = nCompleted;
                             result[2] = nFailed;
@@ -490,7 +529,8 @@ public class SvcDarisDicomSend extends PluginService {
             w.add("sent",
                     new String[] { "completed", Integer.toString(nCompleted),
                             "failed", Integer.toString(nFailed), "total",
-                            Integer.toString(total) }, nFailed <= 0);
+                            Integer.toString(total) },
+                    nFailed <= 0);
             PluginTask.threadTaskCompleted();
         } finally {
             forceDelete(dir);
