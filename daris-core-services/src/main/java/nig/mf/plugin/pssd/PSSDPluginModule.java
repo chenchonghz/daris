@@ -291,7 +291,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcDicomArchiveContentGet());
         _services.add(new SvcDicomLocalAETitleList());
         //
-        _services.add(new SvcDICOMDataSetCount());
+        _services.add(new SvcCollectionDicomDatasetCount());
         _services.add(new SvcDICOMUploadNotify());
         //
         _services.add(new SvcDICOMNormalizeHeader());

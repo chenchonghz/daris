@@ -12,7 +12,7 @@ import arc.mf.client.xml.XmlStringWriter;
 import arc.mf.object.ObjectMessageResponse;
 import arc.mf.session.ServiceResponseHandler;
 import arc.mf.session.Session;
-import daris.client.model.dicom.messages.DicomDataSetCount;
+import daris.client.model.dicom.messages.CollectionDicomDatasetCount;
 import daris.client.model.object.DObjectRef;
 
 public class HasDicomDataPrecondition implements ActionPrecondition {
@@ -48,7 +48,7 @@ public class HasDicomDataPrecondition implements ActionPrecondition {
     public void execute(final ActionPreconditionListener l) {
 
         if (_root != null) {
-            new DicomDataSetCount(_root).send(new ObjectMessageResponse<Integer>() {
+            new CollectionDicomDatasetCount(_root).send(new ObjectMessageResponse<Integer>() {
 
                 @Override
                 public void responded(Integer count) {

@@ -56,6 +56,36 @@ public class BackgroundServiceProperties
         startMonitor();
     }
 
+    public BackgroundServiceProperties(BackgroundService bs) {
+        _backgroundServiceProperty = new SimpleObjectProperty<BackgroundService>();
+        _backgroundServiceProperty.set(bs);
+        _idProperty = new SimpleLongProperty();
+        _idProperty.set(bs.id());
+        _stateProperty = new SimpleObjectProperty<RemoteTask.State>();
+        _nameProperty = new SimpleStringProperty();
+        _descriptionProperty = new SimpleStringProperty();
+        _currentActivityProperty = new SimpleStringProperty();
+        _errorProperty = new SimpleStringProperty();
+        _operationsTotalProperty = new SimpleLongProperty();
+        _operationsTotalProperty.set(0);
+        _operationsCompletedProperty = new SimpleLongProperty();
+        _operationsCompletedProperty.set(0);
+        _startTimeProperty = new SimpleObjectProperty<Date>();
+        _endTimeProperty = new SimpleObjectProperty<Date>();
+        _execTimeProperty = new SimpleObjectProperty<Double>();
+        _execTimeProperty.set(0.0);
+        _progressProperty = new SimpleObjectProperty<Double>();
+        _progressProperty.set(0.0);
+        _progressMessageProperty = new SimpleStringProperty();
+        checked(bs);
+        _bsm = new BackgroundServiceMonitor(bs.id(), this);
+        startMonitor();
+    }
+
+    public long id() {
+        return _idProperty.get();
+    }
+
     public void startMonitor() {
         _bsm.execute(1000);
     }
