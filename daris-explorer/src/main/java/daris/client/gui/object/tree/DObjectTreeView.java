@@ -11,6 +11,7 @@ import arc.mf.event.SystemEvent;
 import arc.mf.event.SystemEventChannel;
 import arc.mf.object.ObjectMessageResponse;
 import daris.client.gui.object.DObjectMenu;
+import daris.client.gui.object.DObjectMenu.MenuUpdateAction;
 import daris.client.model.object.DObjectRef;
 import daris.client.model.object.events.PSSDObjectEvent;
 import daris.client.model.object.events.PSSDObjectEvent.Action;
@@ -20,7 +21,6 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
@@ -55,23 +55,19 @@ public class DObjectTreeView extends TreeView<DObjectRef>
         _contextMenu.setOnShowing(e -> {
             DObjectRef o = DObjectTreeView.this.getSelectionModel()
                     .getSelectedItem().getValue();
-            o.resolve(oo -> {
-                ApplicationThread.execute(() -> {
-                    _contextMenu.getItems()
-                            .setAll(DObjectMenu.menuItemsFor(oo));
-                    MenuItem refreshMenuItem = new MenuItem(
-                            DObjectMenu.menuItemTextFor("Refresh", o));
-                    refreshMenuItem.setOnAction(event -> {
-                        DObjectTreeItem item = findTreeItem(o);
-                        if (item != null) {
-                            item.refresh(true);
-                        }
-                    });
-                    if (!_contextMenu.getItems().isEmpty()) {
-                        _contextMenu.getItems().add(new SeparatorMenuItem());
+            ApplicationThread.execute(() -> {
+                _contextMenu.getItems().clear();
+                MenuItem refreshMenuItem = new MenuItem(
+                        DObjectMenu.menuItemTextFor("Refresh", o));
+                refreshMenuItem.setOnAction(event -> {
+                    DObjectTreeItem item = findTreeItem(o);
+                    if (item != null) {
+                        item.refresh(true);
                     }
-                    _contextMenu.getItems().add(refreshMenuItem);
                 });
+                _contextMenu.getItems().add(refreshMenuItem);
+                DObjectMenu.updateMenuItems(_contextMenu.getItems(),
+                        MenuUpdateAction.PREPEND, o);
             });
         });
         _contextMenu.setOnHidden(e -> {
