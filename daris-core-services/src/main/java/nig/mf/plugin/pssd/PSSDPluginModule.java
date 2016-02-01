@@ -105,6 +105,8 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         // _services.add(new SvcProjectMembersMetaRemove()); // One off
         // transition service
         _services.add(new SvcProjectMetaHarvestMigrate()); // One off migration
+        _services.add(new SvcProjectDiskUsageGet());
+        
         _services.add(new SvcDocTypeRename()); // Rename Doc Type (inc
                                                // templates)
         //
