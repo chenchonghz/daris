@@ -18,6 +18,7 @@ import daris.client.gui.form.field.PasswordFormField;
 import daris.client.gui.form.field.StringFormField;
 import daris.client.gui.form.field.TextFormField;
 import daris.client.gui.form.field.UneditableStringFormField;
+import daris.client.gui.form.field.UrlFormField;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -148,6 +149,7 @@ public class Form extends ValidatedInterfaceComponent {
                 } else if ((type instanceof arc.mf.dtype.AssetType)
                         || (type instanceof arc.mf.dtype.AssetIdType)
                         || (type instanceof arc.mf.dtype.ConstantType)
+                        || (type instanceof arc.mf.dtype.CiteableIdType)
                         || (type instanceof arc.mf.dtype.IdentifierType)
                         || (type instanceof arc.mf.dtype.ReplicaIdType)) {
                     _graphic = new UneditableStringFormField(item, null);
@@ -160,7 +162,7 @@ public class Form extends ValidatedInterfaceComponent {
                 } else if (type instanceof arc.mf.dtype.PasswordType) {
                     _graphic = new PasswordFormField((FormItem<String>) item);
                 } else if (type instanceof arc.mf.dtype.UrlType) {
-                    // TODO
+                    _graphic = new UrlFormField((FormItem<String>) item);
                 } else if (type instanceof arc.mf.dtype.FileType) {
                     _graphic = new FileFormField((FormItem<File>) item);
                 } else if (type instanceof arc.mf.dtype.EmailAddressType) {
