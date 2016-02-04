@@ -37,6 +37,7 @@ public class ArchiveEntryCollectionRef
             _assetId = id;
         }
         _assetMimeType = assetMimeType;
+        setCountMembers(true);
     }
 
     public String assetId() {
@@ -95,4 +96,8 @@ public class ArchiveEntryCollectionRef
         return new String[] { "entry" };
     }
 
+    @Override
+    public boolean supportsPaging() {
+        return true;
+    }
 }
