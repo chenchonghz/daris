@@ -9,7 +9,7 @@ import daris.client.model.object.DObjectRef;
 public class ArchiveEntryCollectionRef
         extends OrderedCollectionRef<ArchiveEntry> {
     public static int PAGE_SIZE_INFINITY = -1;
-    public static int PAGE_SIZE_DEFAULT = 500;
+    public static int PAGE_SIZE_DEFAULT = 50;
 
     private String _assetId;
     private String _cid;
