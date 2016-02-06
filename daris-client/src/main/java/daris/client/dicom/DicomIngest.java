@@ -3,32 +3,31 @@ package daris.client.dicom;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
-import java.text.SimpleDateFormat;
+import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
+import com.pixelmed.dicom.DicomFileUtilities;
 
-import arc.archive.ArchiveArcOutputFile;
 import arc.archive.ArchiveOutput;
+import arc.archive.ArchiveRegistry;
 import arc.mf.client.RemoteServer;
 import arc.mf.client.ServerClient;
+import arc.mf.client.archive.Archive;
+import arc.streams.StreamCopy.AbortCheck;
 import arc.xml.XmlStringWriter;
-
-import com.pixelmed.dicom.DicomFileUtilities;
 
 public class DicomIngest {
 
     public static final int COMPRESSION_LEVEL = 6;
     public static final String MIME_TYPE_AAR = "application/arc-archive";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Throwable {
         if (args == null || args.length == 0) {
             showHelp();
             System.exit(1);
         }
-        boolean debug = false;
         String mfHost = null;
         int mfPort = -1;
         String mfTransport = null;
@@ -38,7 +37,6 @@ public class DicomIngest {
         String mfToken = null;
         String mfSid = null;
         String cid = null;
-        File tmpDir = null;
         boolean anonymize = false;
         String metaSetService = null;
         List<File> dcmFiles = new ArrayList<File>();
@@ -47,9 +45,6 @@ public class DicomIngest {
                 if (args[i].equals("--help") || args[i].equals("-h")) {
                     showHelp();
                     System.exit(0);
-                } else if (args[i].equals("--debug")) {
-                    debug = true;
-                    i++;
                 } else if (args[i].equals("--mf.host")) {
                     if (mfHost != null) {
                         throw new Exception(
@@ -89,9 +84,9 @@ public class DicomIngest {
                         useHttp = false;
                         encrypt = false;
                     } else {
-                        throw new Exception("Invalid mf.transport: "
-                                + mfTransport
-                                + ". Expects http, https or tcp/ip.");
+                        throw new Exception(
+                                "Invalid mf.transport: " + mfTransport
+                                        + ". Expects http, https or tcp/ip.");
                     }
                 } else if (args[i].equals("--mf.auth")) {
                     if (mfAuth != null) {
@@ -138,32 +133,16 @@ public class DicomIngest {
                     i += 2;
                 } else if (args[i].equals("--cid")) {
                     if (cid != null) {
-                        throw new Exception("--cid has already been specified.");
+                        throw new Exception(
+                                "--cid has already been specified.");
                     }
                     cid = args[i + 1];
-                    i += 2;
-                } else if (args[i].equals("--tmp")) {
-                    if (tmpDir != null) {
-                        throw new Exception(
-                                "--tmp directory has already been specified.");
-                    }
-                    tmpDir = new File(args[i + 1]);
-                    if (!tmpDir.exists()) {
-                        throw new Exception(
-                                "The specified --tmp temporary directory "
-                                        + tmpDir + " does not exist.");
-                    }
-                    if (!tmpDir.isDirectory()) {
-                        throw new Exception(
-                                "The specified --tmp temporary directory "
-                                        + tmpDir + " is not a directory.");
-                    }
                     i += 2;
                 } else {
                     File f = new File(args[i]);
                     if (!f.exists()) {
-                        throw new FileNotFoundException("File " + args[i]
-                                + " is not found.");
+                        throw new FileNotFoundException(
+                                "File " + args[i] + " is not found.");
                     }
                     if (f.isFile()) {
                         if (DicomFileUtilities.isDicomOrAcrNemaFile(f)) {
@@ -177,9 +156,6 @@ public class DicomIngest {
                     }
                     i++;
                 }
-            }
-            if (tmpDir == null) {
-                tmpDir = new File(System.getProperty("user.home"));
             }
             if (cid == null) {
                 throw new Exception("--cid is not specified.");
@@ -209,47 +185,20 @@ public class DicomIngest {
                 } else if (mfAuth != null) {
                     String[] parts = mfAuth.split(",");
                     if (parts.length != 3) {
-                        throw new Exception(
-                                "Invalid mf.auth: "
-                                        + mfAuth
-                                        + ". Expects a string in the form of 'domain,user,password'");
+                        throw new Exception("Invalid mf.auth: " + mfAuth
+                                + ". Expects a string in the form of 'domain,user,password'");
                     }
                     cxn.connect(parts[0], parts[1], parts[2]);
                 } else {
                     cxn.reconnect(mfSid);
                 }
-                File tempAARFile = new File(tmpDir,
-                        "daris-dicom-ingest-"
-                                + new SimpleDateFormat("yyyyMMddHHmmssSSS")
-                                        .format(new Date()) + ".aar");
-
-                try {
-                    System.out.println("Adding dicom files to archive "
-                            + tempAARFile.getAbsolutePath() + "...");
-                    aarDicomFiles(tempAARFile, dcmFiles);
-                    System.out.print("Ingesting dicom archive to " + cid
-                            + tempAARFile.getAbsolutePath() + "...");
-                    ingestDicomArchive(cxn, cid, anonymize, metaSetService,
-                            tempAARFile);
-                    System.out.println("done. " + dcmFiles.size()
-                            + " dicom files ingested.");
-                } finally {
-                    try {
-                        FileUtils.forceDelete(tempAARFile);
-                    } catch (Throwable e) {
-                        FileUtils.forceDeleteOnExit(tempAARFile);
-                    }
-                }
+                ingestDicomFiles(cxn, cid, anonymize, metaSetService, dcmFiles);
             } finally {
-                cxn.close();
+                cxn.closeAndDiscard();
             }
-        } catch (Throwable e) {
-            System.err.println("Error: " + e.getMessage());
+        } catch (IllegalArgumentException ex) {
+            System.err.println("Error: " + ex.getMessage());
             showHelp();
-            if (debug) {
-                e.printStackTrace(System.err);
-            }
-            System.exit(1);
         }
     }
 
@@ -272,58 +221,34 @@ public class DicomIngest {
     }
 
     private static void showHelp() {
-        System.out
-                .println("Usage: dicom-ingest [--help] [--debug] --mf.host <host> --mf.port <port> --mf.transport <transport> [--mf.sid <sid>|--mf.token <token>|--mf.auth <domain,user,password>] [--tmp <dir>]  [--anonymize] [--meta-set-service <service>] --cid <cid> <dicom-files/dicom-directories>");
+        System.out.println(
+                "Usage: dicom-ingest [--help] --mf.host <host> --mf.port <port> --mf.transport <transport> [--mf.sid <sid>|--mf.token <token>|--mf.auth <domain,user,password>]  [--anonymize] [--meta-set-service <service>] --cid <cid> <dicom-files/dicom-directories>");
         System.out.println("Description:");
-        System.out
-                .println("    --mf.host <host>                 The Mediaflux server host.");
-        System.out
-                .println("    --mf.port <port>                 The Mediaflux server port.");
-        System.out
-                .println("    --mf.transport <transport>       The Mediaflux server transport, can be http, https or tcp/ip.");
-        System.out
-                .println("    --mf.auth <domain,user,password> The Mediaflux user authentication deatils.");
-        System.out
-                .println("    --mf.token <token>               The Mediaflux secure identity token.");
-        System.out
-                .println("    --mf.sid <sid>                   The Mediaflux session id.");
-        System.out
-                .println("    --cid <cid>                      The DaRIS object cid. It can be the cid of the destination project/subject/study.");
-        System.out
-                .println("    --anonymize                      Anonymize PatientName element(0010,0010) if set.");
-        System.out
-                .println("    --meta-set-service <service>     The service to map dicom header elements to domain specific meta-data. This argument is optional.");
-        System.out
-                .println("    --tmp <dir>                      The directory for temporary archive file. Defaults to the user's home directory. The temporary archive file will be deleted when the execution is finished.");
-        System.out
-                .println("    --help                           Display help information.");
-        System.out
-                .println("    --debug                          Display Java stack trace.");
+        System.out.println(
+                "    --mf.host <host>                 The Mediaflux server host.");
+        System.out.println(
+                "    --mf.port <port>                 The Mediaflux server port.");
+        System.out.println(
+                "    --mf.transport <transport>       The Mediaflux server transport, can be http, https or tcp/ip.");
+        System.out.println(
+                "    --mf.auth <domain,user,password> The Mediaflux user authentication deatils.");
+        System.out.println(
+                "    --mf.token <token>               The Mediaflux secure identity token.");
+        System.out.println(
+                "    --mf.sid <sid>                   The Mediaflux session id.");
+        System.out.println(
+                "    --cid <cid>                      The DaRIS object cid. It can be the cid of the destination project/subject/study.");
+        System.out.println(
+                "    --anonymize                      Anonymize PatientName element(0010,0010) if set.");
+        System.out.println(
+                "    --meta-set-service <service>     The service to map dicom header elements to domain specific meta-data. This argument is optional.");
+        System.out.println(
+                "    --help                           Display help information.");
     }
 
-    /**
-     * Add all dicomFiles to the aar archive file.
-     * 
-     * @param aarFile
-     * @param dicomFiles
-     * @throws Throwable
-     */
-    private static void aarDicomFiles(File aarFile, List<File> dicomFiles)
-            throws Throwable {
-        ArchiveOutput ao = new ArchiveArcOutputFile(aarFile, COMPRESSION_LEVEL);
-        try {
-            for (int i = 0; i < dicomFiles.size(); i++) {
-                String name = String.format("%8d.dcm", i + 1);
-                ao.add("application/dicom", name, dicomFiles.get(i));
-            }
-        } finally {
-            ao.close();
-        }
-    }
-
-    private static void ingestDicomArchive(ServerClient.Connection cxn,
-            String cid, boolean anonymize, String metaSetService, File aarFile)
-            throws Throwable {
+    private static void ingestDicomFiles(ServerClient.Connection cxn,
+            String cid, boolean anonymize, String metaSetService,
+            final List<File> dcmFiles) throws Throwable {
 
         // I think you can't supply the id and prefix for the default PSS
         // engine, only our nig.dicom engine. So you can probably only upload
@@ -339,10 +264,38 @@ public class DicomIngest {
         w.add("arg", new String[] { "name", "nig.dicom.id.citable" }, cid);
         // The CID prefix is not used
         if (metaSetService != null) {
-            w.add("arg", new String[] { "name",
-                    "nig.dicom.subject.meta.set-service" }, metaSetService);
+            w.add("arg",
+                    new String[] { "name",
+                            "nig.dicom.subject.meta.set-service" },
+                    metaSetService);
         }
-        cxn.execute("dicom.ingest", w.document(), new ServerClient.FileInput(
-                aarFile, MIME_TYPE_AAR), null);
+        w.add("wait", true);
+        w.add("type", MIME_TYPE_AAR);
+        Archive.declareSupportForAllTypes();
+        Collections.sort(dcmFiles);
+        ServerClient.Input sci = new ServerClient.GeneratedInput(MIME_TYPE_AAR,
+                "aar", dcmFiles.get(0).getParentFile().getAbsolutePath(), -1,
+                null) {
+
+            @Override
+            protected void copyTo(OutputStream os, AbortCheck ac)
+                    throws Throwable {
+                ArchiveOutput ao = ArchiveRegistry.createOutput(os,
+                        MIME_TYPE_AAR, 6, null);
+                try {
+                    for (int i = 0; i < dcmFiles.size(); i++) {
+                        System.out.println("Sending: "
+                                + dcmFiles.get(i).getAbsolutePath());
+                        ao.add("application/dicom",
+                                String.format("%08d.dcm", i + 1),
+                                dcmFiles.get(i));
+                    }
+                } finally {
+                    ao.close();
+                }
+
+            }
+        };
+        cxn.execute("dicom.ingest", w.document(), sci);
     }
 }
