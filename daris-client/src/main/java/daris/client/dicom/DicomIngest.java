@@ -269,6 +269,9 @@ public class DicomIngest {
                             "nig.dicom.subject.meta.set-service" },
                     metaSetService);
         }
+        w.add("arg",
+                new String[] { "name", "nig.dicom.write.mf-dicom-patient" },
+                true);
         w.add("wait", true);
         w.add("type", MIME_TYPE_AAR);
         Archive.declareSupportForAllTypes();
