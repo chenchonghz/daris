@@ -14,7 +14,9 @@ import arc.mf.plugin.PluginService.Interface.Element;
 import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.CiteableIdType;
 import arc.mf.plugin.dtype.IntegerType;
+import arc.mf.plugin.dtype.StringType;
 import arc.xml.XmlDoc;
+import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
 
 public class SvcExMethodCreate extends PluginService {
@@ -33,6 +35,7 @@ public class SvcExMethodCreate extends PluginService {
 				0, 1));
 		_defn.add(new Element("fillin", BooleanType.DEFAULT, "If the exmethod-number is not given, fill in the ExMethod allocator space (re-use allocated CIDs with no assets), otherwise create the next available CID at the end of the CID pool. Defaults to false; use with care in federated envionment.", 0, 1));
 		_defn.add(new Interface.Element("mid",CiteableIdType.DEFAULT,"The identity of the Method to instantiate.  Must be managed by the same server as the parent Project (not Subject) object.",1,1));
+		_defn.add(new Interface.Element("name",StringType.DEFAULT,"The name of the ExMethod object.  Defaults to the name of the Method.",0,1));
 	}
 
 	public String name() {
@@ -96,6 +99,15 @@ public class SvcExMethodCreate extends PluginService {
 
 		try {
 			String id = ExMethod.create(executor(), dSID, exMethodNumber, dMID, fillIn);
+			
+			// Set PSSD object name as desired. Easier to over-write it here than to insert at creation
+			String name = args.value("name");
+			if (id!=null && name!=null) {
+				XmlDocMaker dm = new XmlDocMaker("args");
+				dm.add("id", id);
+				dm.add("name", name);
+				executor().execute("om.pssd.object.update", dm.root());
+			}
 			w.add("id",id);
 		} finally {
 			if (fillIn) {
