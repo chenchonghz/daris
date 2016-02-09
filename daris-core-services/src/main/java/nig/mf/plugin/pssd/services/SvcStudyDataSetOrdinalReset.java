@@ -1,5 +1,6 @@
 package nig.mf.plugin.pssd.services;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class SvcStudyDataSetOrdinalReset extends PluginService {
                         + "' and model='om.pssd.dataset'</where><action>get-cid</action><size>infinity</size></args>",
                 null, null).elements("cid");
         if (cides != null) {
-            cides.sort(new Comparator<XmlDoc.Element>() {
+        	Collections.sort(cides,new Comparator<XmlDoc.Element>() {
                 @Override
                 public int compare(Element cide1, Element cide2) {
                     String cid1 = cide1.value();
