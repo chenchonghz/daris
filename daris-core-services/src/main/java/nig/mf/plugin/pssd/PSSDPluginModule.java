@@ -39,6 +39,8 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcAnnouncementDescribe());
         _services.add(new SvcAnnouncementDestroy());
         _services.add(new SvcAnnouncementList());
+        
+        _services.add(new SvcAssetTemplateNamespaceReplace());
 
         _services.add(new SvcRoleTypeDescribe());
         _services.add(new SvcRoleList());
@@ -128,6 +130,8 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcSubjectClone());
         _services.add(new SvcSubjectMethodTemplateReplace());
         _services.add(new SvcSubjectMethodReplace());
+//        _services.add(new SvcSubjectOrdinalSet()); // TODO Need to test 
+        
 
         _services.add(new SvcExMethodCreate());
         _services.add(new SvcExMethodUpdate());
@@ -154,6 +158,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcExMethodStudiesPreCreate());
         _services.add(new SvcStudyTemplateReplace());
         _services.add(new SvcStudyOrdinalSet());
+        _services.add(new SvcStudyDataSetOrdinalReset());
 
         _services.add(new SvcDataSetPrimaryCreate());
         _services.add(new SvcDataSetPrimaryUpdate());
