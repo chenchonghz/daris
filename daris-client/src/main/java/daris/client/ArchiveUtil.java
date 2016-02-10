@@ -30,9 +30,19 @@ public class ArchiveUtil {
             System.exit(2);
         }
         /*
+         * quiet
+         */
+        boolean quiet = "--quiet".equalsIgnoreCase(args[1]);
+        if (quiet && args.length < 3) {
+            System.err.println("Error: missing arguments.");
+            showUsage();
+            System.exit(1);
+        }
+
+        /*
          * arc file
          */
-        String arcFilePath = args[1];
+        String arcFilePath = quiet ? args[2] : args[1];
         if (!isArchiveFilePath(arcFilePath)) {
             System.err.println("Error: invalid archive file name: "
                     + arcFilePath + ". Expects a .zip or .aar file.");
@@ -46,8 +56,8 @@ public class ArchiveUtil {
                 System.exit(4);
             }
             File outputDir = null;
-            if (args.length == 3) {
-                outputDir = new File(args[2]);
+            if (args.length >= 3) {
+                outputDir = quiet ? new File(args[3]) : new File(args[2]);
                 if (!outputDir.exists()) {
                     System.err.println("Output directory: "
                             + outputDir.getAbsolutePath() + " does not exist.");
@@ -60,14 +70,15 @@ public class ArchiveUtil {
                     System.exit(6);
                 }
             }
-            extract(arcFile, outputDir);
+            extract(arcFile, outputDir, quiet);
         } else {
-            if (args.length == 2) {
+            int start = quiet ? 3 : 2;
+            if (args.length == start) {
                 System.err.println("No input file/directory is specified.");
                 System.exit(7);
             }
             Set<File> inputFiles = new TreeSet<File>();
-            for (int i = 2; i < args.length; i++) {
+            for (int i = start; i < args.length; i++) {
                 addFiles(inputFiles, new File(args[i]));
             }
             if (inputFiles.isEmpty()) {
@@ -76,11 +87,12 @@ public class ArchiveUtil {
                 System.exit(8);
             }
             archive(arcFile, new File(System.getProperty("user.dir")),
-                    inputFiles);
+                    inputFiles, quiet);
         }
     }
 
-    private static void extract(File arcFile, File outputDir) throws Throwable {
+    private static void extract(File arcFile, File outputDir, boolean quiet)
+            throws Throwable {
         Archive.declareSupportForAllTypes();
         ArchiveInput ai = ArchiveRegistry.createInput(arcFile,
                 new NamedMimeType(getMimeType(arcFile)));
@@ -88,6 +100,9 @@ public class ArchiveUtil {
             ArchiveInput.Entry entry = null;
             while ((entry = ai.next()) != null) {
                 String ename = entry.name();
+                if (!quiet) {
+                    System.out.print("Extracting " + ename + "...");
+                }
                 if (ename.startsWith("/")) {
                     ename = ename.substring(1);
                 }
@@ -96,9 +111,14 @@ public class ArchiveUtil {
                 if (entry.isDirectory()) {
                     of.mkdirs();
                 } else {
+                    of.getParentFile().mkdirs();
+                    of.createNewFile();
                     StreamCopy.copy(entry.stream(), of);
                 }
                 ai.closeEntry();
+                if (!quiet) {
+                    System.out.println("done");
+                }
             }
         } finally {
             ai.close();
@@ -106,25 +126,28 @@ public class ArchiveUtil {
     }
 
     private static void archive(File arcFile, File baseDir,
-            Set<File> inputFiles) throws Throwable {
+            Set<File> inputFiles, boolean quiet) throws Throwable {
         Archive.declareSupportForAllTypes();
         ArchiveOutput ao = ArchiveRegistry.createOutput(arcFile,
                 getMimeType(arcFile), 6, null);
         try {
             for (File inputFile : inputFiles) {
-                String ename = inputFile.getName();
-                if (baseDir != null) {
-                    ename = inputFile.getAbsolutePath();
-                    String baseDirPath = baseDir.getAbsolutePath();
-                    if (ename.startsWith(baseDirPath + File.separator)
-                            || ename.startsWith(baseDirPath + "/")) {
-                        ename = ename.substring(baseDirPath.length());
-                    }
+                String ename = inputFile.getAbsolutePath();
+                String baseDirPath = baseDir.getAbsolutePath();
+                if (ename.startsWith(baseDirPath + File.separator)
+                        || ename.startsWith(baseDirPath + "/")) {
+                    ename = ename.substring(baseDirPath.length());
                 }
                 if (ename.startsWith(File.separator) || ename.startsWith("/")) {
                     ename = ename.substring(1);
                 }
+                if (!quiet) {
+                    System.out.print("Adding " + ename + "...");
+                }
                 ao.add(null, ename, inputFile);
+                if (!quiet) {
+                    System.out.println("done");
+                }
             }
         } finally {
             ao.close();
@@ -181,10 +204,10 @@ public class ArchiveUtil {
 
     private static void showUsage() {
         System.out.println("Usage:");
-        System.out
-                .println("    darc extract <archive-file> [output-directory]");
-        System.out
-                .println("    darc archive <archive-file> <files/directories>");
+        System.out.println(
+                "    darc extract [--quiet] <archive-file> [output-directory]");
+        System.out.println(
+                "    darc archive [--quiet] <archive-file> <files/directories>");
         System.out.println("Examples:");
         System.out.println("    darc extract book.zip");
         System.out.println("    darc extract book.aar /home/wilson/Documents");
