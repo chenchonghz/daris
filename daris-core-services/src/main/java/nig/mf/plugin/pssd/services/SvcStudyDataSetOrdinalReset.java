@@ -43,8 +43,7 @@ public class SvcStudyDataSetOrdinalReset extends PluginService {
 
     @Override
     public void execute(Element args, Inputs arg1, Outputs arg2,
-            final XmlWriter w)
-            throws Throwable {
+            final XmlWriter w) throws Throwable {
         String studyCid = args.value("cid");
         XmlDoc.Element ae = executor().execute("asset.get",
                 "<args><cid>" + studyCid + "</cid></args>", null, null);
@@ -57,7 +56,7 @@ public class SvcStudyDataSetOrdinalReset extends PluginService {
                         + "' and model='om.pssd.dataset'</where><action>get-cid</action><size>infinity</size></args>",
                 null, null).elements("cid");
         if (cides != null) {
-        	Collections.sort(cides,new Comparator<XmlDoc.Element>() {
+            Collections.sort(cides, new Comparator<XmlDoc.Element>() {
                 @Override
                 public int compare(Element cide1, Element cide2) {
                     String cid1 = cide1.value();
@@ -88,11 +87,13 @@ public class SvcStudyDataSetOrdinalReset extends PluginService {
                             String assetId = cide.value("@id");
                             String newCid = CiteableIdUtil.getParentId(cid)
                                     + "." + ordinal;
+                            importCidIfNotExists(exec, newCid);
                             exec.execute("asset.cid.set",
                                     "<args><id>" + assetId + "</id><cid>"
                                             + newCid + "</cid></args>",
                                     null, null);
-                            w.add("cid", new String[]{"id", assetId, "old-cid", cid}, newCid);
+                            w.add("cid", new String[] { "id", assetId,
+                                    "old-cid", cid }, newCid);
                         }
 
                     }
@@ -100,6 +101,19 @@ public class SvcStudyDataSetOrdinalReset extends PluginService {
                 }
             }).execute(executor());
 
+        }
+    }
+
+    private static void importCidIfNotExists(ServiceExecutor executor,
+            String cid) throws Throwable {
+        if (!executor
+                .execute("citeable.id.exists",
+                        "<args><cid>" + cid + "</cid></args>", null, null)
+                .booleanValue("exists")) {
+            executor.execute("citeable.id.import",
+                    "<args><root-depth>1</root-depth><cid>" + cid
+                            + "</cid></args>",
+                    null, null);
         }
     }
 

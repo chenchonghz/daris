@@ -113,7 +113,7 @@ public class SvcStudyOrdinalSet extends PluginService {
                         "<args><cid>" + cid + "</cid></args>", null, null)
                 .booleanValue("exists")) {
             executor.execute("citeable.id.import",
-                    "<args><root-depth>0</root-depth><cid>" + cid
+                    "<args><root-depth>1</root-depth><cid>" + cid
                             + "</cid></args>",
                     null, null);
         }
