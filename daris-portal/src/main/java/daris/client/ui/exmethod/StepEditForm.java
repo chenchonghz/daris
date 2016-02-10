@@ -81,13 +81,14 @@ import daris.client.ui.form.XmlMetaForm;
 import daris.client.ui.object.action.DObjectCreateAction;
 import daris.client.ui.transform.TransformBrowser;
 
-public class StepEditForm extends ValidatedInterfaceComponent implements AsynchronousAction {
+public class StepEditForm extends ValidatedInterfaceComponent
+        implements AsynchronousAction {
 
-    public static final arc.gui.image.Image ICON_VALID = new arc.gui.image.Image(Resource.INSTANCE.tick12()
-            .getSafeUri().asString(), 12, 12);
+    public static final arc.gui.image.Image ICON_VALID = new arc.gui.image.Image(
+            Resource.INSTANCE.tick12().getSafeUri().asString(), 12, 12);
 
-    public static final arc.gui.image.Image ICON_INVALID = new arc.gui.image.Image(Resource.INSTANCE.cross12()
-            .getSafeUri().asString(), 12, 12);
+    public static final arc.gui.image.Image ICON_INVALID = new arc.gui.image.Image(
+            Resource.INSTANCE.cross12().getSafeUri().asString(), 12, 12);
 
     private MethodAndStep _mas;
     private ExMethodStep _step;
@@ -111,12 +112,13 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
         Form stepForm = new Form(FormEditMode.UPDATE);
         stepForm.setWidth100();
         stepForm.setHeight(125);
-        Field<String> stepNameField = new Field<String>(new FieldDefinition("Step", ConstantType.DEFAULT, "Step name",
-                null, 1, 1));
+        Field<String> stepNameField = new Field<String>(new FieldDefinition(
+                "Step", ConstantType.DEFAULT, "Step name", null, 1, 1));
         stepNameField.setInitialValue(_step.name(), false);
         stepForm.add(stepNameField);
-        Field<State> stateField = new Field<State>(new FieldDefinition("State", new EnumerationType<State>(
-                State.values()), "State", null, 1, 1));
+        Field<State> stateField = new Field<State>(new FieldDefinition("State",
+                new EnumerationType<State>(State.values()), "State", null, 1,
+                1));
         stateField.setInitialValue(_step.state(), false);
         stateField.addListener(new FormItemListener<State>() {
             @Override
@@ -125,13 +127,14 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
             }
 
             @Override
-            public void itemPropertyChanged(FormItem<State> f, FormItem.Property property) {
+            public void itemPropertyChanged(FormItem<State> f,
+                    FormItem.Property property) {
 
             }
         });
         stepForm.add(stateField);
-        Field<String> notesField = new Field<String>(
-                new FieldDefinition("Notes", TextType.DEFAULT, "Notes", null, 0, 1));
+        Field<String> notesField = new Field<String>(new FieldDefinition(
+                "Notes", TextType.DEFAULT, "Notes", null, 0, 1));
         FieldRenderOptions fro = new FieldRenderOptions();
         fro.setWidth(1.0);
         notesField.setRenderOptions(fro);
@@ -144,7 +147,8 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
             }
 
             @Override
-            public void itemPropertyChanged(FormItem<String> f, FormItem.Property p) {
+            public void itemPropertyChanged(FormItem<String> f,
+                    FormItem.Property p) {
 
             }
         });
@@ -225,7 +229,8 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
             public void onClick(ClickEvent event) {
                 btn.disable();
                 // TODO: link with paramGrid.
-                new ExMethodTransformStepExecute(step, true, null).send(new ObjectMessageResponse<List<String>>() {
+                new ExMethodTransformStepExecute(step, true, null)
+                        .send(new ObjectMessageResponse<List<String>>() {
 
                     @Override
                     public void responded(List<String> r) {
@@ -249,11 +254,13 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
         paramLabel.setWidth100();
         paramLabel.setFontSize(12);
         paramLabel.setPaddingLeft(15);
-        paramLabel.setBackgroundImage(new LinearGradient(LinearGradient.Orientation.TOP_TO_BOTTOM, new RGB(0xcc, 0xcc,
-                0xcc), new RGB(0x99, 0x99, 0x99)));
+        paramLabel.setBackgroundImage(
+                new LinearGradient(LinearGradient.Orientation.TOP_TO_BOTTOM,
+                        new RGB(0xcc, 0xcc, 0xcc), new RGB(0x99, 0x99, 0x99)));
         vp.add(paramLabel);
 
-        ListGrid<Transform.Parameter> paramGrid = new ListGrid<Transform.Parameter>(ScrollPolicy.AUTO);
+        ListGrid<Transform.Parameter> paramGrid = new ListGrid<Transform.Parameter>(
+                ScrollPolicy.AUTO);
         paramGrid.setCursorSize(500);
         paramGrid.addColumnDefn("name", "name");
         paramGrid.addColumnDefn("value", "value");
@@ -277,79 +284,88 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
         int tabId = tp.addTab("Study", null, vp);
         tp.setActiveTabById(tabId);
 
-        final ListGrid<Study> studyGrid = new ListGrid<Study>(ScrollPolicy.AUTO);
-        studyGrid.setDataSource(new ListGridDataSource<Study>(new DataSource<Study>() {
-
-            @Override
-            public boolean isRemote() {
-
-                return true;
-            }
-
-            @Override
-            public boolean supportCursor() {
-
-                return false;
-            }
-
-            @Override
-            public void load(final Filter filter, final long start, final long end, final DataLoadHandler<Study> lh) {
-
-                ObjectMessage<List<Study>> msg = new ExMethodStepStudyFind(_step.exMethodId(), _step.exMethodProute(),
-                        _mas.stepPath());
-                msg.send(new ObjectMessageResponse<List<Study>>() {
+        final ListGrid<Study> studyGrid = new ListGrid<Study>(
+                ScrollPolicy.AUTO);
+        studyGrid.setDataSource(
+                new ListGridDataSource<Study>(new DataSource<Study>() {
 
                     @Override
-                    public void responded(List<Study> studies) {
+                    public boolean isRemote() {
 
-                        if (studies != null) {
-                            List<Study> rstudies = studies;
-                            if (filter != null) {
-                                List<Study> fstudies = new Vector<Study>();
-                                for (Study a : studies) {
-                                    if (filter.matches(a)) {
-                                        fstudies.add(a);
-                                    }
-                                }
-                                rstudies = fstudies;
-                            }
-                            long total = rstudies.size();
-                            int start1 = (int) start;
-                            int end1 = (int) end;
-                            if (start1 > 0 || end1 < rstudies.size()) {
-                                if (start1 >= rstudies.size()) {
-                                    rstudies = null;
-                                } else {
-                                    if (end1 > rstudies.size()) {
-                                        end1 = rstudies.size();
-                                    }
-                                    rstudies = rstudies.subList(start1, end1);
-                                }
-                            }
-                            if (rstudies != null) {
-                                if (rstudies.isEmpty()) {
-                                    rstudies = null;
-                                }
-                            }
-                            lh.loaded(start1, end1, total, rstudies, rstudies == null ? null : DataLoadAction.REPLACE);
-                        } else {
-                            lh.loaded(0, 0, 0, null, null);
-                        }
+                        return true;
                     }
-                });
-            }
-        }, new Transformer<Study, ListGridEntry<Study>>() {
 
-            @Override
-            protected ListGridEntry<Study> doTransform(Study study) throws Throwable {
+                    @Override
+                    public boolean supportCursor() {
 
-                ListGridEntry<Study> entry = new ListGridEntry<Study>(study);
-                entry.set("id", study.id());
-                entry.set("name", study.name());
-                entry.set("path", study.stepPath());
-                return entry;
-            }
-        }));
+                        return false;
+                    }
+
+                    @Override
+                    public void load(final Filter filter, final long start,
+                            final long end, final DataLoadHandler<Study> lh) {
+
+                        ObjectMessage<List<Study>> msg = new ExMethodStepStudyFind(
+                                _step.exMethodId(), _step.exMethodProute(),
+                                _mas.stepPath());
+                        msg.send(new ObjectMessageResponse<List<Study>>() {
+
+                            @Override
+                            public void responded(List<Study> studies) {
+
+                                if (studies != null) {
+                                    List<Study> rstudies = studies;
+                                    if (filter != null) {
+                                        List<Study> fstudies = new Vector<Study>();
+                                        for (Study a : studies) {
+                                            if (filter.matches(a)) {
+                                                fstudies.add(a);
+                                            }
+                                        }
+                                        rstudies = fstudies;
+                                    }
+                                    long total = rstudies.size();
+                                    int start1 = (int) start;
+                                    int end1 = (int) end;
+                                    if (start1 > 0 || end1 < rstudies.size()) {
+                                        if (start1 >= rstudies.size()) {
+                                            rstudies = null;
+                                        } else {
+                                            if (end1 > rstudies.size()) {
+                                                end1 = rstudies.size();
+                                            }
+                                            rstudies = rstudies.subList(start1,
+                                                    end1);
+                                        }
+                                    }
+                                    if (rstudies != null) {
+                                        if (rstudies.isEmpty()) {
+                                            rstudies = null;
+                                        }
+                                    }
+                                    lh.loaded(start1, end1, total, rstudies,
+                                            rstudies == null ? null
+                                                    : DataLoadAction.REPLACE);
+                                } else {
+                                    lh.loaded(0, 0, 0, null, null);
+                                }
+                            }
+                        });
+                    }
+                }, new Transformer<Study, ListGridEntry<Study>>() {
+
+                    @Override
+                    protected ListGridEntry<Study> doTransform(Study study)
+                            throws Throwable {
+
+                        ListGridEntry<Study> entry = new ListGridEntry<Study>(
+                                study);
+                        entry.set("id", study.id());
+                        entry.set("name", study.name());
+                        entry.set("path", study.stepPath());
+                        return entry;
+                    }
+                }));
         studyGrid.setCursorSize(500);
         studyGrid.addColumnDefn("id", "id");
         studyGrid.addColumnDefn("name", "name");
@@ -358,7 +374,8 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
         final Subscriber subscriber = new Subscriber() {
             @Override
             public List<arc.mf.event.Filter> systemEventFilters() {
-                return ListUtil.list(new arc.mf.event.Filter("pssd-object", _step.exMethodId(), DynamicBoolean.FALSE));
+                return ListUtil.list(new arc.mf.event.Filter("pssd-object",
+                        _step.exMethodId(), DynamicBoolean.FALSE));
             }
 
             @Override
@@ -390,9 +407,11 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
             public void onClick(ClickEvent event) {
                 btn.disable();
 
-                DObjectRef exmr = new DObjectRef(_step.exMethodId(), _mas.exMethod().proute(), false, false, -1);
+                DObjectRef exmr = new DObjectRef(_step.exMethodId(),
+                        _mas.exMethod().proute(), false, false, -1);
 
-                DObjectCreateAction action = new DObjectCreateAction(exmr, window()) {
+                DObjectCreateAction action = new DObjectCreateAction(exmr,
+                        window()) {
                     @Override
                     protected void finished() {
                         btn.enable();
@@ -421,9 +440,11 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
         tp.fitToParent();
         int psTabId = -1;
         int rsTabId = -1;
-        List<XmlElement> psmeta = step.psPublicMetadata();
-        if (psmeta != null && !psmeta.isEmpty()) {
-            Form psForm = XmlMetaForm.formFor(psmeta, FormEditMode.UPDATE);
+        XmlElement psMetaEditable = step.psPublicMetadataEditable();
+        List<XmlElement> psmes = psMetaEditable == null ? null
+                : psMetaEditable.elements();
+        if (psmes != null && !psmes.isEmpty()) {
+            Form psForm = XmlMetaForm.formFor(psmes, FormEditMode.UPDATE);
             psForm.addListener(new FormListener() {
 
                 @Override
@@ -439,9 +460,7 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
                 @Override
                 public void formValuesUpdated(Form f) {
                     XmlStringWriter w = new XmlStringWriter();
-                    w.push("ps-meta");
                     f.save(w);
-                    w.pop();
                     step.setPSPublicMetadata(w.document());
                 }
 
@@ -452,11 +471,14 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
             });
             addMustBeValid(psForm);
             psForm.render();
-            psTabId = tp.addTab("Subject", "", new ScrollPanel(psForm, ScrollPolicy.AUTO));
+            psTabId = tp.addTab("Subject", "",
+                    new ScrollPanel(psForm, ScrollPolicy.AUTO));
         }
-        List<XmlElement> rsmeta = step.rsPublicMetadata();
-        if (rsmeta != null && !rsmeta.isEmpty()) {
-            Form rsForm = XmlMetaForm.formFor(rsmeta, FormEditMode.UPDATE);
+        XmlElement rsMetaEditable = step.rsPublicMetadataEditable();
+        List<XmlElement> rsmes = rsMetaEditable == null ? null
+                : rsMetaEditable.elements();
+        if (rsmes != null && !rsmes.isEmpty()) {
+            Form rsForm = XmlMetaForm.formFor(rsmes, FormEditMode.UPDATE);
             rsForm.addListener(new FormListener() {
 
                 @Override
@@ -472,9 +494,7 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
                 @Override
                 public void formValuesUpdated(Form f) {
                     XmlStringWriter w = new XmlStringWriter();
-                    w.push("rs-meta");
                     f.save(w);
-                    w.pop();
                     step.setRSPublicMetadata(w.document());
                 }
 
@@ -485,7 +505,8 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
             });
             addMustBeValid(rsForm);
             rsForm.render();
-            rsTabId = tp.addTab("R-subject", "", new ScrollPanel(rsForm, ScrollPolicy.AUTO));
+            rsTabId = tp.addTab("R-subject", "",
+                    new ScrollPanel(rsForm, ScrollPolicy.AUTO));
         }
         if (psTabId > 0) {
             tp.setActiveTabById(psTabId);
@@ -510,8 +531,9 @@ public class StepEditForm extends ValidatedInterfaceComponent implements Asynchr
 
     @Override
     public void execute(final ActionListener l) {
-        ObjectMessage<Boolean> msg = (_step instanceof ExMethodSubjectStep) ? new ExMethodSubjectStepUpdate(
-                (ExMethodSubjectStep) _step) : new ExMethodStepUpdate(_step);
+        ObjectMessage<Boolean> msg = (_step instanceof ExMethodSubjectStep)
+                ? new ExMethodSubjectStepUpdate((ExMethodSubjectStep) _step)
+                : new ExMethodStepUpdate(_step);
         msg.send(new ObjectMessageResponse<Boolean>() {
 
             @Override

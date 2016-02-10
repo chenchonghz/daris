@@ -1,21 +1,24 @@
 package daris.client.model.exmethod;
 
-import java.util.List;
-
 import arc.mf.client.xml.XmlDoc;
 import arc.mf.client.xml.XmlElement;
 
 public class ExMethodSubjectStep extends ExMethodStep {
-    private List<XmlElement> _psMeta;
-    private List<XmlElement> _rsMeta;
+    private XmlElement _psMetaEditable;
+    private XmlElement _rsMetaEditable;
+    private XmlElement _psMeta;
+    private XmlElement _rsMeta;
 
-    public ExMethodSubjectStep(String exmId, String exmProute, String step, String name, State state, String notes,
-            List<XmlElement> psMeta, List<XmlElement> rsMeta, boolean editable) {
+    public ExMethodSubjectStep(String exmId, String exmProute, String step,
+            String name, State state, String notes, XmlElement psMetaEditable,
+            XmlElement rsMetaEditable, boolean editable) {
 
         super(exmId, exmProute, step, name, state, notes, editable);
 
-        _psMeta = psMeta;
-        _rsMeta = rsMeta;
+        _psMetaEditable = psMetaEditable;
+        _rsMetaEditable = rsMetaEditable;
+        _psMeta = null;
+        _rsMeta = null;
     }
 
     /**
@@ -23,9 +26,14 @@ public class ExMethodSubjectStep extends ExMethodStep {
      * 
      * @return
      */
-    public List<XmlElement> psPublicMetadata() {
+    public XmlElement psPublicMetadata() {
 
         return _psMeta;
+    }
+
+    public XmlElement psPublicMetadataEditable() {
+
+        return _psMetaEditable;
     }
 
     /**
@@ -33,30 +41,35 @@ public class ExMethodSubjectStep extends ExMethodStep {
      * 
      * @return
      */
-    public List<XmlElement> rsPublicMetadata() {
+    public XmlElement rsPublicMetadata() {
 
         return _rsMeta;
     }
 
-    public void setPSPublicMetadata(String psMeta) {
+    public XmlElement rsPublicMetadataEditable() {
 
+        return _rsMetaEditable;
+    }
+
+    public void setPSPublicMetadata(String psMeta) {
+        if (psMeta == null || psMeta.trim().equals("")) {
+            _psMeta = null;
+            return;
+        }
         try {
-            XmlElement psme = XmlDoc.parse(psMeta);
-            if (psme != null) {
-                _psMeta = psme.elements();
-            }
+            _psMeta = XmlDoc.parse("<ps-meta>" + psMeta + "</ps-meta>");
         } catch (Throwable e) {
 
         }
     }
 
     public void setRSPublicMetadata(String rsMeta) {
-
+        if (rsMeta == null || rsMeta.trim().equals("")) {
+            _rsMeta = null;
+            return;
+        }
         try {
-            XmlElement rsme = XmlDoc.parse(rsMeta);
-            if (rsme != null) {
-                _rsMeta = rsme.elements();
-            }
+            _rsMeta = XmlDoc.parse("<rs-meta>" + rsMeta + "</rs-meta>");
         } catch (Throwable e) {
 
         }

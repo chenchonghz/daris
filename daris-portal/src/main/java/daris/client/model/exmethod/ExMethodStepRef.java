@@ -12,7 +12,8 @@ public class ExMethodStepRef extends ObjectRef<ExMethodStep> {
     private String _exMethodProute;
     private String _stepPath;
 
-    public ExMethodStepRef(String exMethodId, String exMethodProute, String stepPath) {
+    public ExMethodStepRef(String exMethodId, String exMethodProute,
+            String stepPath) {
 
         _exMethodId = exMethodId;
         _exMethodProute = exMethodProute;
@@ -56,31 +57,33 @@ public class ExMethodStepRef extends ObjectRef<ExMethodStep> {
                 String notes = xe.value("ex-method/step/status/notes");
                 if (xe.element("ex-method/step/study") != null) {
                     String studyType = xe.value("ex-method/step/study/type");
-                    List<XmlElement> meta = xe.elements("ex-method/step/study/metadata");
-                    return new ExMethodStudyStep(_exMethodId, _exMethodProute, _stepPath, name, state == null ? null
-                            : State.parse(state), notes, studyType, meta, true);
+                    List<XmlElement> meta = xe
+                            .elements("ex-method/step/study/metadata");
+                    return new ExMethodStudyStep(_exMethodId, _exMethodProute,
+                            _stepPath, name,
+                            state == null ? null : State.parse(state), notes,
+                            studyType, meta, true);
                 } else if (xe.element("ex-method/step/subject") != null) {
-                    XmlElement pse = xe.element("ex-method/step/subject[@type='p']");
-                    List<XmlElement> psMeta = null;
-                    if (pse != null) {
-                        psMeta = pse.elements("metadata");
-                    }
-                    XmlElement rse = xe.element("ex-method/step/subject[@type='r']");
-                    List<XmlElement> rsMeta = null;
-                    if (rse != null) {
-                        rsMeta = rse.elements("metadata");
-                    }
-                    return new ExMethodSubjectStep(_exMethodId, _exMethodProute, _stepPath, name, state == null ? null
-                            : State.parse(state), notes, psMeta, rsMeta, true);
+                    XmlElement psMetaEditable = xe
+                            .element("ex-method/step/subject[@type='p']");
+                    XmlElement rsMetaEditable = xe
+                            .element("ex-method/step/subject[@type='r']");
+                    return new ExMethodSubjectStep(_exMethodId, _exMethodProute,
+                            _stepPath, name,
+                            state == null ? null : State.parse(state), notes,
+                            psMetaEditable, rsMetaEditable, true);
                 } else if (xe.element("ex-method/step/transform") != null) {
                     XmlElement te = xe.element("ex-method/step/transform");
-                    return new ExMethodTransformStep(te, _exMethodId, _exMethodProute, _stepPath, name,
-                            state == null ? null : State.parse(state), notes, true);
+                    return new ExMethodTransformStep(te, _exMethodId,
+                            _exMethodProute, _stepPath, name,
+                            state == null ? null : State.parse(state), notes,
+                            true);
                 }
             }
         }
-        throw new Exception("Failed to instantiate ExMethodStep: invalid XML element: " + xe == null ? "null"
-                : xe.toString());
+        throw new Exception(
+                "Failed to instantiate ExMethodStep: invalid XML element: "
+                        + xe == null ? "null" : xe.toString());
     }
 
     @Override

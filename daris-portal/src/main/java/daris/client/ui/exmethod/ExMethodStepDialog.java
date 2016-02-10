@@ -78,11 +78,11 @@ import daris.client.ui.transform.TransformForm;
 
 public class ExMethodStepDialog extends ValidatedInterfaceComponent {
 
-    public static final arc.gui.image.Image ICON_VALID = new arc.gui.image.Image(Resource.INSTANCE.tick12()
-            .getSafeUri().asString(), 12, 12);
+    public static final arc.gui.image.Image ICON_VALID = new arc.gui.image.Image(
+            Resource.INSTANCE.tick12().getSafeUri().asString(), 12, 12);
 
-    public static final arc.gui.image.Image ICON_INVALID = new arc.gui.image.Image(Resource.INSTANCE.cross12()
-            .getSafeUri().asString(), 12, 12);
+    public static final arc.gui.image.Image ICON_INVALID = new arc.gui.image.Image(
+            Resource.INSTANCE.cross12().getSafeUri().asString(), 12, 12);
 
     private MethodAndStep _mas;
     private ExMethodStep _step;
@@ -116,15 +116,16 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
         } else if (_step instanceof ExMethodStudyStep) {
             addStudyTab((ExMethodStudyStep) _step);
         } else if (_step instanceof ExMethodTransformStep) {
-            ((ExMethodTransformStep) _step).getTransformBuilder(new ObjectResolveHandler<TransformBuilder>() {
+            ((ExMethodTransformStep) _step).getTransformBuilder(
+                    new ObjectResolveHandler<TransformBuilder>() {
 
-                @Override
-                public void resolved(TransformBuilder tb) {
-                    if (tb != null) {
-                        addTransformTab(tb);
-                    }
-                }
-            });
+                        @Override
+                        public void resolved(TransformBuilder tb) {
+                            if (tb != null) {
+                                addTransformTab(tb);
+                            }
+                        }
+                    });
         }
 
     }
@@ -134,18 +135,21 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
         VerticalPanel vp = new VerticalPanel();
         vp.fitToParent();
 
-        _interfaceTabId = _tp.addTab("interface", "The interface elements for the step (name, state, notes).", vp);
+        _interfaceTabId = _tp.addTab("interface",
+                "The interface elements for the step (name, state, notes).",
+                vp);
         _tp.setActiveTabById(_interfaceTabId);
 
         Form form = new Form(FormEditMode.UPDATE);
         form.fitToParent();
-        Field<String> nameField = new Field<String>(new FieldDefinition("step", ConstantType.DEFAULT, "step name",
-                null, 1, 1));
+        Field<String> nameField = new Field<String>(new FieldDefinition("step",
+                ConstantType.DEFAULT, "step name", null, 1, 1));
         nameField.setInitialValue(_step.name(), false);
         form.add(nameField);
 
-        Field<State> stateField = new Field<State>(new FieldDefinition("state", new EnumerationType<State>(
-                State.values()), "state", null, 1, 1));
+        Field<State> stateField = new Field<State>(new FieldDefinition("state",
+                new EnumerationType<State>(State.values()), "state", null, 1,
+                1));
         stateField.setInitialValue(_step.state(), false);
         stateField.addListener(new FormItemListener<State>() {
             @Override
@@ -154,14 +158,15 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
             }
 
             @Override
-            public void itemPropertyChanged(FormItem<State> f, FormItem.Property property) {
+            public void itemPropertyChanged(FormItem<State> f,
+                    FormItem.Property property) {
 
             }
         });
         form.add(stateField);
 
-        Field<String> notesField = new Field<String>(
-                new FieldDefinition("notes", TextType.DEFAULT, "notes", null, 0, 1));
+        Field<String> notesField = new Field<String>(new FieldDefinition(
+                "notes", TextType.DEFAULT, "notes", null, 0, 1));
         // FieldRenderOptions fro = new FieldRenderOptions();
         // fro.setWidth100();
         // fro.setHeight100();
@@ -175,7 +180,8 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
             }
 
             @Override
-            public void itemPropertyChanged(FormItem<String> f, FormItem.Property p) {
+            public void itemPropertyChanged(FormItem<String> f,
+                    FormItem.Property p) {
 
             }
         });
@@ -199,8 +205,10 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
             @Override
             public void onClick(ClickEvent event) {
                 updateButton.disable();
-                ObjectMessage<Boolean> msg = (_step instanceof ExMethodSubjectStep) ? new ExMethodSubjectStepUpdate(
-                        (ExMethodSubjectStep) _step) : new ExMethodStepUpdate(_step);
+                ObjectMessage<Boolean> msg = (_step instanceof ExMethodSubjectStep)
+                        ? new ExMethodSubjectStepUpdate(
+                                (ExMethodSubjectStep) _step)
+                        : new ExMethodStepUpdate(_step);
                 msg.send(new ObjectMessageResponse<Boolean>() {
 
                     @Override
@@ -239,9 +247,11 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
         tp.fitToParent();
         int psTabId = -1;
         int rsTabId = -1;
-        List<XmlElement> psmeta = step.psPublicMetadata();
-        if (psmeta != null && !psmeta.isEmpty()) {
-            Form psForm = XmlMetaForm.formFor(psmeta, FormEditMode.UPDATE);
+        XmlElement psMetaEditable = step.psPublicMetadataEditable();
+        List<XmlElement> psmes = psMetaEditable == null ? null
+                : psMetaEditable.elements();
+        if (psmes != null && !psmes.isEmpty()) {
+            Form psForm = XmlMetaForm.formFor(psmes, FormEditMode.UPDATE);
             psForm.addListener(new FormListener() {
 
                 @Override
@@ -256,11 +266,7 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
 
                 @Override
                 public void formValuesUpdated(Form f) {
-                    XmlStringWriter w = new XmlStringWriter();
-                    w.push("ps-meta");
-                    f.save(w);
-                    w.pop();
-                    step.setPSPublicMetadata(w.document());
+                    savePSPublicMetadata(step, f);
                 }
 
                 @Override
@@ -270,11 +276,15 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
             });
             addMustBeValid(psForm);
             psForm.render();
-            psTabId = tp.addTab("public", null, new ScrollPanel(psForm, ScrollPolicy.AUTO));
+            savePSPublicMetadata(step, psForm);
+            psTabId = tp.addTab("public", null,
+                    new ScrollPanel(psForm, ScrollPolicy.AUTO));
         }
-        List<XmlElement> rsmeta = step.rsPublicMetadata();
-        if (rsmeta != null && !rsmeta.isEmpty()) {
-            Form rsForm = XmlMetaForm.formFor(rsmeta, FormEditMode.UPDATE);
+        XmlElement rsMetaEditable = step.rsPublicMetadataEditable();
+        List<XmlElement> rsmes = rsMetaEditable == null ? null
+                : rsMetaEditable.elements();
+        if (rsmes != null && !rsmes.isEmpty()) {
+            Form rsForm = XmlMetaForm.formFor(rsmes, FormEditMode.UPDATE);
             rsForm.addListener(new FormListener() {
 
                 @Override
@@ -289,11 +299,7 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
 
                 @Override
                 public void formValuesUpdated(Form f) {
-                    XmlStringWriter w = new XmlStringWriter();
-                    w.push("rs-meta");
-                    f.save(w);
-                    w.pop();
-                    step.setRSPublicMetadata(w.document());
+                    saveRSPublicMetadata(step, f);
                 }
 
                 @Override
@@ -303,7 +309,9 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
             });
             addMustBeValid(rsForm);
             rsForm.render();
-            rsTabId = tp.addTab("private", null, new ScrollPanel(rsForm, ScrollPolicy.AUTO));
+            saveRSPublicMetadata(step, rsForm);
+            rsTabId = tp.addTab("private", null,
+                    new ScrollPanel(rsForm, ScrollPolicy.AUTO));
         }
         if (psTabId > 0) {
             tp.setActiveTabById(psTabId);
@@ -326,8 +334,10 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
             @Override
             public void onClick(ClickEvent event) {
                 updateButton.disable();
-                ObjectMessage<Boolean> msg = (_step instanceof ExMethodSubjectStep) ? new ExMethodSubjectStepUpdate(
-                        (ExMethodSubjectStep) _step) : new ExMethodStepUpdate(_step);
+                ObjectMessage<Boolean> msg = (_step instanceof ExMethodSubjectStep)
+                        ? new ExMethodSubjectStepUpdate(
+                                (ExMethodSubjectStep) _step)
+                        : new ExMethodStepUpdate(_step);
                 msg.send(new ObjectMessageResponse<Boolean>() {
 
                     @Override
@@ -356,6 +366,18 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
         });
     }
 
+    private static void savePSPublicMetadata(ExMethodSubjectStep step, Form f) {
+        XmlStringWriter w = new XmlStringWriter();
+        f.save(w);
+        step.setPSPublicMetadata(w.document());
+    }
+
+    private static void saveRSPublicMetadata(ExMethodSubjectStep step, Form f) {
+        XmlStringWriter w = new XmlStringWriter();
+        f.save(w);
+        step.setRSPublicMetadata(w.document());
+    }
+
     private void addStudyTab(ExMethodStudyStep step) {
 
         VerticalPanel vp = new VerticalPanel();
@@ -363,82 +385,91 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
 
         _subjectTabId = _tp.addTab("study", null, vp);
 
-        final ListGrid<Study> studyGrid = new ListGrid<Study>(ScrollPolicy.AUTO);
+        final ListGrid<Study> studyGrid = new ListGrid<Study>(
+                ScrollPolicy.AUTO);
 
         vp.add(studyGrid);
 
-        studyGrid.setDataSource(new ListGridDataSource<Study>(new DataSource<Study>() {
-
-            @Override
-            public boolean isRemote() {
-
-                return true;
-            }
-
-            @Override
-            public boolean supportCursor() {
-
-                return false;
-            }
-
-            @Override
-            public void load(final Filter filter, final long start, final long end, final DataLoadHandler<Study> lh) {
-
-                ObjectMessage<List<Study>> msg = new ExMethodStepStudyFind(_step.exMethodId(), _step.exMethodProute(),
-                        _mas.stepPath());
-                msg.send(new ObjectMessageResponse<List<Study>>() {
+        studyGrid.setDataSource(
+                new ListGridDataSource<Study>(new DataSource<Study>() {
 
                     @Override
-                    public void responded(List<Study> studies) {
+                    public boolean isRemote() {
 
-                        if (studies != null) {
-                            List<Study> rstudies = studies;
-                            if (filter != null) {
-                                List<Study> fstudies = new Vector<Study>();
-                                for (Study a : studies) {
-                                    if (filter.matches(a)) {
-                                        fstudies.add(a);
-                                    }
-                                }
-                                rstudies = fstudies;
-                            }
-                            long total = rstudies.size();
-                            int start1 = (int) start;
-                            int end1 = (int) end;
-                            if (start1 > 0 || end1 < rstudies.size()) {
-                                if (start1 >= rstudies.size()) {
-                                    rstudies = null;
-                                } else {
-                                    if (end1 > rstudies.size()) {
-                                        end1 = rstudies.size();
-                                    }
-                                    rstudies = rstudies.subList(start1, end1);
-                                }
-                            }
-                            if (rstudies != null) {
-                                if (rstudies.isEmpty()) {
-                                    rstudies = null;
-                                }
-                            }
-                            lh.loaded(start1, end1, total, rstudies, rstudies == null ? null : DataLoadAction.REPLACE);
-                        } else {
-                            lh.loaded(0, 0, 0, null, null);
-                        }
+                        return true;
                     }
-                });
-            }
-        }, new Transformer<Study, ListGridEntry<Study>>() {
 
-            @Override
-            protected ListGridEntry<Study> doTransform(Study study) throws Throwable {
+                    @Override
+                    public boolean supportCursor() {
 
-                ListGridEntry<Study> entry = new ListGridEntry<Study>(study);
-                entry.set("id", study.id());
-                entry.set("name", study.name());
-                entry.set("path", study.stepPath());
-                return entry;
-            }
-        }));
+                        return false;
+                    }
+
+                    @Override
+                    public void load(final Filter filter, final long start,
+                            final long end, final DataLoadHandler<Study> lh) {
+
+                        ObjectMessage<List<Study>> msg = new ExMethodStepStudyFind(
+                                _step.exMethodId(), _step.exMethodProute(),
+                                _mas.stepPath());
+                        msg.send(new ObjectMessageResponse<List<Study>>() {
+
+                            @Override
+                            public void responded(List<Study> studies) {
+
+                                if (studies != null) {
+                                    List<Study> rstudies = studies;
+                                    if (filter != null) {
+                                        List<Study> fstudies = new Vector<Study>();
+                                        for (Study a : studies) {
+                                            if (filter.matches(a)) {
+                                                fstudies.add(a);
+                                            }
+                                        }
+                                        rstudies = fstudies;
+                                    }
+                                    long total = rstudies.size();
+                                    int start1 = (int) start;
+                                    int end1 = (int) end;
+                                    if (start1 > 0 || end1 < rstudies.size()) {
+                                        if (start1 >= rstudies.size()) {
+                                            rstudies = null;
+                                        } else {
+                                            if (end1 > rstudies.size()) {
+                                                end1 = rstudies.size();
+                                            }
+                                            rstudies = rstudies.subList(start1,
+                                                    end1);
+                                        }
+                                    }
+                                    if (rstudies != null) {
+                                        if (rstudies.isEmpty()) {
+                                            rstudies = null;
+                                        }
+                                    }
+                                    lh.loaded(start1, end1, total, rstudies,
+                                            rstudies == null ? null
+                                                    : DataLoadAction.REPLACE);
+                                } else {
+                                    lh.loaded(0, 0, 0, null, null);
+                                }
+                            }
+                        });
+                    }
+                }, new Transformer<Study, ListGridEntry<Study>>() {
+
+                    @Override
+                    protected ListGridEntry<Study> doTransform(Study study)
+                            throws Throwable {
+
+                        ListGridEntry<Study> entry = new ListGridEntry<Study>(
+                                study);
+                        entry.set("id", study.id());
+                        entry.set("name", study.name());
+                        entry.set("path", study.stepPath());
+                        return entry;
+                    }
+                }));
         studyGrid.setCursorSize(500);
         studyGrid.addColumnDefn("id", "id");
         studyGrid.addColumnDefn("name", "name");
@@ -447,7 +478,8 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
         final Subscriber subscriber = new Subscriber() {
             @Override
             public List<arc.mf.event.Filter> systemEventFilters() {
-                return ListUtil.list(new arc.mf.event.Filter("pssd-object", _step.exMethodId(), DynamicBoolean.FALSE));
+                return ListUtil.list(new arc.mf.event.Filter("pssd-object",
+                        _step.exMethodId(), DynamicBoolean.FALSE));
             }
 
             @Override
@@ -476,8 +508,10 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
             @Override
             public void onClick(ClickEvent event) {
                 addStudyButton.disable();
-                DObjectRef exmr = new DObjectRef(_step.exMethodId(), _mas.exMethod().proute(), false, false, -1);
-                DObjectCreateAction action = new DObjectCreateAction(exmr, window()) {
+                DObjectRef exmr = new DObjectRef(_step.exMethodId(),
+                        _mas.exMethod().proute(), false, false, -1);
+                DObjectCreateAction action = new DObjectCreateAction(exmr,
+                        window()) {
                     @Override
                     protected void finished() {
                         addStudyButton.enable();
@@ -514,32 +548,39 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
         _transformSP.setContent(_transformForm.gui());
 
         ButtonBar bb = new ButtonBar(Position.BOTTOM, Alignment.CENTER);
-        Button loadFromExistingButton = bb.addButton("Load parameter values from an existing transform");
+        Button loadFromExistingButton = bb
+                .addButton("Load parameter values from an existing transform");
         loadFromExistingButton.addClickHandler(new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {
-                new TransformSelectDialog(step, new TransformSelectDialog.SelectionHandler() {
+                new TransformSelectDialog(step,
+                        new TransformSelectDialog.SelectionHandler() {
 
                     @Override
                     public void selected(Transform transform) {
                         if (transform != null) {
                             tb.loadParameterValues(step, transform);
                             _transformForm = new TransformForm(tb);
-                            _transformForm.addChangeListener(new StateChangeListener() {
+                            _transformForm.addChangeListener(
+                                    new StateChangeListener() {
 
                                 @Override
                                 public void notifyOfChangeInState() {
-                                    _transformExecuteButton.setEnabled(_transformForm.valid().valid());
+                                    _transformExecuteButton.setEnabled(
+                                            _transformForm.valid().valid());
                                 }
                             });
                             _transformSP.setContent(_transformForm.gui());
-                            _transformExecuteButton.setEnabled(_transformForm.valid().valid());
-                            _transformForm.addChangeListener(new StateChangeListener() {
+                            _transformExecuteButton
+                                    .setEnabled(_transformForm.valid().valid());
+                            _transformForm.addChangeListener(
+                                    new StateChangeListener() {
 
                                 @Override
                                 public void notifyOfChangeInState() {
-                                    _transformExecuteButton.setEnabled(_transformForm.valid().valid());
+                                    _transformExecuteButton.setEnabled(
+                                            _transformForm.valid().valid());
                                 }
                             });
                         }
@@ -586,7 +627,8 @@ public class ExMethodStepDialog extends ValidatedInterfaceComponent {
 
             @Override
             public void notifyOfChangeInState() {
-                _transformExecuteButton.setEnabled(_transformForm.valid().valid());
+                _transformExecuteButton
+                        .setEnabled(_transformForm.valid().valid());
             }
         });
         vp.add(bb);

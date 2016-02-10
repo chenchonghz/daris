@@ -1,12 +1,9 @@
 package daris.client.model.exmethod.messages;
 
-import java.util.List;
-
-import daris.client.model.exmethod.ExMethodSubjectStep;
-
 import arc.mf.client.xml.XmlElement;
 import arc.mf.client.xml.XmlWriter;
 import arc.mf.object.ObjectMessage;
+import daris.client.model.exmethod.ExMethodSubjectStep;
 
 public class ExMethodSubjectStepUpdate extends ObjectMessage<Boolean> {
 
@@ -14,17 +11,18 @@ public class ExMethodSubjectStepUpdate extends ObjectMessage<Boolean> {
     private String _stepPath;
     private String _state;
     private String _notes;
-    private List<XmlElement> _psMeta;
-    private List<XmlElement> _rsMeta;
+    private XmlElement _psMeta;
+    private XmlElement _rsMeta;
 
     public ExMethodSubjectStepUpdate(ExMethodSubjectStep step) {
 
-        this(step.exMethodId(), step.stepPath(), step.state() == null ? null : step.state().toString(), step.notes(),
-                step.psPublicMetadata(), step.rsPublicMetadata());
+        this(step.exMethodId(), step.stepPath(),
+                step.state() == null ? null : step.state().toString(),
+                step.notes(), step.psPublicMetadata(), step.rsPublicMetadata());
     }
 
-    public ExMethodSubjectStepUpdate(String exMethodId, String stepPath, String state, String notes,
-            List<XmlElement> psMeta, List<XmlElement> rsMeta) {
+    public ExMethodSubjectStepUpdate(String exMethodId, String stepPath,
+            String state, String notes, XmlElement psMeta, XmlElement rsMeta) {
 
         _exMethodId = exMethodId;
         _stepPath = stepPath;
@@ -46,22 +44,10 @@ public class ExMethodSubjectStepUpdate extends ObjectMessage<Boolean> {
             w.add("notes", _notes);
         }
         if (_psMeta != null) {
-            if (_psMeta.size() > 0) {
-                w.push("ps-meta");
-                for (XmlElement me : _psMeta) {
-                    w.add(me);
-                }
-                w.pop();
-            }
+            w.add(_psMeta);
         }
         if (_rsMeta != null) {
-            if (_rsMeta.size() > 0) {
-                w.push("rs-meta");
-                for (XmlElement me : _rsMeta) {
-                    w.add(me);
-                }
-                w.pop();
-            }
+            w.add(_psMeta);
         }
     }
 
