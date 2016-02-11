@@ -52,6 +52,11 @@ import arc.xml.XmlWriter;
  * 
  */
 public class SvcObjectFind extends PluginService {
+	
+	
+	// White list of additional non PSSD doc types we want to present
+	private static String[] DocTypeWhiteList = {"mf-image", "mf-image-exif", "mf-image-iptc", "mf-image-tiff"};
+	        
 
     private Interface _defn;
 
@@ -1342,7 +1347,7 @@ public class SvcObjectFind extends PluginService {
         boolean pushMeta = true;
 
         for (XmlDoc.Element me : mes) {
-            if (isPssdObjectMeta(me, type)) {
+            if (isPssdObjectMeta(me, type) || isInWhiteList(me)) {
                 if (pushMeta) {
                     w.push("meta");
                     pushMeta = false;
@@ -1400,6 +1405,15 @@ public class SvcObjectFind extends PluginService {
         }
 
         return false;
+    }
+    
+    public static boolean isInWhiteList (XmlDoc.Element me) throws Throwable {
+    	String type = me.name();
+    	int n = DocTypeWhiteList.length;
+    	for (int i=0;i<n;i++) {
+    		if (type.equalsIgnoreCase(DocTypeWhiteList[i])) return true;
+    	}
+    	return false;
     }
 
     public static void addPssdProject(ServiceExecutor executor, String proute,
