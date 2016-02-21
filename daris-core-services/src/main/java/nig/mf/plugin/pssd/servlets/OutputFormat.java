@@ -3,7 +3,7 @@ package nig.mf.plugin.pssd.servlets;
 import arc.mf.plugin.http.HttpRequest;
 
 public enum OutputFormat {
-    xml, html;
+    xml, html, text;
 
     public static OutputFormat parse(String s) {
         if (s != null) {
