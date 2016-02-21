@@ -2,6 +2,8 @@ package daris.client.ui.dataset;
 
 import java.util.List;
 
+import com.google.gwt.event.logical.shared.AttachEvent;
+import com.google.gwt.event.logical.shared.AttachEvent.Handler;
 import com.google.gwt.user.client.ui.Frame;
 
 import arc.gui.form.Field;
@@ -9,6 +11,7 @@ import arc.gui.form.FieldDefinition;
 import arc.gui.form.FieldGroup;
 import arc.gui.form.Form;
 import arc.gui.form.FormEditMode;
+import arc.gui.gwt.widget.dialog.Dialog;
 import arc.gui.gwt.widget.panel.SimplePanel;
 import arc.mf.dtype.BooleanType;
 import arc.mf.dtype.ConstantType;
@@ -30,8 +33,11 @@ import daris.client.ui.object.DataContentFieldGroup;
 
 public class DataSetDetails extends DObjectDetails {
 
-    public static final String TAB_NAME_DICOM = "DICOM";
-    public static final String TAB_DESC_DICOM = "DICOM";
+    public static final String TAB_NAME_DICOM3D = "DICOM View(Papaya)";
+    public static final String TAB_DESC_DICOM3D = "Papaya DICOM Viewer";
+    public static final String TAB_NAME_DICOM2D = "DICOM View(Simple 2D)";
+    public static final String TAB_DESC_DICOM2D = "Simple 2D DICOM Viewer";
+
     public static final String TAB_NAME_NIFTI = "NIFTI";
     public static final String TAB_DESC_NIFTI = "NIFTI";
     public static final String TAB_NAME_CONTENT = "Content";
@@ -57,17 +63,45 @@ public class DataSetDetails extends DObjectDetails {
         }
         DataSet ds = (DataSet) object();
         if (ds instanceof DicomDataSet) {
+            // 3d viewer tab
+            SimplePanel sp3d = new SimplePanel();
+            final Frame frame3d = new Frame();
+            frame3d.setSize("100%", "100%");
+            sp3d.setContent(frame3d);
+            sp3d.fitToParent();
+            sp3d.addAttachHandler(new Handler() {
+                @Override
+                public void onAttachOrDetach(AttachEvent event) {
+                    // load dicom image until the sp is attached (tab is
+                    // activated).
+                    if (event.isAttached() && (frame3d.getUrl() == null
+                            || frame3d.getUrl().isEmpty())) {
+                        frame3d.setUrl(
+                                ((DicomDataSet) object()).papayaViewerUrl());
+                    }
+                }
+            });
+            setTab(TAB_NAME_DICOM3D, TAB_DESC_DICOM3D, sp3d);
+            // 2d viewer tab
+            SimplePanel sp2d = new SimplePanel();
+            final Frame frame2d = new Frame();
+            frame2d.setSize("100%", "100%");
+            sp2d.setContent(frame2d);
+            sp2d.fitToParent();
+            sp2d.addAttachHandler(new Handler() {
+                @Override
+                public void onAttachOrDetach(AttachEvent event) {
+                    // load dicom image until the sp is attached (tab is
+                    // activated).
+                    if (event.isAttached() && (frame2d.getUrl() == null
+                            || frame2d.getUrl().isEmpty())) {
+                        frame2d.setUrl(
+                                ((DicomDataSet) object()).simpleViewerUrl());
+                    }
+                }
+            });
+            setTab(TAB_NAME_DICOM2D, TAB_DESC_DICOM2D, sp2d);
 
-            DicomDataSet dds = (DicomDataSet) ds;
-            Frame frame = new Frame(dds.viewerUrl());
-            frame.setSize("100%", "100%");
-            SimplePanel sp = new SimplePanel();
-            sp.fitToParent();
-            sp.setContent(frame);
-            setTab(TAB_NAME_DICOM, TAB_DESC_DICOM, sp);
-            // setTab(TAB_NAME_DICOM, TAB_DESC_DICOM,
-            // new DicomSeriesViewer(dds.assetId(), dds.size(),
-            // InitialPosition.MIDDLE).widget());
         }
     }
 
