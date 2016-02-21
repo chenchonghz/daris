@@ -14,6 +14,7 @@ import daris.client.gui.LogonDialog;
 import daris.client.gui.MainWindow;
 import daris.client.model.object.events.PSSDObjectEvents;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 
 public class MainApp extends Application {
@@ -78,6 +79,7 @@ public class MainApp extends Application {
     @Override
     public void start(final Stage primaryStage) throws Exception {
         primaryStage.setOnCloseRequest(event -> {
+            Platform.exit();
             System.exit(0);
         });
         _logonDialog.show(new LogonResponseHandler() {
