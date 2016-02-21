@@ -195,7 +195,6 @@ public class SvcCollectionArchiveCreate extends PluginService {
         /*
          * initialize service output
          */
-        final Boolean completed = false;
         final PipedInputStream pis = new PipedInputStream();
         final PipedOutputStream pos = new PipedOutputStream(pis);
         PluginThread.executeAsync(SERVICE_NAME, new Runnable() {
@@ -232,7 +231,7 @@ public class SvcCollectionArchiveCreate extends PluginService {
                             os.close();
                         }
                         pos.close();
-                        pis.close();
+                        // NOTE: No need to close pis (If do that, it will cause problem: corrupt archive).
                     }
                 } catch (Throwable e) {
                     e.printStackTrace(System.out);
