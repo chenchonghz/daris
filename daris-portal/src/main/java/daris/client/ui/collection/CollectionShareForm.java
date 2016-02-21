@@ -93,9 +93,8 @@ public class CollectionShareForm extends CollectionArchiveOptionsForm
         /*
          * number of uses
          */
-        Field<Integer> usesField = new Field<Integer>(
-                new FieldDefinition("Uses", "uses",
-                        IntegerType.POSITIVE_ONE, null, null, 0, 1));
+        Field<Integer> usesField = new Field<Integer>(new FieldDefinition(
+                "Uses", "uses", IntegerType.POSITIVE_ONE, null, null, 0, 1));
         usesField.addListener(new FormItemListener<Integer>() {
 
             @Override
@@ -118,8 +117,9 @@ public class CollectionShareForm extends CollectionArchiveOptionsForm
         /*
          * expiry date
          */
-        Field<Date> expiryDateField = new Field<Date>(new FieldDefinition(
-                "Expiry date", "expiry date", DateType.DATE_ONLY, null, null, 0, 1));
+        Field<Date> expiryDateField = new Field<Date>(
+                new FieldDefinition("Expiry date", "expiry date",
+                        DateType.DATE_ONLY, null, null, 0, 1));
         expiryDateField.setInitialValue(_expiryDate);
         expiryDateField.addListener(new FormItemListener<Date>() {
 
@@ -159,29 +159,23 @@ public class CollectionShareForm extends CollectionArchiveOptionsForm
                 Session.domainName() + ":" + Session.userName());
         DObjectRef o = object();
         ArchiveOptions options = archiveOptions();
-        if (o.isDataSet() && !options.decompress()) {
-            w.push("service", new String[] { "name", "asset.get" });
-            w.add("cid", o.id());
-            w.pop();
-        } else {
-            w.push("service",
-                    new String[] { "name", "daris.collection.archive.create" });
-            w.add("cid", o.id());
-            w.add("parts", options.parts());
-            w.add("include-attachments", options.includeAttachments());
-            w.add("decompress", options.decompress());
-            w.add("format", options.archiveFormat());
-            Map<String, String> transcodes = options.transcodes();
-            if (transcodes != null) {
-                for (String from : transcodes.keySet()) {
-                    w.push("transcode");
-                    w.add("from", from);
-                    w.add("to", transcodes.get(from));
-                    w.pop();
-                }
+        w.push("service",
+                new String[] { "name", "daris.collection.archive.create" });
+        w.add("cid", o.id());
+        w.add("parts", options.parts());
+        w.add("include-attachments", options.includeAttachments());
+        w.add("decompress", options.decompress());
+        w.add("format", options.archiveFormat());
+        Map<String, String> transcodes = options.transcodes();
+        if (transcodes != null) {
+            for (String from : transcodes.keySet()) {
+                w.push("transcode");
+                w.add("from", from);
+                w.add("to", transcodes.get(from));
+                w.pop();
             }
-            w.pop();
         }
+        w.pop();
         w.add("min-token-length", 20);
         w.add("max-token-length", 20);
         w.add("grant-caller-transient-roles", true);
