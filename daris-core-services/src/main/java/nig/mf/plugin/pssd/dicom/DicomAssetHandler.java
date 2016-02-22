@@ -71,8 +71,10 @@ public class DicomAssetHandler implements DicomAssetEngine {
 		res.add(DicomElements.SERIES_NUMBER);
 		res.add(DicomElements.SERIES_SOP_INSTANCE_UID);
 		res.add(DicomElements.SERIES_DESCRIPTION);
-		res.add(DicomElements.SERIES_DATE);
-		res.add(DicomElements.SERIES_TIME);
+		res.add(DicomElements.SERIES_SDATE);
+		res.add(DicomElements.SERIES_STIME);
+	    res.add(DicomElements.SERIES_ADATE);
+        res.add(DicomElements.SERIES_ATIME);
 		res.add(DicomElements.INSTANCE_NB);
 		res.add(DicomElements.PROTOCOL_NAME);
 		res.add(DicomElements.IMAGE_COMMENT);

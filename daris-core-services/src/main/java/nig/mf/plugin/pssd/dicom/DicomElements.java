@@ -38,8 +38,10 @@ public class DicomElements {
 	public static final DataElementTag SERIES_UID = new DataElementTag(0x0020,0x000E);
 	public static final DataElementTag SERIES_NUMBER = new DataElementTag(0x0020,0x0011);
 	public static final DataElementTag SERIES_DESCRIPTION = new DataElementTag(0x0008,0x103E);
-	public static final DataElementTag SERIES_DATE = new DataElementTag(0x0008,0x0021);
-	public static final DataElementTag SERIES_TIME = new DataElementTag(0x0008,0x0031);
+	public static final DataElementTag SERIES_SDATE = new DataElementTag(0x0008,0x0021);
+	public static final DataElementTag SERIES_STIME = new DataElementTag(0x0008,0x0031);
+	public static final DataElementTag SERIES_ADATE = new DataElementTag(0x0008,0x0022);
+	public static final DataElementTag SERIES_ATIME = new DataElementTag(0x0008,0x0032);
 	public static final DataElementTag SERIES_SOP_INSTANCE_UID = new DataElementTag(0x0008,0x0018);
 	public static final DataElementTag ACQUISITION_NB = new DataElementTag(0x0020,0x0012);
 	public static final DataElementTag INSTANCE_NB = new DataElementTag(0x0020,0x0013);

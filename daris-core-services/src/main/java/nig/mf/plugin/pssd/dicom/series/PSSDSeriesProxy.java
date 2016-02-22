@@ -112,9 +112,13 @@ public class PSSDSeriesProxy extends SeriesProxy {
 			dm.add("protocol",prot);
 		}
 
-		if ( _sm.creationTime() != null ) {
-			dm.add("sdate",_sm.creationTime());
+		if ( _sm.seriesDateTime() != null ) {
+			dm.add("sdate",_sm.seriesDateTime());
 		}
+		
+	    if ( _sm.acquisitionDateTime() != null ) {
+	        dm.add("adate",_sm.acquisitionDateTime());
+	    }
 
 		if ( imin != -1 ) {
 			// MF 3.6.052 allows imin,imax>=0
