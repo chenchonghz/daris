@@ -1,5 +1,6 @@
 package daris.client.gui;
 
+import daris.client.app.Version;
 import daris.client.model.pkg.PackageRef;
 import daris.client.model.pkg.messages.PackageList;
 import javafx.application.Platform;
@@ -11,6 +12,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
@@ -33,9 +35,19 @@ public class AboutDialog {
         _pkgs = new SimpleListProperty<PackageRef>(
                 FXCollections.observableArrayList());
 
-        Text label = new Text("DaRIS");
-        label.setFont(new Font("Arial", 20));
-        label.setTextAlignment(TextAlignment.CENTER);
+        HBox hbox1 = new HBox();
+        hbox1.setAlignment(Pos.CENTER);
+        Label title = new Label("DaRIS Explorer");
+        title.setFont(new Font("Arial", 20));
+        title.setStyle("-fx-font-weight:bold");
+        title.setTextAlignment(TextAlignment.CENTER);
+        hbox1.getChildren().add(title);
+
+        HBox hbox2 = new HBox();
+        hbox2.setAlignment(Pos.CENTER);
+        Label version = new Label("Vesion: " + Version.VERSION);
+        version.setTextAlignment(TextAlignment.CENTER);
+        hbox2.getChildren().add(version);
 
         _table = new TableView<PackageRef>();
         _table.setEditable(false);
@@ -55,23 +67,23 @@ public class AboutDialog {
         _table.getColumns().add(versionCol);
         _table.itemsProperty().bind(_pkgs);
 
-        HBox hbox = new HBox();
-        hbox.setAlignment(Pos.CENTER_RIGHT);
+        HBox hbox3 = new HBox();
+        hbox3.setAlignment(Pos.CENTER_RIGHT);
         Button button = new Button("OK");
         button.setOnAction(event -> {
             if (_stage != null) {
                 _stage.close();
             }
         });
-        hbox.getChildren().add(button);
+        hbox3.getChildren().add(button);
 
         VBox vbox = new VBox();
         vbox.setFillWidth(true);
         vbox.setSpacing(5);
         vbox.setPadding(new Insets(20, 20, 20, 20));
-        vbox.getChildren().addAll(label, _table, hbox);
+        vbox.getChildren().addAll(hbox1, hbox2, _table, hbox3);
 
-        _scene = new Scene(vbox, 480, 320);
+        _scene = new Scene(vbox, 420, 360);
 
         new PackageList().send(pkgs -> {
             Platform.runLater(() -> {
@@ -85,7 +97,7 @@ public class AboutDialog {
 
         if (_stage == null) {
             _stage = new Stage();
-            _stage.setTitle("About DaRIS");
+            _stage.setTitle("About DaRIS Explorer");
             _stage.initStyle(StageStyle.UTILITY);
             _stage.initModality(Modality.APPLICATION_MODAL);
             _stage.setScene(_scene);
