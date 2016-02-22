@@ -1,15 +1,17 @@
 package daris.client.model.collection.messages;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import arc.mf.client.Output;
 import arc.mf.client.xml.XmlElement;
 import arc.mf.client.xml.XmlWriter;
 import arc.mf.object.Null;
 import arc.mf.object.ObjectMessage;
-import daris.client.model.IDUtil;
 import daris.client.model.collection.archive.ArchiveFormat;
+import daris.client.model.collection.archive.ArchiveOptions;
 import daris.client.model.collection.archive.Parts;
 import daris.client.model.object.DObjectRef;
 import daris.client.model.transcode.Transcode;
@@ -18,8 +20,7 @@ public class CollectionArchiveCreate extends ObjectMessage<Null> {
 
     public static final String SERVICE_NAME = "daris.collection.archive.create";
 
-
-    private String _cid;
+    private DObjectRef _o;
     private String _where;
     private Parts _parts;
     private boolean _includeAttachments;
@@ -27,22 +28,24 @@ public class CollectionArchiveCreate extends ObjectMessage<Null> {
     private ArchiveFormat _format;
     private Map<String, Transcode> _transcodes;
 
-    public CollectionArchiveCreate(String cid) {
-        _cid = cid;
-        _where = null;
-        _parts = Parts.all;
-        _includeAttachments = true;
-        _decompress = true;
-        _format = ArchiveFormat.aar;
-    }
-
-    public CollectionArchiveCreate(DObjectRef o) {
-        this(o.id());
+    public CollectionArchiveCreate(DObjectRef o,
+            ArchiveOptions archiveOptions) {
+        _o = o;
+        _parts = archiveOptions.parts();
+        _includeAttachments = archiveOptions.includeAttachments();
+        _decompress = archiveOptions.decompress();
+        _format = archiveOptions.archiveFormat();
+        if (archiveOptions.hasTranscodes()) {
+            Map<String, String> ts = archiveOptions.transcodes();
+            for (String k : ts.keySet()) {
+                addTranscode(k, ts.get(k));
+            }
+        }
     }
 
     @Override
     protected void messageServiceArgs(XmlWriter w) {
-        w.add("cid", _cid);
+        w.add("cid", _o.id());
         if (_where != null) {
             w.add("where", _where);
         }
@@ -79,7 +82,7 @@ public class CollectionArchiveCreate extends ObjectMessage<Null> {
         _format = format;
     }
 
-    public void setTranscode(String from, String to) {
+    public void addTranscode(String from, String to) {
         if (_transcodes == null) {
             _transcodes = new TreeMap<String, Transcode>();
         }
@@ -104,12 +107,28 @@ public class CollectionArchiveCreate extends ObjectMessage<Null> {
 
     @Override
     protected String objectTypeName() {
-        return IDUtil.typeNameFromId(_cid);
+        return _o.referentTypeName();
     }
 
     @Override
     protected String idToString() {
-        return _cid;
+        return _o.id();
+    }
+
+    @Override
+    protected int numberOfOutputs() {
+        return 1;
+    }
+
+    @Override
+    protected void process(Null o, List<Output> outputs) {
+        if (outputs != null) {
+            for (Output output : outputs) {
+                String filename = _o.referentTypeName() + "_" + _o.id() + "."
+                        + _format.name();
+                output.download(filename);
+            }
+        }
     }
 
 }

@@ -9,7 +9,6 @@ import arc.gui.form.Form;
 import arc.gui.form.FormItem.XmlType;
 import arc.mf.client.file.LocalFile;
 import arc.mf.dtype.BooleanType;
-import arc.mf.dtype.ConstantType;
 import arc.mf.dtype.DocType;
 import arc.mf.dtype.StringType;
 import arc.mf.object.ObjectResolveHandler;
