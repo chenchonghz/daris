@@ -223,7 +223,7 @@ public class DObjectBrowser extends ContainerWidget implements DTIReadyListener 
                     }
                 });
 
-        Menu downloadMenu = new Menu("Download") {
+        Menu downloadMenu = new Menu("Shopping Cart") {
             @Override
             public void preShow() {
                 if (arc.mf.client.dti.DTI.enabled()) {
