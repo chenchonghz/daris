@@ -383,9 +383,7 @@ public class SubjectHandler {
 		if (id!=null) dm.add("id", id);      
 		if (sex!=null) dm.add("sex", sex);
 		if (dob!=null) {
-			// Canonicalize the Time to 00:00:00 (meaingless for DOB)
-			String t = DateUtil.formatDate(dob, true, true);
-			dm.add("dob", t);
+			dm.addDateOnly("dob", dob);
 		}
 
 		if (name!=null) {
