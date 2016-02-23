@@ -296,7 +296,7 @@ public abstract class DataSet extends DObject {
         return sb.toString();
     }
 
-    public static String dicomViewerUrl(DicomDataSet dicomDataSet) {
+    public static String papayaDicomViewerUrl(DicomDataSet dicomDataSet) {
         if (dicomDataSet.data() == null && !RemoteServer.haveSession()) {
             return null;
         }
@@ -310,4 +310,20 @@ public abstract class DataSet extends DObject {
         sb.append(dicomDataSet.assetId());
         return sb.toString();
     }
+
+    public static String simpleDicomViewerUrl(DicomDataSet dicomDataSet) {
+        if (dicomDataSet.data() == null && !RemoteServer.haveSession()) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(com.google.gwt.user.client.Window.Location.getProtocol());
+        sb.append("//");
+        sb.append(com.google.gwt.user.client.Window.Location.getHost());
+        sb.append("/daris/dicom.mfjp?_skey=");
+        sb.append(RemoteServer.sessionId());
+        sb.append("&module=simpleview&id=");
+        sb.append(dicomDataSet.assetId());
+        return sb.toString();
+    }
+
 }

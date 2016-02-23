@@ -40,7 +40,7 @@ public class MainWindow {
 
         MenuItem aboutItem = new MenuItem("About DaRIS");
         aboutItem.setOnAction(event -> {
-            // TODO
+            new AboutDialog().show();
         });
         darisMenu.getItems().add(aboutItem);
 

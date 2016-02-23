@@ -43,6 +43,14 @@ public class ObjectServlet extends AbstractServlet {
     public static final String ARG_DISPOSITION = "disposition";
 
     public static final String ARG_FILENAME = "filename";
+    
+    public static final String ARG_ATYPE = "atype";
+    
+    public static final String ARG_PARTS = "parts";
+    
+    public static final String ARG_DECOMPRESS = "decompress";
+    
+    public static final String ARG_INCLUDE_ATTACHEMENTS = "include-attachments";
 
     public static final String TRANSCODE_VALUE_SEPARATOR = "-";
 

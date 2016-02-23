@@ -54,6 +54,10 @@ public class ArchiveOptions {
         return _transcodes;
     }
 
+    public boolean hasTranscodes() {
+        return _transcodes != null && !_transcodes.isEmpty();
+    }
+
     public void addTranscode(String from, String to) {
         if (_transcodes == null) {
             _transcodes = new TreeMap<String, String>();

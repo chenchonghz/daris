@@ -46,6 +46,7 @@ import daris.client.model.sc.ShoppingCartRef;
 import daris.client.ui.DObjectBrowser;
 import daris.client.ui.collection.CollectionShareForm;
 import daris.client.ui.object.action.DObjectCreateAction;
+import daris.client.ui.object.action.DObjectDownloadForm;
 import daris.client.ui.object.action.DObjectEditAction;
 import daris.client.ui.object.action.DerivedDataSetCreateAction;
 import daris.client.ui.object.action.DicomIngestAction;
@@ -308,54 +309,64 @@ public class DObjectGUI implements ObjectGUI {
             /*
              * download data-set directly using the servlet api
              */
-            if (ro.isDataSet()) {
-                final ActionEntry aeDownloadContent = new ActionEntry(
-                        ICON_DOWNLOAD, "Download", new Action() {
-
-                            @Override
-                            public void execute() {
-                                ro.resolve(new ObjectResolveHandler<DObject>() {
-
-                                    @Override
-                                    public void resolved(DObject o) {
-                                        String contentUrl = ((DataSet) o)
-                                                .contentDownloadUrl();
-                                        DownloadUtil.download(contentUrl);
-                                    }
-                                });
-
-                            }
-                        });
-                aeDownloadContent.disable();
-                ro.reset();
-                ro.resolve(new ObjectResolveHandler<DObject>() {
-
-                    @Override
-                    public void resolved(DObject o) {
-                        if (o == null) {
-                            return;
-                        }
-                        String contentUrl = ((DataSet) o).contentDownloadUrl();
-                        if (contentUrl != null) {
-                            aeDownloadContent.enable();
-                        }
-                    }
-                });
-                menu.add(aeDownloadContent);
-            }
-            /*
-             * Share URL
-             */
-            if (!ro.isProject()) {
-                // TODO: re-enable this when the underlying service/servlet is fixed. 
-//                menu.add(new ActionEntry(ICON_SHARE, "Generate Sharable Link",
-//                        new Action() {
+//            if (ro.isDataSet()) {
+//                final ActionEntry aeDownloadContent = new ActionEntry(
+//                        ICON_DOWNLOAD, "Download", new Action() {
 //
 //                            @Override
 //                            public void execute() {
-//                                new CollectionShareForm(ro).showDialog(w);
+//                                ro.resolve(new ObjectResolveHandler<DObject>() {
+//
+//                                    @Override
+//                                    public void resolved(DObject o) {
+//                                        String contentUrl = ((DataSet) o)
+//                                                .contentDownloadUrl();
+//                                        DownloadUtil.download(contentUrl);
+//                                    }
+//                                });
+//
 //                            }
-//                        }));
+//                        });
+//                aeDownloadContent.disable();
+//                ro.reset();
+//                ro.resolve(new ObjectResolveHandler<DObject>() {
+//
+//                    @Override
+//                    public void resolved(DObject o) {
+//                        if (o == null) {
+//                            return;
+//                        }
+//                        String contentUrl = ((DataSet) o).contentDownloadUrl();
+//                        if (contentUrl != null) {
+//                            aeDownloadContent.enable();
+//                        }
+//                    }
+//                });
+//                menu.add(aeDownloadContent);
+//            }
+            
+            if (!ro.isProject()) {
+                /*
+                 * Download as archive
+                 */
+                menu.add(new ActionEntry(ICON_DOWNLOAD, "Download", new Action(){
+                    @Override
+                    public void execute() {
+                                new DObjectDownloadForm(ro).showDialog(w);
+                    }
+                }));
+                
+                /*
+                 * Share URL
+                 */ 
+                menu.add(new ActionEntry(ICON_SHARE, "Generate Sharable Link",
+                        new Action() {
+
+                            @Override
+                            public void execute() {
+                                new CollectionShareForm(ro).showDialog(w);
+                            }
+                        }));
             }
             /*
              * add to shopping cart

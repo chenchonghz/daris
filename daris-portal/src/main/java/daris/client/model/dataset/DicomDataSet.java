@@ -26,8 +26,12 @@ public class DicomDataSet extends DerivedDataSet {
         return _size;
     }
 
-    public String viewerUrl() {
-        return DataSet.dicomViewerUrl(this);
+    public String papayaViewerUrl() {
+        return DataSet.papayaDicomViewerUrl(this);
+    }
+
+    public String simpleViewerUrl() {
+        return DataSet.simpleDicomViewerUrl(this);
     }
 
 }
