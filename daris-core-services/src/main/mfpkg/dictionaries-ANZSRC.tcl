@@ -60,7 +60,7 @@ proc createUpdateANZSRCPSSDDicts { } {
 #============================================================================#
 proc destroyPSSDDicts { } {
 
-	set dicts { daris:pssd.ANZSRC.Division-11.field-of-research }
+	set dicts { daris:pssd.ANZSRC.Division-11.field-of-research daris:pssd.ANZSRC.Division-06.field-of-research }
 	foreach dict $dicts {
 		if { [xvalue exists [dictionary.exists :name $dict]] == "true" } {
 			dictionary.destroy :name $dict
