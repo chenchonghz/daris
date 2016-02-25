@@ -892,6 +892,14 @@ asset.doc.type.update :create yes :type daris:pssd-project-governance \
     < \
       :description "A standard keyword for the research undertaken by this project" \
     > \
+   :element -name "ANZSRC-06" -type "enumeration" -index "true" -min-occurs "0" \
+    < \
+      :description "Standard ANZSRC Field of Research (Biological Sciences; 06) classification code." \
+      :restriction -base "enumeration" \
+      < \
+        :dictionary "daris:pssd.ANZSRC.Division-06.field-of-research" \
+      > \
+    > \
    :element -name "ANZSRC-11" -type "enumeration" -index "true" -min-occurs "0" \
     < \
       :description "Standard ANZSRC Field of Research (Medical and Health Sciences; 11) classification code." \

@@ -24,14 +24,32 @@ proc createDict_FieldOfResearch { } {
 	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1108 - Medical Microbiology"
 	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1109 - Neurosciences"
 	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1110 - Nursing"
-	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1111 - Nutrition and Dietetics"	
-	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1112 - Oncology and Carcinogenesis"		
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1111 - Nutrition and Dietetics"
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1112 - Oncology and Carcinogenesis"
 	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1113 - Ophthalmology and Optometry"	
-	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1114 - Paediatrics and Reproductive Medicine"	
-	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1115 - Pharmacology and Pharmaceutical Sciences"	
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1114 - Paediatrics and Reproductive Medicine"
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1115 - Pharmacology and Pharmaceutical Sciences"
 	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1116 - Medical Physiology"
-	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1117 - Public Health and Health Services"		
-	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1199 - Other Medical and Health Sciences"								
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1117 - Public Health and Health Services"
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-11.field-of-research "1199 - Other Medical and Health Sciences"
+	
+#
+# These are for division 06, BiologicalSciences
+#	
+	if { [xvalue exists [dictionary.exists :name daris:pssd.ANZSRC.Division-06.field-of-research]] == "false" } {
+		dictionary.create :name daris:pssd.ANZSRC.Division-06.field-of-research \
+		     :description "Standard Field of Research classification for Division 06 (Biological Sciences) for the Australian and New Zealand Standard Research Classification. See http://www.abs.gov.au/ausstats/abs@.nsf/0/4AE1B46AE2048A28CA25741800044242?opendocument" \
+		     :case-sensitive true
+	}
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-06.field-of-research "0601 - Biochemistry and Cell Biology"
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-06.field-of-research "0602 - Ecology"
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-06.field-of-research "0603 - Evolutionary Biology"
+    addDictionaryEntry  daris:pssd.ANZSRC.Division-06.field-of-research "0604 - Genetics"
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-06.field-of-research "0605 - Microbiology"
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-06.field-of-research "0606 - Physiology"
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-06.field-of-research "0607 - Plant Biology"
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-06.field-of-research "0608 - Zoology"
+	addDictionaryEntry  daris:pssd.ANZSRC.Division-06.field-of-research "0609 - Other Biological Sciences"
 }
 
 #============================================================================#
@@ -42,7 +60,7 @@ proc createUpdateANZSRCPSSDDicts { } {
 #============================================================================#
 proc destroyPSSDDicts { } {
 
-	set dicts { daris:pssd.ANZSRC.Division-11.field-of-research }
+	set dicts { daris:pssd.ANZSRC.Division-11.field-of-research daris:pssd.ANZSRC.Division-06.field-of-research }
 	foreach dict $dicts {
 		if { [xvalue exists [dictionary.exists :name $dict]] == "true" } {
 			dictionary.destroy :name $dict
