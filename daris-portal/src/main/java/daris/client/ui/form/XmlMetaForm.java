@@ -20,6 +20,7 @@ import arc.mf.client.xml.XmlElement;
 import arc.mf.client.xml.XmlWriter;
 import arc.mf.dtype.ConstantType;
 import arc.mf.dtype.DocType;
+import arc.mf.dtype.InvisibleConstantType;
 import arc.mf.dtype.StringType;
 import arc.mf.xml.defn.Attribute;
 import arc.mf.xml.defn.Element;
@@ -28,6 +29,13 @@ import arc.mf.xml.defn.Value;
 
 @SuppressWarnings("unchecked")
 public class XmlMetaForm {
+
+    private static boolean isHiddenDocAttribute(XmlAttribute attr) {
+        return attr != null && attr.name() != null
+                && ("id".equals(attr.name()) || "ns".equals(attr.name())
+                        || "tag".equals(attr.name())
+                        || attr.name().startsWith("xmlns:"));
+    }
 
     /**
      * Generate a form from a list of docs.
@@ -61,8 +69,9 @@ public class XmlMetaForm {
      */
     public static Form formFor(XmlElement root, FormEditMode mode) {
 
-        assert root.name().equals("meta") || root.name().equals("public") || root.name().equals("private")
-                || root.name().equals("method") || root.name().equals("subject");
+        assert root.name().equals("meta") || root.name().equals("public")
+                || root.name().equals("private") || root.name().equals("method")
+                || root.name().equals("subject");
         Form form = new Form(mode);
         form.setBooleanAs(BooleanAs.TRUE_FALSE);
         if (FormEditMode.READ_ONLY == mode) {
@@ -101,17 +110,20 @@ public class XmlMetaForm {
 
         assert form.editMode() != FormEditMode.READ_ONLY;
         assert doc.name().equals("metadata");
-        arc.mf.xml.defn.Element de = new arc.mf.xml.defn.Element(doc.value("@type"));
+        arc.mf.xml.defn.Element de = new arc.mf.xml.defn.Element(
+                doc.value("@type"));
         de.setMinOccurs(doc.value("@requirement").equals("optional") ? 0 : 1);
         de.setMaxOccurs(1);
         de.setDescription(doc.value("description"));
         de.setDataType(DocType.DEFAULT);
-        FieldGroup fg = new FieldGroup(new FieldDefinition(de.name(), de.type(), de.description(), null,
-                de.minOccurs(), de.maxOccurs())) {
+        FieldGroup fg = new FieldGroup(new FieldDefinition(de.name(), de.type(),
+                de.description(), null, de.minOccurs(), de.maxOccurs())) {
             public Validity valid() {
                 Validity v = super.valid();
-                if (v.valid() && !hasSomeValue() && definition().minOccurs() > 0 && !form().allowMissingMandatory()) {
-                    return new IsNotValid("The mandatory document " + definition().name() + " is missing some value.");
+                if (v.valid() && !hasSomeValue() && definition().minOccurs() > 0
+                        && !form().allowMissingMandatory()) {
+                    return new IsNotValid("The mandatory document "
+                            + definition().name() + " is missing some value.");
                 }
                 return v;
             }
@@ -126,8 +138,8 @@ public class XmlMetaForm {
                     // out since they cause trouble.
                     continue;
                 }
-                Field<String> af = new Field<String>(new FieldDefinition(attr.name(), ConstantType.DEFAULT, null, null,
-                        0, 1)) {
+                Field<String> af = new Field<String>(new FieldDefinition(
+                        attr.name(), ConstantType.DEFAULT, null, null, 0, 1)) {
                     @Override
                     public boolean hasSomeValue() {
                         // TODO: use Jason's library if he can do this in his
@@ -138,7 +150,8 @@ public class XmlMetaForm {
                     }
 
                     @Override
-                    public void save(XmlWriter w, Predicate<FormItem<String>> p) {
+                    public void save(XmlWriter w,
+                            Predicate<FormItem<String>> p) {
                         // TODO: use Jason's library if he can do this in his
                         // library.
                         // NOTE: since hasSomeValue() always returns false. This
@@ -148,7 +161,8 @@ public class XmlMetaForm {
                             if (definition().name() == null) {
                                 w.appValue(valueAsServerString());
                             } else {
-                                w.add(definition().name(), valueAsServerString());
+                                w.add(definition().name(),
+                                        valueAsServerString());
                             }
                         }
                     }
@@ -164,7 +178,8 @@ public class XmlMetaForm {
         if (xdes != null) {
             for (XmlElement xde : xdes) {
                 try {
-                    arc.mf.xml.defn.Element sde = new arc.mf.xml.defn.Element(de, xde);
+                    arc.mf.xml.defn.Element sde = new arc.mf.xml.defn.Element(
+                            de, xde);
                     de.add(sde, false);
                 } catch (Throwable t) {
                     UnhandledException.report(null, t);
@@ -179,48 +194,57 @@ public class XmlMetaForm {
 
         assert form.editMode() == FormEditMode.READ_ONLY;
         if (!doc.hasElements() && !doc.hasAttributes()) {
-            Field<String> f = new Field<String>(new FieldDefinition(doc.name(), StringType.DEFAULT, null, null, 0, 1));
+            Field<String> f = new Field<String>(new FieldDefinition(doc.name(),
+                    StringType.DEFAULT, null, null, 0, 1));
             if (doc.value() != null) {
                 f.setValue(doc.value(), false);
             }
             form.add(f);
         } else {
-            FieldGroup fg = new FieldGroup(new FieldDefinition(doc.name(), StringType.DEFAULT, null, null, 1, 1));
+            FieldGroup fg = new FieldGroup(new FieldDefinition(doc.name(),
+                    StringType.DEFAULT, null, null, 1, 1));
             List<XmlElement> ces = doc.elements();
             if (ces != null) {
                 for (XmlElement ce : ces) {
                     addToFieldSetForView(fg, ce);
                 }
             }
-            List<XmlAttribute> aes = doc.attributes();
-            if (aes != null) {
-                for (XmlAttribute ae : aes) {
-                    Field<String> af = new Field<String>(new FieldDefinition(ae.name(), StringType.DEFAULT, null,null,0,1));
-                    af.setValue(ae.value(),false);
+            List<XmlAttribute> as = doc.attributes();
+            if (as != null) {
+                for (XmlAttribute a : as) {
+                    if (isHiddenDocAttribute(a)) {
+                        continue;
+                    }
+                    Field<String> af = new Field<String>(new FieldDefinition(
+                            a.name(), StringType.DEFAULT, null, null, 0, 1));
+                    af.setValue(a.value(), false);
                     af.setXmlType(XmlType.ATTRIBUTE);
                     fg.add(af);
                 }
             }
-            if(doc.value()!=null){
-                Field<String> vf = new Field<String>(new FieldDefinition(null, StringType.DEFAULT, null,null,1,1));
-                vf.setValue(doc.value(),false);
+            if (doc.value() != null) {
+                Field<String> vf = new Field<String>(new FieldDefinition(null,
+                        StringType.DEFAULT, null, null, 1, 1));
+                vf.setValue(doc.value(), false);
                 fg.add(vf);
             }
             form.add(fg);
         }
     }
 
-    private static void addMembersToFieldSetForEdit(FieldSet fs, arc.mf.xml.defn.Element de) {
+    private static void addMembersToFieldSetForEdit(FieldSet fs,
+            arc.mf.xml.defn.Element de) {
         addMembersToFieldSetForEdit(fs, de, true);
     }
 
     @SuppressWarnings("rawtypes")
-    private static void addMembersToFieldSetForEdit(FieldSet fs, arc.mf.xml.defn.Element de,
-            boolean honourConstantFields) {
+    private static void addMembersToFieldSetForEdit(FieldSet fs,
+            arc.mf.xml.defn.Element de, boolean honourConstantFields) {
         List<Attribute> attrs = de.attributes();
         if (attrs != null) {
             for (Attribute a : attrs) {
-                FieldDefinition fd = new FieldDefinition(a.name(), a.type(), a.description(), null, a.minOccurs(), 1);
+                FieldDefinition fd = new FieldDefinition(a.name(), a.type(),
+                        a.description(), null, a.minOccurs(), 1);
                 Field af = new Field(fd);
                 af.setXmlType(FormItem.XmlType.ATTRIBUTE);
                 af.setVisible(a.visible());
@@ -243,7 +267,8 @@ public class XmlMetaForm {
                 }
 
                 if (fd == null) {
-                    fd = new FieldDefinition(se.name(), se.type(), se.description(), null, se.minOccurs(),
+                    fd = new FieldDefinition(se.name(), se.type(),
+                            se.description(), null, se.minOccurs(),
                             se.maxOccurs());
                 }
 
@@ -265,7 +290,8 @@ public class XmlMetaForm {
             // The value part at this point can only have a max value of 1 - the
             // multi-value
             // occurs at the outer definition.
-            FieldDefinition fd = new FieldDefinition(null, de.type(), de.description(), null, 1, 1);
+            FieldDefinition fd = new FieldDefinition(null, de.type(),
+                    de.description(), null, 1, 1);
             Field ef = new Field(fd);
             setValue(ef, de, honourConstantFields);
             fs.add(ef);
@@ -283,7 +309,8 @@ public class XmlMetaForm {
      * @param honourConstantFields
      */
     @SuppressWarnings("rawtypes")
-    private static void setValue(Field f, Node n, boolean honourConstantFields) {
+    private static void setValue(Field f, Node n,
+            boolean honourConstantFields) {
         Value v = n.value();
         if (v == null) {
             return;
@@ -298,7 +325,8 @@ public class XmlMetaForm {
 
     private static void addToFieldSetForView(FieldSet fs, XmlElement e) {
 
-        FieldDefinition fd = new FieldDefinition(e.name(), ConstantType.DEFAULT, null, null, 1, 1);
+        FieldDefinition fd = new FieldDefinition(e.name(), ConstantType.DEFAULT,
+                null, null, 1, 1);
         if (!e.hasAttributes() && !e.hasElements()) {
             // no sub-nodes
             Field<String> f = new Field<String>(fd);
@@ -314,8 +342,8 @@ public class XmlMetaForm {
         if (e.hasAttributes()) {
             // has attributes
             for (XmlAttribute a : e.attributes()) {
-                Field<String> af = new Field<String>(new FieldDefinition(a.name(), ConstantType.DEFAULT, null, null, 1,
-                        1));
+                Field<String> af = new Field<String>(new FieldDefinition(
+                        a.name(), ConstantType.DEFAULT, null, null, 1, 1));
                 af.setXmlType(XmlType.ATTRIBUTE);
                 if (a.value() != null) {
                     af.setValue(a.value());
@@ -325,7 +353,8 @@ public class XmlMetaForm {
         }
         if (e.value() != null) {
             // has value and (has attributes/sub-elements)
-            Field<String> f = new Field<String>(new FieldDefinition(null, ConstantType.DEFAULT, null, null, 1, 1));
+            Field<String> f = new Field<String>(new FieldDefinition(null,
+                    ConstantType.DEFAULT, null, null, 1, 1));
             f.setValue(e.value());
             fg.add(f);
         }
