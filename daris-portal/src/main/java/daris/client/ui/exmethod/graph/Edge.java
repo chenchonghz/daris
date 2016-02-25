@@ -49,11 +49,15 @@ public class Edge implements GraphicsObject<Port[]> {
         gc.setStrokeColour(Colours.BLACK);
         gc.setStrokeWidth(lineWidth);
         gc.setFillColour(Colours.BLACK);
-        GraphUtil.strokeArrowLine(gc, input().x(), input().y(), output().x(), output().y(), LineStyle.SOLID, false);
+        // GraphUtil.strokeArrowLine(gc, input().x(), input().y(), output().x(),
+        // output().y(), LineStyle.SOLID, false);
+        GraphUtil.strokeLine(gc, input().x(), input().y(), output().x(),
+                output().y(), LineStyle.SOLID);
     }
 
     @Override
-    public PrepareRequest prepare(Graphics2D gc, GraphicsObjectReadyHandler rh) {
+    public PrepareRequest prepare(Graphics2D gc,
+            GraphicsObjectReadyHandler rh) {
 
         rh.ready();
         return null;
