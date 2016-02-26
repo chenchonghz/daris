@@ -18,6 +18,7 @@ public class MRConvertTranscodeProvider implements DarisTranscodeProvider {
     private MRConvertTranscodeProvider() {
         _impls = new Vector<DarisTranscodeImpl>();
         _impls.add(new MRConvertDicom2Nifti());
+        _impls.add(new MRConvertDicom2AnalyzeNL());
     }
 
     @Override

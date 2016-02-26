@@ -8,13 +8,19 @@ public class MRConvert {
 
     public static final String CMD = "mrconvert";
 
-    public static String execute(File dir) throws Throwable {
+    public static String convertToNifti(File dir) throws Throwable {
         String inputDir = dir.getAbsolutePath();
         String outputFile = dir.getAbsolutePath() + "/mrconvert.nii";
-        return Exec.exec(CMD, "-datatype int16 " + inputDir + " "
-                + outputFile);
+        return Exec.exec(CMD, "-datatype int16 " + inputDir + " " + outputFile);
     }
-    
-    private MRConvert(){}
+
+    public static String convertToAnalyzeNL(File dir) throws Throwable {
+        String inputDir = dir.getAbsolutePath();
+        String outputFile = dir.getAbsolutePath() + "/mrconvert.img";
+        return Exec.exec(CMD, inputDir + " " + outputFile);
+    }
+
+    private MRConvert() {
+    }
 
 }

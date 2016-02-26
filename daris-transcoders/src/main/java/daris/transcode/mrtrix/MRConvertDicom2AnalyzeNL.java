@@ -7,16 +7,16 @@ import arc.mime.MimeType;
 import daris.transcode.DarisTranscodeImpl;
 import daris.transcode.DarisTranscodeProvider;
 
-public class MRConvertDicom2Nifti extends DarisTranscodeImpl {
+public class MRConvertDicom2AnalyzeNL extends DarisTranscodeImpl {
 
-    MRConvertDicom2Nifti() {
+    MRConvertDicom2AnalyzeNL() {
 
     }
 
     @Override
     protected void transcode(File dir, MimeType fromType, MimeType toType,
             Map<String, String> params) throws Throwable {
-        MRConvert.convertToNifti(dir);
+        MRConvert.convertToAnalyzeNL(dir);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class MRConvertDicom2Nifti extends DarisTranscodeImpl {
 
     @Override
     public String to() {
-        return nig.mf.MimeTypes.NIFTI_SERIES;
+        return nig.mf.MimeTypes.ANALYZE_SERIES_NL;
     }
 
     @Override
