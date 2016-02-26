@@ -66,8 +66,10 @@ public class DObjectGUI implements ObjectGUI {
             Resource.INSTANCE.refreshBlue16().getSafeUri().asString(), 16, 16);
     public static final Image ICON_CREATE = new Image(
             Resource.INSTANCE.add16().getSafeUri().asString(), 16, 16);
-    public static final Image ICON_DOWNLOAD = new Image(
+    public static final Image ICON_DOWNLOAD1 = new Image(
             Resource.INSTANCE.download16().getSafeUri().asString(), 16, 16);
+    public static final Image ICON_DOWNLOAD2 = new Image(
+            Resource.INSTANCE.downloadBig16().getSafeUri().asString(), 16, 16);
     public static final Image ICON_SHARE = new Image(
             Resource.INSTANCE.share16().getSafeUri().asString(), 16, 16);
     public static final Image ICON_EDIT = new Image(
@@ -309,47 +311,47 @@ public class DObjectGUI implements ObjectGUI {
             /*
              * download data-set directly using the servlet api
              */
-//            if (ro.isDataSet()) {
-//                final ActionEntry aeDownloadContent = new ActionEntry(
-//                        ICON_DOWNLOAD, "Download", new Action() {
-//
-//                            @Override
-//                            public void execute() {
-//                                ro.resolve(new ObjectResolveHandler<DObject>() {
-//
-//                                    @Override
-//                                    public void resolved(DObject o) {
-//                                        String contentUrl = ((DataSet) o)
-//                                                .contentDownloadUrl();
-//                                        DownloadUtil.download(contentUrl);
-//                                    }
-//                                });
-//
-//                            }
-//                        });
-//                aeDownloadContent.disable();
-//                ro.reset();
-//                ro.resolve(new ObjectResolveHandler<DObject>() {
-//
-//                    @Override
-//                    public void resolved(DObject o) {
-//                        if (o == null) {
-//                            return;
-//                        }
-//                        String contentUrl = ((DataSet) o).contentDownloadUrl();
-//                        if (contentUrl != null) {
-//                            aeDownloadContent.enable();
-//                        }
-//                    }
-//                });
-//                menu.add(aeDownloadContent);
-//            }
+            if (ro.isDataSet()) {
+                final ActionEntry aeDownloadContent = new ActionEntry(
+                        ICON_DOWNLOAD1, "Download content", new Action() {
+
+                            @Override
+                            public void execute() {
+                                ro.resolve(new ObjectResolveHandler<DObject>() {
+
+                                    @Override
+                                    public void resolved(DObject o) {
+                                        String contentUrl = ((DataSet) o)
+                                                .contentDownloadUrl();
+                                        DownloadUtil.download(contentUrl);
+                                    }
+                                });
+
+                            }
+                        });
+                aeDownloadContent.disable();
+                ro.reset();
+                ro.resolve(new ObjectResolveHandler<DObject>() {
+
+                    @Override
+                    public void resolved(DObject o) {
+                        if (o == null) {
+                            return;
+                        }
+                        String contentUrl = ((DataSet) o).contentDownloadUrl();
+                        if (contentUrl != null) {
+                            aeDownloadContent.enable();
+                        }
+                    }
+                });
+                menu.add(aeDownloadContent);
+            }
             
             if (!ro.isProject()) {
                 /*
                  * Download as archive
                  */
-                menu.add(new ActionEntry(ICON_DOWNLOAD, "Download", new Action(){
+                menu.add(new ActionEntry(ICON_DOWNLOAD2, "Download as archive...", new Action(){
                     @Override
                     public void execute() {
                                 new DObjectDownloadForm(ro).showDialog(w);

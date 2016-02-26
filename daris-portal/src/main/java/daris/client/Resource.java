@@ -148,6 +148,9 @@ public interface Resource extends ClientBundle {
 
     @Source("resource/16download_small.gif")
     ImageResource downloadSmall16();
+    
+    @Source("resource/16download_big.png")
+    ImageResource downloadBig16();
 
     @Source("resource/10edit.png")
     ImageResource edit10();
