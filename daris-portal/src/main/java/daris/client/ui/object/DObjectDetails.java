@@ -5,6 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gwt.dom.client.Style.BorderStyle;
+import com.google.gwt.dom.client.Style.FontWeight;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.Widget;
+
 import arc.gui.ValidatedInterfaceComponent;
 import arc.gui.form.Field;
 import arc.gui.form.FieldDefinition;
@@ -15,7 +20,6 @@ import arc.gui.form.FormItem;
 import arc.gui.form.FormItem.Property;
 import arc.gui.form.FormItemListener;
 import arc.gui.form.FormListener;
-import arc.gui.gwt.colour.Colour;
 import arc.gui.gwt.colour.RGB;
 import arc.gui.gwt.widget.BaseWidget;
 import arc.gui.gwt.widget.image.LinearGradient;
@@ -36,12 +40,6 @@ import arc.mf.dtype.ListOfType;
 import arc.mf.dtype.StringType;
 import arc.mf.dtype.TextType;
 import arc.mf.object.ObjectMessageResponse;
-
-import com.google.gwt.dom.client.Style.BorderStyle;
-import com.google.gwt.dom.client.Style.FontWeight;
-import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.Widget;
-
 import daris.client.model.IDUtil;
 import daris.client.model.dataobject.DataObject;
 import daris.client.model.dataset.DataSet;
@@ -68,10 +66,11 @@ import daris.client.util.StringUtil;
 
 public abstract class DObjectDetails extends ValidatedInterfaceComponent {
 
-    public static final Colour BORDER_COLOR = new RGB(0x97, 0x97, 0x97);
-    public static final Colour BORDER_COLOR_LIGHT = new RGB(0xcd, 0xcd, 0xcd);
-    public static final int BORDER_RADIUS = 5;
-    public static final int BORDER_WIDTH = 1;
+    // public static final Colour BORDER_COLOR = new RGB(0xcd, 0xcd, 0xcd);
+    // public static final Colour BORDER_COLOR_LIGHT = new RGB(0xef, 0xef,
+    // 0xef);
+    // public static final int BORDER_RADIUS = 5;
+    // public static final int BORDER_WIDTH = 1;
 
     public static final String TAB_NAME_INTERFACE = "Interface";
     public static final String TAB_DESC_INTERFACE = "Interface";
@@ -113,7 +112,8 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
         this(po, o, mode, mode.equals(FormEditMode.READ_ONLY) ? true : false);
     }
 
-    protected DObjectDetails(DObjectRef po, DObject o, FormEditMode mode, boolean showHeader) {
+    protected DObjectDetails(DObjectRef po, DObject o, FormEditMode mode,
+            boolean showHeader) {
 
         _o = o;
         _po = po;
@@ -127,7 +127,6 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
         }
         SimplePanel sp = new SimplePanel();
         sp.fitToParent();
-        sp.setBorder(BORDER_WIDTH, BORDER_COLOR);
         _tp = new TabPanel() {
             @Override
             protected void activated(int tabId) {
@@ -139,7 +138,6 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
             }
         };
         _tp.fitToParent();
-        _tp.setBodyBorder(2, BorderStyle.SOLID, new RGB(0x88, 0x88, 0x88));
 
         sp.setContent(_tp);
         _vp.add(sp);
@@ -151,8 +149,10 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
 
             Form aimForm = new Form(_mode);
             aimForm.setShowDescriptions(false);
-            Field<Boolean> allowIncompleteMeta = new Field<Boolean>(new FieldDefinition("allow-incomplete-metadata",
-                    BooleanType.DEFAULT_TRUE_FALSE, "allow incomplete metadata", null, 0, 1));
+            Field<Boolean> allowIncompleteMeta = new Field<Boolean>(
+                    new FieldDefinition("allow-incomplete-metadata",
+                            BooleanType.DEFAULT_TRUE_FALSE,
+                            "allow incomplete metadata", null, 0, 1));
             allowIncompleteMeta.setInitialValue(_o.allowIncompleteMeta());
             allowIncompleteMeta.addListener(new FormItemListener<Boolean>() {
 
@@ -165,7 +165,8 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
                 }
 
                 @Override
-                public void itemPropertyChanged(FormItem<Boolean> f, Property property) {
+                public void itemPropertyChanged(FormItem<Boolean> f,
+                        Property property) {
 
                 }
             });
@@ -262,10 +263,13 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
                 if (_tp.activeTabId() != -1) {
                     return;
                 }
-                DObjectRef prevObject = DObjectBrowser.get(false).prevSelected();
-                DObject.Type prevObjectType = prevObject == null ? null : prevObject.referentType();
+                DObjectRef prevObject = DObjectBrowser.get(false)
+                        .prevSelected();
+                DObject.Type prevObjectType = prevObject == null ? null
+                        : prevObject.referentType();
                 String prevObjectTabName = _prevObjectTabName;
-                if (prevObjectType != null && prevObjectType == _o.type() && prevObjectTabName != null
+                if (prevObjectType != null && prevObjectType == _o.type()
+                        && prevObjectTabName != null
                         && _tabIds.containsKey(prevObjectTabName)) {
                     _tp.setActiveTabById(_tabIds.get(prevObjectTabName));
                 } else {
@@ -319,7 +323,8 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
 
         appendToInterfaceTab(_interfaceVP);
 
-        setTab(TAB_NAME_INTERFACE, TAB_DESC_INTERFACE, new ScrollPanel(_interfaceVP, ScrollPolicy.AUTO));
+        setTab(TAB_NAME_INTERFACE, TAB_DESC_INTERFACE,
+                new ScrollPanel(_interfaceVP, ScrollPolicy.AUTO));
 
     }
 
@@ -334,8 +339,8 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
     protected void addToInterfaceForm(Form interfaceForm) {
 
         if (!_mode.equals(FormEditMode.CREATE)) {
-            Field<String> idField = new Field<String>(new FieldDefinition("id", ConstantType.DEFAULT, "object id",
-                    null, 1, 1));
+            Field<String> idField = new Field<String>(new FieldDefinition("id",
+                    ConstantType.DEFAULT, "object id", null, 1, 1));
             idField.setValue(_o.id());
             interfaceForm.add(idField);
             // @formatter:off
@@ -361,8 +366,10 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
             for (Tag tag : _o.tags()) {
                 tags.add(tag.name());
             }
-            Field<List<String>> tagsField = new Field<List<String>>(new FieldDefinition("tags", new ListOfType(
-                    ConstantType.DEFAULT), null, null, 0, 1));
+            Field<List<String>> tagsField = new Field<List<String>>(
+                    new FieldDefinition("tags",
+                            new ListOfType(ConstantType.DEFAULT), null, null, 0,
+                            1));
             tagsField.setValue(tags);
             interfaceForm.add(tagsField);
         }
@@ -375,7 +382,8 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
             name = "Subject name; generally do NOT use this for human subject details which  should be located in specialised and protected meta-data specified by the Method";
         }
 
-        Field<String> nameField = new Field<String>(new FieldDefinition("name", StringType.DEFAULT, name, null, min, 1));
+        Field<String> nameField = new Field<String>(new FieldDefinition("name",
+                StringType.DEFAULT, name, null, min, 1));
         nameField.setValue(_o.name());
         nameField.addListener(new FormItemListener<String>() {
             @Override
@@ -385,7 +393,8 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
             }
 
             @Override
-            public void itemPropertyChanged(FormItem<String> f, FormItem.Property p) {
+            public void itemPropertyChanged(FormItem<String> f,
+                    FormItem.Property p) {
 
             }
         });
@@ -395,8 +404,8 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
         if (_o instanceof Project) {
             ddesc = "Description of project; this may be harvested into meta-data registries (with your permission) so make as meaningful as possible.";
         }
-        Field<String> descField = new Field<String>(new FieldDefinition("description", TextType.DEFAULT, ddesc, null,
-                min, 1));
+        Field<String> descField = new Field<String>(new FieldDefinition(
+                "description", TextType.DEFAULT, ddesc, null, min, 1));
         descField.setValue(_o.description());
         descField.addListener(new FormItemListener<String>() {
 
@@ -407,7 +416,8 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
             }
 
             @Override
-            public void itemPropertyChanged(FormItem<String> f, FormItem.Property p) {
+            public void itemPropertyChanged(FormItem<String> f,
+                    FormItem.Property p) {
 
             }
         });
@@ -419,7 +429,8 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
         // Original filename. Only implemented for DataSets at this time, but is
         // generic and any PSSD object could have it.
         if (_mode == FormEditMode.READ_ONLY && _o.fileName() != null) {
-            Field<String> fnField = new Field<String>(new FieldDefinition("filename", StringType.DEFAULT,
+            Field<String> fnField = new Field<String>(new FieldDefinition(
+                    "filename", StringType.DEFAULT,
                     "Original name of file when uploaded.", null, min, 1));
             fnField.setValue(_o.fileName());
             fnField.addListener(new FormItemListener<String>() {
@@ -430,7 +441,8 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
                 }
 
                 @Override
-                public void itemPropertyChanged(FormItem<String> f, FormItem.Property p) {
+                public void itemPropertyChanged(FormItem<String> f,
+                        FormItem.Property p) {
 
                 }
             });
@@ -448,17 +460,18 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
         label.setFontSize(12);
         label.setFontWeight(FontWeight.BOLD);
 
-        CenteringPanel cp = new CenteringPanel(Axis.HORIZONTAL);
+        CenteringPanel cp = new CenteringPanel(Axis.BOTH);
         cp.setWidth100();
         cp.setHeight(20);
         cp.setMarginTop(1);
-        cp.setBorderTop(BORDER_WIDTH, BorderStyle.SOLID, BORDER_COLOR);
-        cp.setBorderLeft(BORDER_WIDTH, BorderStyle.SOLID, BORDER_COLOR);
-        cp.setBorderRight(BORDER_WIDTH, BorderStyle.SOLID, BORDER_COLOR);
-        cp.setBorderRadiusTopLeft(BORDER_RADIUS);
-        cp.setBorderRadiusTopRight(BORDER_RADIUS);
-        cp.setBackgroundImage(new LinearGradient(LinearGradient.Orientation.TOP_TO_BOTTOM, BORDER_COLOR_LIGHT,
-                BORDER_COLOR));
+        cp.setBorderTop(1, BorderStyle.SOLID, new RGB(221, 221, 221));
+        cp.setBorderLeft(1, BorderStyle.SOLID, new RGB(221, 221, 221));
+        cp.setBorderRight(1, BorderStyle.SOLID, new RGB(221, 221, 221));
+        cp.setBorderRadiusTopLeft(5);
+        cp.setBorderRadiusTopRight(5);
+        cp.setBackgroundImage(
+                new LinearGradient(LinearGradient.Orientation.TOP_TO_BOTTOM,
+                        new RGB(221, 221, 221), new RGB(204, 204, 204)));
         cp.add(label);
         return cp;
     }
@@ -467,10 +480,12 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
 
         // No parent object provided, must be viewing or editing.
         assert !mode.equals(FormEditMode.CREATE);
-        return detailsFor(new DObjectRef(IDUtil.getParentId(o.id()), o.proute(), false, true, -1), o, mode);
+        return detailsFor(new DObjectRef(IDUtil.getParentId(o.id()), o.proute(),
+                false, true, -1), o, mode);
     }
 
-    public static DObjectDetails detailsFor(DObjectRef po, DObject o, FormEditMode mode) {
+    public static DObjectDetails detailsFor(DObjectRef po, DObject o,
+            FormEditMode mode) {
 
         if (o instanceof Repository) {
             return new RepositoryDetails((Repository) o, mode);
@@ -487,7 +502,8 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
         } else if (o instanceof DataObject) {
             return new DataObjectDetails(po, (DataObject) o, mode);
         } else {
-            throw new AssertionError("Failed to instantiate details(GUI) for object " + o.id());
+            throw new AssertionError(
+                    "Failed to instantiate details(GUI) for object " + o.id());
         }
     }
 
@@ -514,25 +530,28 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
             return;
         }
 
-        new ObjectThumbnailGet(_o.id(), false).send(new ObjectMessageResponse<Thumbnail>() {
+        new ObjectThumbnailGet(_o.id(), false)
+                .send(new ObjectMessageResponse<Thumbnail>() {
 
-            @Override
-            public void responded(Thumbnail t) {
-                if (t == null) {
-                    removeTab(TAB_NAME_THUMBNAIL);
-                    return;
-                }
-                ThumbnailPanel thumbnailPanel = new ThumbnailPanel(t);
-                thumbnailPanel.fitToParent();
-                setTab(TAB_NAME_THUMBNAIL, TAB_DESC_THUMBNAIL, thumbnailPanel);
-            }
-        });
+                    @Override
+                    public void responded(Thumbnail t) {
+                        if (t == null) {
+                            removeTab(TAB_NAME_THUMBNAIL);
+                            return;
+                        }
+                        ThumbnailPanel thumbnailPanel = new ThumbnailPanel(t);
+                        thumbnailPanel.fitToParent();
+                        setTab(TAB_NAME_THUMBNAIL, TAB_DESC_THUMBNAIL,
+                                thumbnailPanel);
+                    }
+                });
     }
 
     private void updateMetaTab() {
 
         if ((_mode == FormEditMode.READ_ONLY && _o.meta() == null)
-                || (_mode != FormEditMode.READ_ONLY && _o.metaForEdit() == null)) {
+                || (_mode != FormEditMode.READ_ONLY
+                        && _o.metaForEdit() == null)) {
             removeTab(TAB_NAME_METADATA);
             return;
         }
@@ -578,7 +597,8 @@ public abstract class DObjectDetails extends ValidatedInterfaceComponent {
             _metaForm = XmlMetaForm.formFor(_o.meta(), _mode);
         }
         _metaForm.render();
-        setTab(TAB_NAME_METADATA, TAB_DESC_METADATA, new ScrollPanel(_metaForm, ScrollPolicy.AUTO));
+        setTab(TAB_NAME_METADATA, TAB_DESC_METADATA,
+                new ScrollPanel(_metaForm, ScrollPolicy.AUTO));
     }
 
 }

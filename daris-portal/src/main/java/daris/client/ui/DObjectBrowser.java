@@ -542,7 +542,7 @@ public class DObjectBrowser extends ContainerWidget implements DTIReadyListener 
             }
         });
 
-        HorizontalSplitPanel hsp = new HorizontalSplitPanel();
+        HorizontalSplitPanel hsp = new HorizontalSplitPanel(5);
         hsp.add(_ovsp);
         hsp.add(_dv);
         hsp.fitToParent();

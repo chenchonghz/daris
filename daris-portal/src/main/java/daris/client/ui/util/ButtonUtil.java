@@ -55,7 +55,7 @@ public class ButtonUtil {
         MenuButton mb = menu != null ? new MenuButton(menu) : new MenuButton(new Menu());
         String mbText = label != null ? label : menu.label();
         mb.setHTML("<div><img src=\"" + icon + "\" style=\"width:" + iconWidth + "px;height:" + iconHeight
-                + "px;vertical-align:middle\"><span style=\"\">&nbsp;" + mbText + "</span></div>");
+                + "px;vertical-align:middle\"><span style=\"font-size:1em;\">&nbsp;" + mbText + "</span></div>");
         return mb;
     }
 
