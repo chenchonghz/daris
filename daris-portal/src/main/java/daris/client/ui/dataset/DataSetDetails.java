@@ -2,6 +2,7 @@ package daris.client.ui.dataset;
 
 import java.util.List;
 
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.event.logical.shared.AttachEvent.Handler;
 import com.google.gwt.user.client.ui.Frame;
@@ -11,7 +12,6 @@ import arc.gui.form.FieldDefinition;
 import arc.gui.form.FieldGroup;
 import arc.gui.form.Form;
 import arc.gui.form.FormEditMode;
-import arc.gui.gwt.widget.dialog.Dialog;
 import arc.gui.gwt.widget.panel.SimplePanel;
 import arc.mf.dtype.BooleanType;
 import arc.mf.dtype.ConstantType;
@@ -66,6 +66,7 @@ public class DataSetDetails extends DObjectDetails {
             // 3d viewer tab
             SimplePanel sp3d = new SimplePanel();
             final Frame frame3d = new Frame();
+            frame3d.getElement().getStyle().setBorderWidth(0, Unit.PX);
             frame3d.setSize("100%", "100%");
             sp3d.setContent(frame3d);
             sp3d.fitToParent();
@@ -85,6 +86,7 @@ public class DataSetDetails extends DObjectDetails {
             // 2d viewer tab
             SimplePanel sp2d = new SimplePanel();
             final Frame frame2d = new Frame();
+            frame2d.getElement().getStyle().setBorderWidth(0, Unit.PX);
             frame2d.setSize("100%", "100%");
             sp2d.setContent(frame2d);
             sp2d.fitToParent();
@@ -116,6 +118,7 @@ public class DataSetDetails extends DObjectDetails {
                         .equals(ds.data().logicalMimeType()))) {
             String niftiViewerUrl = DataSet.niftiViewerUrl(ds);
             Frame frame = new Frame(niftiViewerUrl);
+            frame.getElement().getStyle().setBorderWidth(0, Unit.PX);
             frame.setSize("100%", "100%");
             SimplePanel sp = new SimplePanel();
             sp.fitToParent();
