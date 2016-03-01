@@ -1,12 +1,14 @@
 package daris.client;
 
 import arc.gui.gwt.dnd.DragAndDrop;
+import arc.mf.client.dti.DTIReadyListener;
 import arc.mf.client.plugin.Plugin;
 import arc.mf.client.util.ObjectUtil;
 import arc.mf.client.util.ThrowableUtil;
 import arc.mf.desktop.plugin.PluginApplication;
 import arc.mf.event.SystemEventChannel;
 import arc.mf.model.asset.task.AssetTasks;
+import arc.mf.model.service.task.ServiceTasks;
 import arc.mf.model.shopping.events.ShoppingEvents;
 import arc.mf.session.DefaultLoginDialog;
 import arc.mf.session.LoginDialog;
@@ -52,13 +54,14 @@ public class DaRIS implements EntryPoint {
                 /*
                  * Stand-alone Application
                  */
-                final boolean noDTI = ObjectUtil.equals(Window.Location.getParameter("dti"), "no");
+                final boolean noDTI = ObjectUtil
+                        .equals(Window.Location.getParameter("dti"), "no");
                 BrowserCheck.check(noDTI);
                 LoginDialog dlg = new DefaultLoginDialog();
                 dlg.setTitle("DaRIS");
                 dlg.setVersion(Version.VERSION);
                 Session.setLoginDialog(dlg);
-//                Session.setLoginDialog(DaRISLoginDialog.get());
+                // Session.setLoginDialog(DaRISLoginDialog.get());
                 Session.initialize(new SessionHandler() {
 
                     @Override
@@ -85,9 +88,9 @@ public class DaRIS implements EntryPoint {
             }
         } catch (Throwable t) {
             String st = ThrowableUtil.stackTrack(t);
-            com.google.gwt.user.client.Window.alert("Error: "
-                    + t.getClass().getName() + ": " + t.getMessage() + ": "
-                    + st);
+            com.google.gwt.user.client.Window
+                    .alert("Error: " + t.getClass().getName() + ": "
+                            + t.getMessage() + ": " + st);
         }
 
     }
@@ -146,6 +149,31 @@ public class DaRIS implements EntryPoint {
          * Starts announcement monitor
          */
         AnnouncementMonitor.start();
+
+        /*
+         * Declare DTI tasks (if
+         */
+        arc.mf.client.dti.DTI.addReadyListener(new DTIReadyListener() {
+
+            @Override
+            public void failed(String reason) {
+
+            }
+
+            @Override
+            public void activated() {
+                /*
+                 * Declare DTI tasks
+                 */
+                AssetTasks.declare();
+                ServiceTasks.declare();
+            }
+
+            @Override
+            public void deactivated() {
+
+            }
+        });
 
         if (Plugin.isStandaloneApplication()) {
             /*
