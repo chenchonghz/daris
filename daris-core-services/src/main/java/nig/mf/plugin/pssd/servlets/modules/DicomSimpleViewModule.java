@@ -100,7 +100,7 @@ public class DicomSimpleViewModule implements Module {
         sb.append("<title>DaRIS Simple DICOM Viewer</title>\n");
         sb.append("<style type=\"text/css\">\n");
         sb.append(
-                "html, body { font-size:90%; font-family:'Lucida Grande',Verdana,Arial,Sans-Serif; width:100%; height:100%; margin:0; padding:0; }\n");
+                "html, body { font-size:9pt; font-family:'Lucida Grande',Verdana,Arial,Sans-Serif; width:100%; height:100%; margin:0; padding:0; }\n");
         sb.append(
                 "div#container { display:flex; flex-flow:column; height:100%; }\n");
         sb.append("div#content { flex: 1 1 auto; overflow:hidden; }\n");
