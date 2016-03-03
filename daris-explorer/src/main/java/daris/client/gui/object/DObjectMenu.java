@@ -1,6 +1,8 @@
 package daris.client.gui.object;
 
 import arc.mf.desktop.ui.util.ApplicationThread;
+import daris.client.gui.dicom.action.DicomSendAction;
+import daris.client.gui.dicom.action.DicomSendDialog;
 import daris.client.gui.object.action.DownloadAction;
 import daris.client.model.dataset.DataSet;
 import daris.client.model.dicom.messages.CollectionDicomDatasetCount;
@@ -14,6 +16,7 @@ import daris.client.model.repository.Repository;
 import daris.client.model.repository.RepositoryRef;
 import daris.client.model.study.Study;
 import daris.client.model.subject.Subject;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
 
@@ -63,7 +66,9 @@ public class DObjectMenu {
                         });
                         destroyMenuItem.setDisable(true);
                         new CanDestroy(oo).send(canDestroy -> {
-                            destroyMenuItem.setDisable(!canDestroy);
+                            Platform.runLater(() -> {
+                                destroyMenuItem.setDisable(!canDestroy);
+                            });
                         });
                         items.add(idx, destroyMenuItem);
                         idx++;
@@ -73,7 +78,8 @@ public class DObjectMenu {
                         MenuItem dicomSendMenuItem = new MenuItem(
                                 menuItemTextFor("Send DICOM data in", oo));
                         dicomSendMenuItem.setOnAction(e -> {
-                            // TODO: DicomSendGUI
+                            new DicomSendDialog();
+                            new DicomSendAction(null, o).execute();
                         });
                         items.add(idx, dicomSendMenuItem);
                         idx++;

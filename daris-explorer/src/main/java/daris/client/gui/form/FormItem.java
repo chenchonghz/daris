@@ -76,19 +76,51 @@ public class FormItem<T> implements MustBeValid, StateChangeListener {
         _itemsProperty.addListener(new ListChangeListener<FormItem<?>>() {
             @Override
             public void onChanged(Change<? extends FormItem<?>> c) {
-                if (c.getAddedSize() > 0 || c.getRemovedSize() > 0) {
-                    _changed = true;
+                while (c.next()) {
+                    if (c.getAddedSize() > 0 || c.getRemovedSize() > 0) {
+                        _changed = true;
+                    }
+                    updateValidity();
+                    notifyOfChangeInState();
                 }
-                updateValidity();
-                notifyOfChangeInState();
             }
         });
+        _validityProperty = new SimpleObjectProperty<Validity>();
+        _validityProperty.set(IsNotValid.INSTANCE);
+        updateValidity();
+    }
+
+    public FormItem(FormItem<?> parent, DataType dataType, String name,
+            String displayName, String description, int minOccurs,
+            int maxOccurs, XmlNodeType xmlNodeType, T initialValue) {
+        this(null, parent, dataType, name, displayName, description, minOccurs,
+                maxOccurs, xmlNodeType, initialValue);
+    }
+
+    public FormItem(DataType dataType, String name, String displayName,
+            String description, int minOccurs, int maxOccurs,
+            XmlNodeType xmlNodeType, T initialValue) {
+        this(null, null, dataType, name, displayName, description, minOccurs,
+                maxOccurs, xmlNodeType, initialValue);
     }
 
     public FormItem(Form form, FormItem<?> parent, DataType dataType,
             String name, String displayName, String description, int minOccurs,
             int maxOccurs) {
         this(form, parent, dataType, name, displayName, description, minOccurs,
+                maxOccurs, XmlNodeType.ELEMENT, null);
+    }
+
+    public FormItem(FormItem<?> parent, DataType dataType, String name,
+            String displayName, String description, int minOccurs,
+            int maxOccurs) {
+        this(null, parent, dataType, name, displayName, description, minOccurs,
+                maxOccurs, XmlNodeType.ELEMENT, null);
+    }
+
+    public FormItem(DataType dataType, String name, String displayName,
+            String description, int minOccurs, int maxOccurs) {
+        this(null, null, dataType, name, displayName, description, minOccurs,
                 maxOccurs, XmlNodeType.ELEMENT, null);
     }
 
@@ -236,10 +268,18 @@ public class FormItem<T> implements MustBeValid, StateChangeListener {
     }
 
     public void add(FormItem<?> formItem) {
+        formItem.setForm(this.form());
+        formItem.setParent(this);
         _itemsProperty.add(formItem);
     }
 
     public void remove(FormItem<?> formItem) {
+        formItem.setForm(null);
+        formItem.setParent(null);
         _itemsProperty.remove(formItem);
+    }
+
+    public ObservableList<FormItem<?>> getItems() {
+        return _itemsProperty.get();
     }
 }

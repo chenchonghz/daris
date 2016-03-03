@@ -1,11 +1,11 @@
 package daris.client.gui.form;
 
 import java.io.File;
-import java.util.Iterator;
 
 import arc.gui.ValidatedInterfaceComponent;
 import arc.mf.dtype.DataType;
 import arc.mf.dtype.DocType;
+import daris.client.gui.form.FormItem.XmlNodeType;
 import daris.client.gui.form.field.BooleanFormField;
 import daris.client.gui.form.field.DoubleFormField;
 import daris.client.gui.form.field.EmailAddressFormField;
@@ -20,93 +20,97 @@ import daris.client.gui.form.field.TextFormField;
 import daris.client.gui.form.field.UneditableStringFormField;
 import daris.client.gui.form.field.UrlFormField;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Window;
 
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class Form extends ValidatedInterfaceComponent {
 
+    private FormItem<?> _rootItem;
+    private StackPane _stackPane;
     private TreeTableView<FormItem<?>> _ttv;
 
     public Form() {
-        _ttv = new TreeTableView<FormItem<?>>(
-                new FormTreeItem(this, null, null));
-        _ttv.getRoot().setExpanded(true);
-        _ttv.setShowRoot(false);
+        _stackPane = new StackPane();
+        _rootItem = new FormItem(this, null, DocType.DEFAULT, "root", null,
+                null, 1, 1, XmlNodeType.ELEMENT, null);
+    }
 
-        TreeTableColumn<FormItem<?>, String> nameColumn = new TreeTableColumn<FormItem<?>, String>(
-                "Name");
-        nameColumn.setPrefWidth(250);
-        nameColumn.setCellValueFactory(param -> {
-            String displayName = param.getValue().getValue().displayName();
-            return new ReadOnlyStringWrapper(displayName);
-        });
-        nameColumn.setStyle("-fx-font-weight: bold;");
+    public void render() {
+        if (_ttv == null) {
+            _ttv = new TreeTableView<FormItem<?>>(
+                    new FormTreeItem(this, null, _rootItem));
+            _ttv.getRoot().setExpanded(true);
+            _ttv.setShowRoot(false);
 
-        TreeTableColumn<FormItem<?>, FormItem<?>> valueColumn = new TreeTableColumn<FormItem<?>, FormItem<?>>(
-                "Value");
-        valueColumn.setPrefWidth(500);
-        valueColumn.setCellValueFactory(param -> {
-            return param.getValue().valueProperty();
-        });
-        valueColumn.setCellFactory(column -> {
-            return new FormTreeTableCell();
-        });
-        _ttv.getColumns().add(nameColumn);
-        _ttv.getColumns().add(valueColumn);
+            TreeTableColumn<FormItem<?>, String> nameColumn = new TreeTableColumn<FormItem<?>, String>(
+                    "Name");
+            nameColumn.setPrefWidth(250);
+            nameColumn.setCellValueFactory(param -> {
+                String displayName = param.getValue().getValue().displayName();
+                return new ReadOnlyStringWrapper(displayName);
+            });
+            nameColumn.setStyle("-fx-font-weight: bold;");
+
+            TreeTableColumn<FormItem<?>, FormItem<?>> valueColumn = new TreeTableColumn<FormItem<?>, FormItem<?>>(
+                    "Value");
+            valueColumn.setPrefWidth(500);
+            valueColumn.setCellValueFactory(param -> {
+                return param.getValue().valueProperty();
+            });
+            valueColumn.setCellFactory(column -> {
+                return new FormTreeTableCell();
+            });
+            _ttv.getColumns().add(nameColumn);
+            _ttv.getColumns().add(valueColumn);
+            _stackPane.getChildren().setAll(_ttv);
+
+            FormTreeItem rootTreeItem = (FormTreeItem) _ttv.getRoot();
+            ObservableList<FormItem<?>> items = _rootItem.getItems();
+            if (items != null) {
+                for (FormItem<?> item : items) {
+                    addTreeItem(rootTreeItem, item);
+                }
+            }
+        }
     }
 
     @Override
     public Node gui() {
-        return _ttv;
+        return _stackPane;
     }
 
     public Window window() {
-        Scene scene = _ttv.getScene();
+        Scene scene = _stackPane.getScene();
         if (scene != null) {
             return scene.getWindow();
         }
         return null;
     }
 
-    public FormTreeItem add(FormTreeItem parent, FormItem<?> formItem) {
-        FormTreeItem formTreeItem = new FormTreeItem(this, parent, formItem);
-        parent.getChildren().add(formTreeItem);
-        return formTreeItem;
-    }
-
-    public FormTreeItem add(FormItem<?> formItem) {
-        FormTreeItem formTreeItem = add((FormTreeItem) _ttv.getRoot(),
+    private FormTreeItem addTreeItem(FormTreeItem parentTreeItem,
+            FormItem<?> formItem) {
+        FormTreeItem treeItem = new FormTreeItem(this, parentTreeItem,
                 formItem);
-        addMustBeValid(formItem);
-        return formTreeItem;
-    }
-
-    public void remove(FormTreeItem parent, FormItem<?> formItem) {
-        for (Iterator<TreeItem<FormItem<?>>> it = parent.getChildren()
-                .iterator(); it.hasNext();) {
-            TreeItem<FormItem<?>> treeItem = it.next();
-            if (formItem.equals(treeItem.getValue())) {
-                it.remove();
-                formItem.setForm(null);
-                formItem.setParent(null);
-                FormItem<?> parentItem = parent.getValue();
-                if (parentItem == null) {
-                    // It is a top level item as parent is root.
-                    removeMustBeValid(formItem);
-                } else {
-                    parentItem.remove(formItem);
-                }
+        parentTreeItem.getChildren().add(treeItem);
+        ObservableList<FormItem<?>> items = formItem.getItems();
+        if (items != null) {
+            for (FormItem<?> item : items) {
+                addTreeItem(treeItem, item);
             }
         }
+        return treeItem;
     }
 
-    public void remove(FormItem<?> formItem) {
-        remove((FormTreeItem) _ttv.getRoot(), formItem);
+    public void add(FormItem<?> formItem) {
+        _rootItem.add(formItem);
     }
 
     private static class FormTreeTableCell
@@ -128,7 +132,6 @@ public class Form extends ValidatedInterfaceComponent {
             }
         }
 
-        @SuppressWarnings({ "unchecked", "rawtypes" })
         private Node graphicFor(FormItem<?> item) {
             DataType type = item.dataType();
             if (_graphic == null) {
@@ -179,12 +182,16 @@ public class Form extends ValidatedInterfaceComponent {
         private FormTreeItem(Form form, FormTreeItem parent,
                 FormItem<?> formItem) {
             super(formItem);
-            formItem.setForm(form);
-            FormItem<?> parentItem = parent.getValue();
-            formItem.setParent(parentItem);
-            if (parentItem != null) {
-                parentItem.add(formItem);
-            }
+            setExpanded(true);
+            // FormItem<?> parentItem = parent == null ? null :
+            // parent.getValue();
+            // if (formItem != null) {
+            // formItem.setForm(form);
+            // formItem.setParent(parentItem);
+            // if (parentItem != null) {
+            // parentItem.add(formItem);
+            // }
+            // }
         }
     }
 

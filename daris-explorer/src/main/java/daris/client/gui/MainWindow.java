@@ -1,6 +1,8 @@
 package daris.client.gui;
 
 import daris.client.app.MainApp;
+import daris.client.gui.object.DObjectMenu;
+import daris.client.gui.object.DObjectMenu.MenuUpdateAction;
 import daris.client.gui.object.DObjectViewPane;
 import daris.client.gui.object.tree.DObjectTreeView;
 import daris.client.model.object.DObjectRef;
@@ -29,49 +31,14 @@ public class MainWindow {
     private DObjectTreeView _nav;
     private DObjectViewPane _dv;
     private StatusPane _statusPane;
+    private Menu _actionMenu;
 
     public MainWindow() {
 
         _borderPane = new BorderPane();
 
-        MenuBar menuBar = new MenuBar();
+        MenuBar menuBar = createMenuBar();
 
-        Menu darisMenu = new Menu("DaRIS");
-
-        MenuItem aboutItem = new MenuItem("About DaRIS");
-        aboutItem.setOnAction(event -> {
-            new AboutDialog().show();
-        });
-        darisMenu.getItems().add(aboutItem);
-
-        darisMenu.getItems().add(new SeparatorMenuItem());
-
-        MenuItem preferencesItem = new MenuItem("Preferences");
-        preferencesItem.setOnAction(event -> {
-            // TODO
-        });
-        darisMenu.getItems().add(preferencesItem);
-
-        darisMenu.getItems().add(new SeparatorMenuItem());
-
-        MenuItem exitItem = new MenuItem("Exit");
-        exitItem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                System.exit(0);
-            }
-        });
-        if (OSUtils.isMac()) {
-            exitItem.setAccelerator(new KeyCodeCombination(KeyCode.Q,
-                    KeyCombination.META_DOWN));
-        } else {
-            exitItem.setAccelerator(new KeyCodeCombination(KeyCode.Q,
-                    KeyCombination.CONTROL_DOWN));
-        }
-        darisMenu.getItems().add(exitItem);
-
-        menuBar.getMenus().add(darisMenu);
-        menuBar.setUseSystemMenuBar(true);
         _borderPane.setTop(menuBar);
 
         _dv = new DObjectViewPane();
@@ -87,8 +54,11 @@ public class MainWindow {
 
         _nav.getSelectionModel().selectedItemProperty()
                 .addListener((observable, oldValue, newValue) -> {
-                    _dv.displayObject(
-                            newValue == null ? null : newValue.getValue());
+                    DObjectRef o = newValue == null ? null
+                            : newValue.getValue();
+                    DObjectMenu.updateMenuItems(_actionMenu.getItems(),
+                            MenuUpdateAction.REPLACE, o);
+                    _dv.displayObject(o);
                 });
 
         SplitPane splitPane = new SplitPane();
@@ -105,6 +75,68 @@ public class MainWindow {
         _scene = new Scene(_borderPane, 1280.0, 800.0, Color.WHITE);
         _scene.getStylesheets().add(MainApp.css());
 
+    }
+
+    private MenuBar createMenuBar() {
+        MenuBar menuBar = new MenuBar();
+        Menu darisMenu = createDarisMenu();
+        menuBar.getMenus().add(darisMenu);
+        _actionMenu = createActionMenu();
+        menuBar.getMenus().add(_actionMenu);
+        menuBar.setUseSystemMenuBar(true);
+        return menuBar;
+    }
+
+    private Menu createDarisMenu() {
+        Menu darisMenu = new Menu("DaRIS");
+        /*
+         * DaRIS -> About
+         */
+        MenuItem aboutItem = new MenuItem("About DaRIS");
+        aboutItem.setOnAction(event -> {
+            new AboutDialog().show();
+        });
+        darisMenu.getItems().add(aboutItem);
+
+        darisMenu.getItems().add(new SeparatorMenuItem());
+
+        /*
+         * DaRIS -> Preferences
+         */
+        MenuItem preferencesItem = new MenuItem("Preferences");
+        preferencesItem.setOnAction(event -> {
+            // TODO
+        });
+        darisMenu.getItems().add(preferencesItem);
+
+        darisMenu.getItems().add(new SeparatorMenuItem());
+
+        /*
+         * DaRIS -> Exit;
+         */
+        MenuItem exitItem = new MenuItem("Exit");
+        exitItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                System.exit(0);
+            }
+        });
+        if (OSUtils.isMac()) {
+            exitItem.setAccelerator(new KeyCodeCombination(KeyCode.Q,
+                    KeyCombination.META_DOWN));
+        } else {
+            exitItem.setAccelerator(new KeyCodeCombination(KeyCode.Q,
+                    KeyCombination.CONTROL_DOWN));
+        }
+        darisMenu.getItems().add(exitItem);
+        return darisMenu;
+    }
+
+    private Menu createActionMenu() {
+        Menu actionMenu = new Menu("Action");
+        MenuItem test = new MenuItem("test");
+        actionMenu.getItems().add(test);
+        return actionMenu;
     }
 
     public void show(Stage stage) {
