@@ -1,8 +1,9 @@
 package daris.client.gui.object;
 
 import arc.mf.desktop.ui.util.ApplicationThread;
+import daris.client.gui.dialog.ActionDialog;
 import daris.client.gui.dicom.action.DicomSendAction;
-import daris.client.gui.dicom.action.DicomSendDialog;
+import daris.client.gui.dicom.action.DicomSendForm;
 import daris.client.gui.object.action.DownloadAction;
 import daris.client.model.dataset.DataSet;
 import daris.client.model.dicom.messages.CollectionDicomDatasetCount;
@@ -78,8 +79,10 @@ public class DObjectMenu {
                         MenuItem dicomSendMenuItem = new MenuItem(
                                 menuItemTextFor("Send DICOM data in", oo));
                         dicomSendMenuItem.setOnAction(e -> {
-                            new DicomSendDialog();
-                            new DicomSendAction(null, o).execute();
+//                            new DicomSendDialog();
+                            DicomSendForm f = new DicomSendForm(o);
+                            new ActionDialog(f,f, 640, 400).show();
+//                              new DicomSendAction(null, o).execute();
                         });
                         items.add(idx, dicomSendMenuItem);
                         idx++;

@@ -12,6 +12,7 @@ public class IntegerFormField extends IntegerField {
                 ((IntegerType) formItem.dataType()).maximum(),
                 formItem.value());
         _formItem = formItem;
+        setValue(_formItem.value());
         valueProperty().addListener((obs, ov, nv) -> {
             _formItem.setValue(nv);
         });

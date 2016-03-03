@@ -34,7 +34,7 @@ public abstract class NumberField<T extends Number> extends TextField
     protected abstract void updateValue(String text);
 
     protected static boolean isEmptyOrNull(String v) {
-        return v != null && !v.trim().equals("");
+        return v == null || v.trim().equals("");
     }
 
     public T value() {
@@ -43,7 +43,7 @@ public abstract class NumberField<T extends Number> extends TextField
 
     public void setValue(T v) {
         _valueProperty.setValue(v);
-        setText(v.toString());
+        setText(v==null?null:v.toString());
     }
 
     public ObjectProperty<T> valueProperty() {

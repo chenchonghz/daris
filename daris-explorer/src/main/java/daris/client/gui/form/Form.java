@@ -116,8 +116,6 @@ public class Form extends ValidatedInterfaceComponent {
     private static class FormTreeTableCell
             extends TreeTableCell<FormItem<?>, FormItem<?>> {
 
-        private Node _graphic;
-
         public FormTreeTableCell() {
 
         }
@@ -133,47 +131,45 @@ public class Form extends ValidatedInterfaceComponent {
         }
 
         private Node graphicFor(FormItem<?> item) {
+            Node graphic = null;
             DataType type = item.dataType();
-            if (_graphic == null) {
-                if (type instanceof DocType) {
-                    _graphic = null;
-                } else if (type instanceof arc.mf.dtype.IntegerType) {
-                    _graphic = new IntegerFormField((FormItem<Integer>) item);
-                } else if (type instanceof arc.mf.dtype.LongType) {
-                    _graphic = new LongFormField((FormItem<Long>) item);
-                } else if (type instanceof arc.mf.dtype.FloatType) {
-                    _graphic = new FloatFormField((FormItem<Float>) item);
-                } else if (type instanceof arc.mf.dtype.DoubleType) {
-                    _graphic = new DoubleFormField((FormItem<Double>) item);
-                } else if (type instanceof arc.mf.dtype.BooleanType) {
-                    _graphic = new BooleanFormField((FormItem<Boolean>) item);
-                } else if (type instanceof arc.mf.dtype.EnumerationType) {
-                    _graphic = new EnumerationFormField(item);
-                } else if ((type instanceof arc.mf.dtype.AssetType)
-                        || (type instanceof arc.mf.dtype.AssetIdType)
-                        || (type instanceof arc.mf.dtype.ConstantType)
-                        || (type instanceof arc.mf.dtype.CiteableIdType)
-                        || (type instanceof arc.mf.dtype.IdentifierType)
-                        || (type instanceof arc.mf.dtype.ReplicaIdType)) {
-                    _graphic = new UneditableStringFormField(item, null);
-                } else if (type instanceof arc.mf.dtype.DateType) {
+            if (type instanceof DocType) {
+                graphic = null;
+            } else if (type instanceof arc.mf.dtype.IntegerType) {
+                graphic = new IntegerFormField((FormItem<Integer>) item);
+            } else if (type instanceof arc.mf.dtype.LongType) {
+                graphic = new LongFormField((FormItem<Long>) item);
+            } else if (type instanceof arc.mf.dtype.FloatType) {
+                graphic = new FloatFormField((FormItem<Float>) item);
+            } else if (type instanceof arc.mf.dtype.DoubleType) {
+                graphic = new DoubleFormField((FormItem<Double>) item);
+            } else if (type instanceof arc.mf.dtype.BooleanType) {
+                graphic = new BooleanFormField((FormItem<Boolean>) item);
+            } else if (type instanceof arc.mf.dtype.EnumerationType) {
+                graphic = new EnumerationFormField(item);
+            } else if ((type instanceof arc.mf.dtype.AssetType)
+                    || (type instanceof arc.mf.dtype.AssetIdType)
+                    || (type instanceof arc.mf.dtype.ConstantType)
+                    || (type instanceof arc.mf.dtype.CiteableIdType)
+                    || (type instanceof arc.mf.dtype.IdentifierType)
+                    || (type instanceof arc.mf.dtype.ReplicaIdType)) {
+                graphic = new UneditableStringFormField(item, null);
+            } else if (type instanceof arc.mf.dtype.DateType) {
 
-                } else if (type instanceof arc.mf.dtype.StringType) {
-                    _graphic = new StringFormField((FormItem<String>) item);
-                } else if (type instanceof arc.mf.dtype.TextType) {
-                    _graphic = new TextFormField((FormItem<String>) item);
-                } else if (type instanceof arc.mf.dtype.PasswordType) {
-                    _graphic = new PasswordFormField((FormItem<String>) item);
-                } else if (type instanceof arc.mf.dtype.UrlType) {
-                    _graphic = new UrlFormField((FormItem<String>) item);
-                } else if (type instanceof arc.mf.dtype.FileType) {
-                    _graphic = new FileFormField((FormItem<File>) item);
-                } else if (type instanceof arc.mf.dtype.EmailAddressType) {
-                    _graphic = new EmailAddressFormField(
-                            (FormItem<String>) item);
-                }
+            } else if (type instanceof arc.mf.dtype.StringType) {
+                graphic = new StringFormField((FormItem<String>) item);
+            } else if (type instanceof arc.mf.dtype.TextType) {
+                graphic = new TextFormField((FormItem<String>) item);
+            } else if (type instanceof arc.mf.dtype.PasswordType) {
+                graphic = new PasswordFormField((FormItem<String>) item);
+            } else if (type instanceof arc.mf.dtype.UrlType) {
+                graphic = new UrlFormField((FormItem<String>) item);
+            } else if (type instanceof arc.mf.dtype.FileType) {
+                graphic = new FileFormField((FormItem<File>) item);
+            } else if (type instanceof arc.mf.dtype.EmailAddressType) {
+                graphic = new EmailAddressFormField((FormItem<String>) item);
             }
-            return _graphic;
+            return graphic;
         }
     }
 

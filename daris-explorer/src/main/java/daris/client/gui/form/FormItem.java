@@ -268,13 +268,25 @@ public class FormItem<T> implements MustBeValid, StateChangeListener {
     }
 
     public void add(FormItem<?> formItem) {
-        formItem.setForm(this.form());
+        formItem.setForm(form());
+        ObservableList<FormItem<?>> items = _itemsProperty.get();
+        if (items != null) {
+            for (FormItem<?> item : items) {
+                item.setForm(form());
+            }
+        }
         formItem.setParent(this);
         _itemsProperty.add(formItem);
     }
 
     public void remove(FormItem<?> formItem) {
         formItem.setForm(null);
+        ObservableList<FormItem<?>> items = _itemsProperty.get();
+        if (items != null) {
+            for (FormItem<?> item : items) {
+                item.setForm(null);
+            }
+        }
         formItem.setParent(null);
         _itemsProperty.remove(formItem);
     }
