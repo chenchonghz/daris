@@ -77,17 +77,14 @@ public class MainServlet extends HttpServlet {
         return NAME;
     }
 
-    public static String logonUrlFor(HttpRequest request) {
-        return logonUrlFor(request.variableValue(ARG_SOURCE_URL));
-    }
 
-    private static String logonUrlFor(String source) {
+    static String logonUrlFor(String sourceUrl) {
         StringBuilder sb = new StringBuilder();
         sb.append(URL_BASE);
         sb.append("?module=" + ModuleName.logon);
-        if (source != null) {
+        if (sourceUrl != null) {
             sb.append("&" + ARG_SOURCE_URL + "=%22");
-            sb.append(source);
+            sb.append(sourceUrl);
             sb.append("%22");
         }
         return sb.toString();

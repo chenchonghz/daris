@@ -126,7 +126,7 @@ public abstract class AbstractServlet extends HttpServlet {
         SessionKey sessionKey = null;
         if (skey == null && token == null) {
             // no session and token, redirect to logon page
-            response.redirectTo(MainServlet.logonUrlFor(request));
+            response.redirectTo(MainServlet.logonUrlFor(request.completeURL()));
             return;
         }
         if (skey != null) {
@@ -134,7 +134,7 @@ public abstract class AbstractServlet extends HttpServlet {
                 sessionKey = new SessionKey(skey);
             } else {
                 // session expired or invalid, redirect to logon page
-                response.redirectTo(MainServlet.logonUrlFor(request));
+                response.redirectTo(MainServlet.logonUrlFor(request.completeURL()));
                 return;
             }
         } else {
