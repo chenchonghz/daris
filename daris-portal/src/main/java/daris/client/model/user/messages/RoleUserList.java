@@ -20,7 +20,7 @@ public class RoleUserList extends ObjectMessage<List<RoleUser>> {
     @Override
     protected String messageServiceName() {
 
-        return "daris.user.list";
+        return "daris.role-user.list";
     }
 
     @Override
