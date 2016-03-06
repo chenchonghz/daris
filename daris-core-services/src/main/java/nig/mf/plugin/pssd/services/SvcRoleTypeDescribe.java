@@ -5,40 +5,45 @@ import arc.mf.plugin.PluginService;
 import arc.xml.XmlDoc;
 import arc.xml.XmlWriter;
 
-
 public class SvcRoleTypeDescribe extends PluginService {
-	private Interface _defn;
+    private Interface _defn;
 
-	public SvcRoleTypeDescribe() {
-		_defn = null;
-	}
+    public SvcRoleTypeDescribe() {
+        _defn = null;
+    }
 
-	public String name() {
-		return "om.pssd.role.type.describe";
-	}
+    public String name() {
+        return "om.pssd.role.type.describe";
+    }
 
-	public String description() {
-		return "Returns the types of (generic) roles that can be granted to a user.";
-	}
+    public String description() {
+        return "Returns the types of (generic) roles that can be granted to a user.";
+    }
 
-	public Interface definition() {
-		return _defn;
-	}
+    public Interface definition() {
+        return _defn;
+    }
 
-	public Access access() {
-		return ACCESS_ACCESS;
-	}
+    public Access access() {
+        return ACCESS_ACCESS;
+    }
 
-	public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w) throws Throwable {
-		describe(w,Role.MODEL_USER_ROLE_NAME,"This role allows indicates the holder is a user of the model. Required to appear in the the list of users returned by the service om.pssd.user.describe");
-		describe(w,Role.PROJECT_CREATOR_ROLE_NAME,"This role allows the holder to create new projects.");
-		describe(w,Role.SUBJECT_CREATOR_ROLE_NAME,"This role allows the holder to create new cross-project subjects.");
-	}
-	
-	private static void describe(XmlWriter w,String role,String description) throws Throwable {
-		w.push("role");
-		w.add("name",role);
-		w.add("description",description);
-		w.pop();
-	}
+    public void execute(XmlDoc.Element args, Inputs in, Outputs out,
+            XmlWriter w) throws Throwable {
+        describe(w, Role.MODEL_USER_ROLE_NAME,
+                "This role allows indicates the holder is a user of the model. Required to appear in the the list of users returned by the service "
+                        + SvcUserDescribe.SERVICE_NAME + ".");
+        describe(w, Role.PROJECT_CREATOR_ROLE_NAME,
+                "This role allows the holder to create new projects.");
+        describe(w, Role.SUBJECT_CREATOR_ROLE_NAME,
+                "This role allows the holder to create new cross-project subjects.");
+    }
+
+    private static void describe(XmlWriter w, String role, String description)
+            throws Throwable {
+        w.push("role");
+        w.add("name", role);
+        w.add("description", description);
+        w.pop();
+    }
 }

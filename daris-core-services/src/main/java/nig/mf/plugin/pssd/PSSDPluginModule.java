@@ -39,12 +39,14 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcAnnouncementDescribe());
         _services.add(new SvcAnnouncementDestroy());
         _services.add(new SvcAnnouncementList());
-        
+
         _services.add(new SvcAssetTemplateNamespaceReplace());
 
         _services.add(new SvcRoleTypeDescribe());
         _services.add(new SvcRoleList());
         _services.add(new SvcRoleCleanup());
+        _services.add(new SvcRoleUserList());
+        _services.add(new SvcRoleUserDescribe());
 
         _services.add(new SvcUserList());
         _services.add(new SvcUserDescribe());
@@ -108,7 +110,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         // transition service
         _services.add(new SvcProjectMetaHarvestMigrate()); // One off migration
         _services.add(new SvcProjectDiskUsageGet());
-        
+
         _services.add(new SvcDocTypeRename()); // Rename Doc Type (inc
                                                // templates)
         //
@@ -130,8 +132,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcSubjectClone());
         _services.add(new SvcSubjectMethodTemplateReplace());
         _services.add(new SvcSubjectMethodReplace());
-//        _services.add(new SvcSubjectOrdinalSet()); // TODO Need to test 
-        
+        // _services.add(new SvcSubjectOrdinalSet()); // TODO Need to test
 
         _services.add(new SvcExMethodCreate());
         _services.add(new SvcExMethodUpdate());

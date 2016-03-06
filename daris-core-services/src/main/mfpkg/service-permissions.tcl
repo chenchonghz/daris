@@ -133,8 +133,17 @@ actor.grant :perm < :access ACCESS :resource -type service * > :type plugin:serv
 # service: om.pssd.object.icon.get
 actor.grant :perm < :access ACCESS :resource -type service * > :type plugin:service :name om.pssd.object.icon.get
 
-# service: om.pssd.user.describe
-actor.grant :perm < :access ACCESS :resource -type service * > :type plugin:service :name om.pssd.user.describe
+# service: daris.user.describe
+actor.grant :perm < :access ACCESS :resource -type service * > :type plugin:service :name daris.user.describe
+
+# service: daris.user.list
+actor.grant :perm < :access ACCESS :resource -type service * > :type plugin:service :name daris.user.list
+
+# service: daris.role-user.describe
+actor.grant :perm < :access ACCESS :resource -type service * > :type plugin:service :name daris.role-user.describe
+
+# service: daris.role-user.list
+actor.grant :perm < :access ACCESS :resource -type service * > :type plugin:service :name daris.role-user.list
 
 # service: om.pssd.collection.members
 actor.grant :perm < :access ACCESS :resource -type service * > :type plugin:service :name om.pssd.collection.members
