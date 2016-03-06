@@ -45,11 +45,11 @@ import daris.client.model.project.ProjectRole;
 import daris.client.model.project.messages.ProjectMemberList;
 import daris.client.ui.DObjectGUIRegistry;
 
-public class ProjectMemberGrid extends ListGrid<ProjectMember> implements
-        DropHandler, MustBeValid, StateChangeListener {
+public class ProjectMemberGrid extends ListGrid<ProjectMember>
+        implements DropHandler, MustBeValid, StateChangeListener {
 
-    private static class ProjectMemberTransformer extends
-            Transformer<ProjectMember, ListGridEntry<ProjectMember>> {
+    private static class ProjectMemberTransformer
+            extends Transformer<ProjectMember, ListGridEntry<ProjectMember>> {
 
         public static final ProjectMemberTransformer INSTANCE = new ProjectMemberTransformer();
 
@@ -79,8 +79,7 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements
         }
     }
 
-    private static class ProjectMemberListTransformer
-            extends
+    private static class ProjectMemberListTransformer extends
             Transformer<List<ProjectMember>, List<ListGridEntry<ProjectMember>>> {
         public static final ProjectMemberListTransformer INSTANCE = new ProjectMemberListTransformer();
 
@@ -107,8 +106,8 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements
         }
     }
 
-    private static class ProjectMemberDataSource implements
-            DataSource<ListGridEntry<ProjectMember>> {
+    private static class ProjectMemberDataSource
+            implements DataSource<ListGridEntry<ProjectMember>> {
 
         private Project _o;
         private FormEditMode _mode;
@@ -221,7 +220,7 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements
         setCellSpacing(0);
         setCellPadding(1);
         setEmptyMessage("");
-        setLoadingMessage("Loading project members...");
+        setLoadingMessage("");
         setCursorSize(Integer.MAX_VALUE);
 
         setRowToolTip(new ToolTip<ProjectMember>() {
@@ -235,29 +234,76 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements
         });
 
         /*
-		 * 
-		 */
+         * 
+         */
         setObjectRegistry(DObjectGUIRegistry.get());
 
         /*
          * make drop target, and enable row drag (to delete member)
          */
         if (!_mode.equals(FormEditMode.READ_ONLY)) {
-            setRowDoubleClickHandler(new ListGridRowDoubleClickHandler<ProjectMember>() {
+            setRowDoubleClickHandler(
+                    new ListGridRowDoubleClickHandler<ProjectMember>() {
 
-                @Override
-                public void doubleClicked(final ProjectMember pm,
-                        DoubleClickEvent event) {
+                        @Override
+                        public void doubleClicked(final ProjectMember pm,
+                                DoubleClickEvent event) {
 
-                    if (pm == null) {
-                        return;
-                    }
-                    int x = event.getClientX();
-                    int y = event.getClientY();
-                    ProjectMemberRoleSelector
-                            .showAt(x,
-                                    y,
+                            if (pm == null) {
+                                return;
+                            }
+                            int x = event.getClientX();
+                            int y = event.getClientY();
+                            ProjectMemberRoleSelector.showAt(x, y,
                                     new ProjectMemberRoleSelector.RoleSelectionListener() {
+
+                                @Override
+                                public void roleSelected(ProjectRole role,
+                                        DataUse dataUse) {
+
+                                    if (role != null) {
+                                        pm.setRole(role);
+                                        pm.setDataUse(dataUse);
+                                        _o.addMember(pm);
+                                        if (_mode == FormEditMode.UPDATE) {
+                                            commitChangesAndRefresh();
+                                        } else if (_mode == FormEditMode.CREATE) {
+                                            notifyOfChangeInState();
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+            setRowContextMenuHandler(
+                    new ListGridRowContextMenuHandler<ProjectMember>() {
+
+                        @Override
+                        public void show(final ProjectMember pm,
+                                ContextMenuEvent event) {
+
+                            final int x = event.getNativeEvent().getClientX();
+                            final int y = event.getNativeEvent().getClientY();
+                            Menu menu = new Menu("Member");
+                            menu.setShowTitle(true);
+                            menu.add(new ActionEntry("Remove", new Action() {
+
+                                @Override
+                                public void execute() {
+
+                                    _o.removeMember(pm);
+                                    commitChangesAndRefresh();
+                                }
+                            }));
+                            menu.add(new ActionEntry("Set role and data-use",
+                                    new Action() {
+
+                                @Override
+                                public void execute() {
+
+                                    ProjectMemberRoleSelector.showAt(x, y,
+                                            new ProjectMemberRoleSelector.RoleSelectionListener() {
 
                                         @Override
                                         public void roleSelected(
@@ -265,76 +311,25 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements
                                                 DataUse dataUse) {
 
                                             if (role != null) {
-                                                pm.setRole(role);
-                                                pm.setDataUse(dataUse);
-                                                _o.addMember(pm);
-                                                if (_mode == FormEditMode.UPDATE) {
+                                                if (!role.equals(pm.role())
+                                                        || !ObjectUtil.equals(
+                                                                dataUse,
+                                                                pm.dataUse())) {
+                                                    pm.setRole(role);
+                                                    pm.setDataUse(dataUse);
+                                                    _o.addMember(pm);
                                                     commitChangesAndRefresh();
-                                                } else if (_mode == FormEditMode.CREATE) {
-                                                    notifyOfChangeInState();
                                                 }
                                             }
                                         }
                                     });
-                }
-            });
-
-            setRowContextMenuHandler(new ListGridRowContextMenuHandler<ProjectMember>() {
-
-                @Override
-                public void show(final ProjectMember pm, ContextMenuEvent event) {
-
-                    final int x = event.getNativeEvent().getClientX();
-                    final int y = event.getNativeEvent().getClientY();
-                    Menu menu = new Menu("Member");
-                    menu.setShowTitle(true);
-                    menu.add(new ActionEntry("Remove", new Action() {
-
-                        @Override
-                        public void execute() {
-
-                            _o.removeMember(pm);
-                            commitChangesAndRefresh();
-                        }
-                    }));
-                    menu.add(new ActionEntry("Set role and data-use",
-                            new Action() {
-
-                                @Override
-                                public void execute() {
-
-                                    ProjectMemberRoleSelector
-                                            .showAt(x,
-                                                    y,
-                                                    new ProjectMemberRoleSelector.RoleSelectionListener() {
-
-                                                        @Override
-                                                        public void roleSelected(
-                                                                ProjectRole role,
-                                                                DataUse dataUse) {
-
-                                                            if (role != null) {
-                                                                if (!role
-                                                                        .equals(pm
-                                                                                .role())
-                                                                        || !ObjectUtil
-                                                                                .equals(dataUse,
-                                                                                        pm.dataUse())) {
-                                                                    pm.setRole(role);
-                                                                    pm.setDataUse(dataUse);
-                                                                    _o.addMember(pm);
-                                                                    commitChangesAndRefresh();
-                                                                }
-                                                            }
-                                                        }
-                                                    });
                                 }
                             }));
-                    ActionContextMenu am = new ActionContextMenu(menu);
-                    NativeEvent ne = event.getNativeEvent();
-                    am.showAt(ne);
-                }
-            });
+                            ActionContextMenu am = new ActionContextMenu(menu);
+                            NativeEvent ne = event.getNativeEvent();
+                            am.showAt(ne);
+                        }
+                    });
             enableDropTarget(false);
             setDropHandler(this);
             enableRowDrag();
@@ -426,8 +421,9 @@ public class ProjectMemberGrid extends ListGrid<ProjectMember> implements
 
         };
 
-        ProjectMemberRoleSelector.showAt(target.absoluteLeft() + target.width()
-                / 2, target.absoluteTop() + target.height() / 2, rsl);
+        ProjectMemberRoleSelector.showAt(
+                target.absoluteLeft() + target.width() / 2,
+                target.absoluteTop() + target.height() / 2, rsl);
 
     }
 

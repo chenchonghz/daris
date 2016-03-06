@@ -33,7 +33,21 @@ public class PagedUserList extends ContainerWidget implements PagingListener {
 
     public PagedUserList(DomainRef domain) {
         _domain = domain;
-        _users = domain == null ? null : new UserCollectionRef(domain);
+        _users = domain == null ? null : new UserCollectionRef(domain) {
+            @Override
+            public int defaultPagingSize() {
+                return PAGE_SIZE;
+            }
+
+            @Override
+            public boolean supportsPaging() {
+                return true;
+            }
+        };
+        
+        if(_users!=null){
+            _users.setCountMembers(true);
+        }
 
         VerticalPanel vp = new VerticalPanel();
         vp.fitToParent();

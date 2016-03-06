@@ -75,7 +75,7 @@ public class ProjectRoleMemberGUI implements ObjectGUI {
 
 		ProjectRoleMember prm = (ProjectRoleMember) o;
 
-		return new DragWidget("role-member", new Label(prm.member().member()));
+		return new DragWidget("role-member", new Label(prm.member().name()));
 	}
 
 	@Override

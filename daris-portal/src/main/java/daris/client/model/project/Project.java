@@ -274,7 +274,7 @@ public class Project extends DObject {
         if (_roleMembers != null) {
             for (ProjectRoleMember prm : _roleMembers) {
                 w.push("role-member");
-                w.add("member", prm.member().member());
+                w.add("member", prm.member().name());
                 w.add("role", prm.role());
                 if (prm.dataUse() != null) {
                     w.add("data-use", prm.dataUse());
@@ -332,7 +332,7 @@ public class Project extends DObject {
         if (_roleMembers != null) {
             for (ProjectRoleMember prm : _roleMembers) {
                 w.push("role-member");
-                w.add("member", prm.member().member());
+                w.add("member", prm.member().name());
                 w.add("role", prm.role());
                 if (prm.dataUse() != null) {
                     w.add("data-use", prm.dataUse());

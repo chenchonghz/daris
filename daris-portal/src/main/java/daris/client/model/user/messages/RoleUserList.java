@@ -8,29 +8,19 @@ import arc.mf.client.xml.XmlWriter;
 import arc.mf.object.ObjectMessage;
 import daris.client.model.user.RoleUser;
 
-public class RoleUserDescribe extends ObjectMessage<List<RoleUser>> {
+public class RoleUserList extends ObjectMessage<List<RoleUser>> {
 
-    private Boolean _listProjects;
-
-    protected RoleUserDescribe(Boolean listProjects) {
-        _listProjects = listProjects;
-    }
-
-    public RoleUserDescribe() {
-        this(null);
+    public RoleUserList() {
     }
 
     @Override
     protected void messageServiceArgs(XmlWriter w) {
-        if (_listProjects != null) {
-            w.add("list-projects", _listProjects);
-        }
     }
 
     @Override
     protected String messageServiceName() {
 
-        return "daris.user.describe";
+        return "daris.user.list";
     }
 
     @Override
@@ -41,8 +31,7 @@ public class RoleUserDescribe extends ObjectMessage<List<RoleUser>> {
             if (rues != null && !rues.isEmpty()) {
                 List<RoleUser> rus = new ArrayList<RoleUser>(rues.size());
                 for (XmlElement rue : rues) {
-                    rus.add(new RoleUser(rue.value("@member"),
-                            rue.value("@id")));
+                    rus.add(new RoleUser(rue.value(), rue.value("@id")));
                 }
                 if (!rus.isEmpty()) {
                     return rus;

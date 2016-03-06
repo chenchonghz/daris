@@ -3,6 +3,11 @@ package daris.client.ui.project;
 import java.util.List;
 import java.util.Vector;
 
+import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Style.FontWeight;
+import com.google.gwt.event.dom.client.ContextMenuEvent;
+
 import arc.gui.form.Field;
 import arc.gui.form.FieldDefinition;
 import arc.gui.form.FieldGroup;
@@ -34,12 +39,6 @@ import arc.mf.dtype.ConstantType;
 import arc.mf.dtype.EnumerationType;
 import arc.mf.model.authentication.UserRef;
 import arc.mf.object.ObjectMessageResponse;
-
-import com.google.gwt.dom.client.EventTarget;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style.FontWeight;
-import com.google.gwt.event.dom.client.ContextMenuEvent;
-
 import daris.client.model.method.MethodEnum;
 import daris.client.model.method.MethodRef;
 import daris.client.model.object.DObjectRef;
@@ -53,8 +52,8 @@ import daris.client.model.project.ProjectRoleMember;
 import daris.client.model.repository.RepositoryRef;
 import daris.client.model.user.RoleUser;
 import daris.client.ui.object.DObjectDetails;
-import daris.client.ui.user.PagedUserSelect;
-import daris.client.ui.user.RoleUserGrid;
+import daris.client.ui.user.RoleUserListGrid;
+import daris.client.ui.user.UserSelect;
 
 public class ProjectDetails extends DObjectDetails {
 
@@ -380,7 +379,7 @@ public class ProjectDetails extends DObjectDetails {
 
             _memberGrid.fitToParent();
             vpl.add(_memberGrid);
-            final PagedUserSelect userSelect = new PagedUserSelect();
+            final UserSelect userSelect = new UserSelect();
             userSelect.fitToParent();
             userSelect
                     .setRowContextMenuHandler(new ListGridRowContextMenuHandler<UserRef>() {
@@ -575,7 +574,7 @@ public class ProjectDetails extends DObjectDetails {
 
             _roleMemberGrid.fitToParent();
             vpl.add(_roleMemberGrid);
-            final RoleUserGrid roleUserGrid = new RoleUserGrid();
+            final RoleUserListGrid roleUserGrid = new RoleUserListGrid();
             roleUserGrid
                     .setRowContextMenuHandler(new ListGridRowContextMenuHandler<RoleUser>() {
 

@@ -65,7 +65,7 @@ public class RoleUserGUI implements ObjectGUI {
 	public DragWidget dragWidget(Object o) {
 
 		RoleUser ru = (RoleUser) o;
-		return new DragWidget(RoleUser.TYPE_NAME, new Label(ru.member()));
+		return new DragWidget(RoleUser.TYPE_NAME, new Label(ru.name()));
 	}
 
 	@Override

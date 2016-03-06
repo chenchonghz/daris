@@ -62,7 +62,7 @@ public class ProjectRoleMemberGrid extends ListGrid<ProjectRoleMember> implement
 
             ListGridEntry<ProjectRoleMember> prme = new ListGridEntry<ProjectRoleMember>(prm);
             prme.set("id", prm.member().id());
-            prme.set("member", prm.member().member());
+            prme.set("member", prm.member().name());
             prme.set("role", prm.role());
             prme.set("dataUse", prm.dataUse());
             return prme;
@@ -193,7 +193,7 @@ public class ProjectRoleMemberGrid extends ListGrid<ProjectRoleMember> implement
         setCellSpacing(0);
         setCellPadding(1);
         setEmptyMessage("");
-        setLoadingMessage("Loading project role-members...");
+        setLoadingMessage("");
         setCursorSize(Integer.MAX_VALUE);
 
         setRowToolTip(new ToolTip<ProjectRoleMember>() {
