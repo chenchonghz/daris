@@ -63,8 +63,8 @@ public class Project extends DObject {
             if (!mthdes.isEmpty()) {
                 _methods = new Vector<MethodRef>(mthdes.size());
                 for (XmlElement mde : mthdes) {
-                    _methods.add(new MethodRef(mde.value("id"), mde
-                            .value("name"), mde.value("description")));
+                    _methods.add(new MethodRef(mde.value("id"),
+                            mde.value("name"), mde.value("description")));
                 }
             }
         }
@@ -252,14 +252,17 @@ public class Project extends DObject {
         if (_members != null) {
             for (ProjectMember pm : _members) {
                 w.push("member");
-                if (pm.user().domain().authority().name() != null) {
+                if (pm.user().domain().authority() != null
+                        && pm.user().domain().authority().name() != null) {
                     if (pm.user().domain().authority().protocol() != null) {
-                        w.add("authority", new String[] { "protocol",
-                                pm.user().domain().authority().protocol() }, pm
-                                .user().domain().authority().name());
+                        w.add("authority",
+                                new String[] { "protocol",
+                                        pm.user().domain().authority()
+                                                .protocol() },
+                                pm.user().domain().authority().name());
                     } else {
-                        w.add("authority", pm.user().domain().authority()
-                                .name());
+                        w.add("authority",
+                                pm.user().domain().authority().name());
                     }
                 }
                 w.add("domain", pm.user().domain());
@@ -312,12 +315,14 @@ public class Project extends DObject {
                 if (pm.user().domain().authority() != null
                         && pm.user().domain().authority().name() != null) {
                     if (pm.user().domain().authority().protocol() != null) {
-                        w.add("authority", new String[] { "protocol",
-                                pm.user().domain().authority().protocol() }, pm
-                                .user().domain().authority().name());
+                        w.add("authority",
+                                new String[] { "protocol",
+                                        pm.user().domain().authority()
+                                                .protocol() },
+                                pm.user().domain().authority().name());
                     } else {
-                        w.add("authority", pm.user().domain().authority()
-                                .name());
+                        w.add("authority",
+                                pm.user().domain().authority().name());
                     }
                 }
                 w.add("domain", pm.user().domain());
@@ -398,7 +403,8 @@ public class Project extends DObject {
      * @param o
      *            the project to be created.
      */
-    public static void setMetaForEdit(final Project o, final ActionListener al) {
+    public static void setMetaForEdit(final Project o,
+            final ActionListener al) {
 
         new ProjectMetadataDescribe()
                 .send(new ObjectMessageResponse<XmlElement>() {
