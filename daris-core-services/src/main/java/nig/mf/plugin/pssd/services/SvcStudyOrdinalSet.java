@@ -84,12 +84,12 @@ public class SvcStudyOrdinalSet extends PluginService {
                         setCid(executor, datasetAssetId, newDatasetCid);
                     }
                 }
-                // set subject asset name
+                // set study asset name
                 if (studyAssetName != null && studyAssetName.endsWith(studyCid)) {
                     setAssetName(executor, studyAssetId,
                             studyAssetName.replace(studyCid, newStudyCid));
                 }
-                // rename subject namespace
+                // rename study namespace
                 if (studyAssetNamespace != null
                         && studyAssetNamespace.endsWith("/" + studyCid)) {
                     renameAssetNamespace(executor, studyAssetNamespace, newStudyCid);
