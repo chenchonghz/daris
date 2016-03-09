@@ -30,6 +30,7 @@ public class SvcReplicateCheck extends PluginService {
 		_defn.add(new Interface.Element("dst", StringType.DEFAULT, "The destination parent namespace. If supplied (use '/' for root namespace), assets will actually be replicated (one at a time; not efficient). The default is no replication.", 0, 1));
 		_defn.add(new Interface.Element("mod", BooleanType.DEFAULT, "Check modification time of existing replicas (default false) as well as there existence.", 0, 1));
 		_defn.add(new Interface.Element("processed", BooleanType.DEFAULT, "By default, processed DataSets (ones for which (pssd-derivation/processed)='true' AND mf-dicom-series is absent) are excluded. Set to true to incluide.", 0, 1));
+		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 	}
 	public String name() {
 		return "nig.replicate.check";
@@ -69,6 +70,7 @@ public class SvcReplicateCheck extends PluginService {
 		String dst = args.value("dst");
 		Boolean checkMod = args.booleanValue("mod", false);
 		Boolean processed = args.booleanValue("processed", false);
+		Boolean useIndexes = args.booleanValue("use-indexes", true);
 
 
 		// Find route to peer. Exception if can't reach and build in extra checks to make sure we are 
@@ -86,7 +88,7 @@ public class SvcReplicateCheck extends PluginService {
 		boolean more = true;
 		Vector<String> assetIDs = new Vector<String>();
 		while (more) {
-			more = find (executor(),  where, peer, sr, uuidLocal, size, assetIDs, checkMod, processed, w);
+			more = find (executor(),  where, peer, sr, uuidLocal, size, assetIDs, checkMod, processed, useIndexes, w);
 			PluginTask.checkIfThreadTaskAborted();
 		}
 
@@ -120,7 +122,7 @@ public class SvcReplicateCheck extends PluginService {
 	}
 
 	private boolean find (ServiceExecutor executor,  String where, String peer, ServerRoute sr, String uuidLocal, String size, 
-			Vector<String> assetList, Boolean checkMod, Boolean processed, XmlWriter w)
+			Vector<String> assetList, Boolean checkMod, Boolean processed, Boolean useIndexes, XmlWriter w)
 					throws Throwable {
 
 		// Find local  assets  with the given query. We work through the cursor else
@@ -139,6 +141,7 @@ public class SvcReplicateCheck extends PluginService {
 		dm.add("size", size);
 		dm.add("pdist", 0);
 		dm.add("action", "get-meta");
+		dm.add("use-indexes", useIndexes);
 		XmlDoc.Element r = executor().execute("asset.query", dm.root());
 		if (r==null) return false;  
 		Collection<XmlDoc.Element> assets = r.elements("asset");
