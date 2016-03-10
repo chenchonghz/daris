@@ -183,7 +183,7 @@ public class Dicom {
 		int debugLevel = 0;
 
 		// If there is an exception, let it fail. We could also write a Handler and continue
-		// in the face of failures (e.g. see the om.pssd.dicom.send service)
+		// in the face of failures (e.g. see the daris.dicom.send service)
 		new StorageSOPClassSCU(host, port, calledAET, callingAET,
 				dicomFiles, compressionLevel, null, null, 0, debugLevel);
 	}
