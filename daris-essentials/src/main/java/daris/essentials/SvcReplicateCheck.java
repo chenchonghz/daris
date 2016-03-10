@@ -31,6 +31,7 @@ public class SvcReplicateCheck extends PluginService {
 		_defn.add(new Interface.Element("mod", BooleanType.DEFAULT, "Check modification time of existing replicas (default false) as well as there existence.", 0, 1));
 		_defn.add(new Interface.Element("processed", BooleanType.DEFAULT, "By default, processed DataSets (ones for which (pssd-derivation/processed)='true' AND mf-dicom-series is absent) are excluded. Set to true to incluide.", 0, 1));
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
+		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
 	}
 	public String name() {
 		return "nig.replicate.check";
@@ -71,6 +72,7 @@ public class SvcReplicateCheck extends PluginService {
 		Boolean checkMod = args.booleanValue("mod", false);
 		Boolean processed = args.booleanValue("processed", false);
 		Boolean useIndexes = args.booleanValue("use-indexes", true);
+		Boolean dbg = args.booleanValue("debug", true);
 
 
 		// Find route to peer. Exception if can't reach and build in extra checks to make sure we are 
@@ -88,7 +90,7 @@ public class SvcReplicateCheck extends PluginService {
 		boolean more = true;
 		Vector<String> assetIDs = new Vector<String>();
 		while (more) {
-			more = find (executor(),  where, peer, sr, uuidLocal, size, assetIDs, checkMod, processed, useIndexes, w);
+			more = find (executor(),  where, peer, sr, uuidLocal, size, assetIDs, checkMod, processed, useIndexes,dbg,  w);
 			PluginTask.checkIfThreadTaskAborted();
 		}
 
@@ -104,7 +106,7 @@ public class SvcReplicateCheck extends PluginService {
 				dm.pop();
 				dm.add("related", "0");
 				dm.add("update-doc-types", false);
-				//			System.out.println("Sending asset id " + id);
+				if (dbg) System.out.println("nig.replicate.check: replicating asset id " + id);
 				try {
 					executor().execute("asset.replicate.to", dm.root());
 				} catch (Throwable t) {
@@ -122,12 +124,12 @@ public class SvcReplicateCheck extends PluginService {
 	}
 
 	private boolean find (ServiceExecutor executor,  String where, String peer, ServerRoute sr, String uuidLocal, String size, 
-			Vector<String> assetList, Boolean checkMod, Boolean processed, Boolean useIndexes, XmlWriter w)
+			Vector<String> assetList, Boolean checkMod, Boolean processed, Boolean useIndexes, Boolean dbg, XmlWriter w)
 					throws Throwable {
 
 		// Find local  assets  with the given query. We work through the cursor else
 		// we may run out of memory
-		// System.out.println("CHunk starting with idx = " + idx_);
+		if (dbg) System.out.println("nig.replicate.check : chunk starting with idx = " + idx_);
 		XmlDocMaker dm = new XmlDocMaker("args");
 		if (!processed) {
 			// Drop processed DataSets from query
@@ -157,6 +159,9 @@ public class SvcReplicateCheck extends PluginService {
 
 		// See if the replicas exist on the peer. 
 		// One query per asset
+		if (dbg) {
+			System.out.println("nig.replicate.check : checking if assets" + assets.size() + " exist on DR");
+		}
 		for (XmlDoc.Element asset : assets) {
 			// Get the asset id, and the rid (asset may already be a replica from elsewhere)
 			String id = asset.value("@id");
