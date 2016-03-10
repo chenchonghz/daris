@@ -160,7 +160,7 @@ public class SvcReplicateCheck extends PluginService {
 		// See if the replicas exist on the peer. 
 		// One query per asset
 		if (dbg) {
-			System.out.println("nig.replicate.check : checking if assets" + assets.size() + " exist on DR");
+			System.out.println("nig.replicate.check : checking if " + assets.size() + " assets exist on DR");
 		}
 		for (XmlDoc.Element asset : assets) {
 			// Get the asset id, and the rid (asset may already be a replica from elsewhere)
