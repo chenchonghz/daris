@@ -211,8 +211,8 @@ actor.grant :role -type role service-user :type plugin:service :name om.pssd.sho
 # service: om.pssd.dicom.ae.list 
 actor.grant :role -type role service-user :type plugin:service :name om.pssd.dicom.ae.list
 
-# service: om.pssd.dicom.send
-actor.grant :role -type role service-user :type plugin:service :name om.pssd.dicom.send
+# service: daris.dicom.send
+actor.grant :role -type role service-user :type plugin:service :name daris.dicom.send
 
 # service: daris.collection.dicom.dataset.count
 actor.grant :role -type role service-user :type plugin:service :name daris.collection.dicom.dataset.count

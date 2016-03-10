@@ -50,14 +50,11 @@ public class DicomSend extends BackgroundObjectMessage {
         }
 
         public void save(XmlWriterNe w) {
-            String gggg = String.format("%04x", _group);
-            String eeee = String.format("%04x", _element);
             if (_anonymize) {
-                w.push("element", new String[] { "group", gggg, "element", eeee,
-                        "anonymize", Boolean.toString(true) });
+                w.push("element", new String[] { "tag", tag(), "anonymize",
+                        Boolean.toString(true) });
             } else {
-                w.push("element",
-                        new String[] { "group", gggg, "element", eeee });
+                w.push("element", new String[] { "tag", tag() });
                 w.add("value", _value);
             }
             w.pop();
