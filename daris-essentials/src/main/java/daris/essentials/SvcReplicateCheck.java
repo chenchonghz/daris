@@ -132,7 +132,7 @@ public class SvcReplicateCheck extends PluginService {
 
 		// Find local  assets  with the given query. We work through the cursor else
 		// we may run out of memory
-		System.out.println("nig.replicate.check : find assets on primary in chunk starting with idx = " + idx_);
+		if (dbg) System.out.println("nig.replicate.check : find assets on primary in chunk starting with idx = " + idx_);
 		XmlDocMaker dm = new XmlDocMaker("args");
 		if (exclDaRISProc) {
 			// Drop processed DataSets from query
