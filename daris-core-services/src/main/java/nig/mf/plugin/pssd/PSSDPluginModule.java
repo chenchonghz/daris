@@ -35,6 +35,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
 
         _services = new Vector<PluginService>();
 
+        _services.add(new SvcExMethodOrdinalSet());
         _services.add(new SvcAnnouncementCreate());
         _services.add(new SvcAnnouncementDescribe());
         _services.add(new SvcAnnouncementDestroy());
@@ -180,7 +181,6 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcDataSetProcessedInputList());
         _services.add(new SvcDataSetUnprocessedList());
 
-        _services.add(new SvcDICOMDataSetFindSend());
         //
         _services.add(new SvcDataObjectCreate());
         _services.add(new SvcObjectMetaCopy());
@@ -289,7 +289,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcObjectThumbnailGet());
         _services.add(new SvcObjectThumbnailUnset());
 
-        _services.add(new SvcDICOMSend());
+        _services.add(new SvcDicomSend());
         _services.add(new SvcDICOMAERegID());
         _services.add(new SvcDICOMAEAdd());
         _services.add(new SvcDICOMAERemove());
