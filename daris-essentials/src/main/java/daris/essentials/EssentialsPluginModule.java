@@ -47,12 +47,12 @@ public class EssentialsPluginModule implements PluginModule {
         _svs.add(new SvcDICOMMetadataCSVExport());
         _svs.add(new SvcDICOMMetadataPopulate());
         _svs.add(new SvcDICOMModelFix());
-        _svs.add(new SvcDICOMSendEss());
+//        _svs.add(new SvcDICOMSendEss());
         _svs.add(new SvcDICOMStudyFind());
         _svs.add(new SvcDICOMMetaGrab());
         _svs.add(new SvcDICOMHeaderEdit());
         _svs.add(new SvcDICOMDestroy());
-        _svs.add(new SvcDarisDicomSend());
+//        _svs.add(new SvcDarisDicomSend());
         _svs.add(new SvcDicomDownload());
         //
         _svs.add(new SvcSecureWalletKeyEntryGenerate());
