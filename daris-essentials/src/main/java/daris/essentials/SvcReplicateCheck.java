@@ -2,15 +2,15 @@ package daris.essentials;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Vector;
 
+import nig.mf.plugin.util.AssetUtil;
 import nig.mf.pssd.plugin.util.DistributedAssetUtil;
-
 import arc.mf.plugin.*;
 import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.IntegerType;
 import arc.mf.plugin.dtype.StringType;
-
 import arc.xml.XmlDoc;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
@@ -91,6 +91,9 @@ public class SvcReplicateCheck extends PluginService {
 		Vector<String> assetIDs = new Vector<String>();
 		while (more) {
 			more = find (executor(),  where, peer, sr, uuidLocal, size, assetIDs, checkMod, processed, useIndexes,dbg,  w);
+			if (dbg) {
+				System.out.println("nig.replicate.check : checking for abort \n");
+			}
 			PluginTask.checkIfThreadTaskAborted();
 		}
 
@@ -129,7 +132,7 @@ public class SvcReplicateCheck extends PluginService {
 
 		// Find local  assets  with the given query. We work through the cursor else
 		// we may run out of memory
-		if (dbg) System.out.println("nig.replicate.check : chunk starting with idx = " + idx_);
+		if (dbg) System.out.println("nig.replicate.check : find assets on primary in chunk starting with idx = " + idx_);
 		XmlDocMaker dm = new XmlDocMaker("args");
 		if (!processed) {
 			// Drop processed DataSets from query
@@ -159,9 +162,79 @@ public class SvcReplicateCheck extends PluginService {
 
 		// See if the replicas exist on the peer. 
 		// One query per asset
-		if (dbg) {
-			System.out.println("nig.replicate.check : checking if " + assets.size() + " assets exist on DR");
+		
+		// Make a list of rids to find
+		dm = new XmlDocMaker("args");	
+		for (XmlDoc.Element asset : assets) {
+			// Get the asset id, and the rid (asset may already be a replica from elsewhere)
+			String id = asset.value("@id");
+
+			// If the asset is already a replica, its rid remains the same
+			// when replicated to another peer
+			String rid = asset.value("rid");    
+
+			// If primary, set expected rid on remote peer
+			if (rid==null) rid = uuidLocal + "." + id;
+			dm.add("rid", rid);
 		}
+		
+		// Now check if they exist
+		if (dbg) {
+			System.out.println("   nig.replicate.check : checking if " + assets.size() + " assets exist on DR");
+		}
+		XmlDoc.Element r2 = executor.execute(sr, "asset.exists", dm.root());
+		Collection<XmlDoc.Element> results = r2.elements("exists");
+
+		
+		// Create a list of assets to replicate
+		if (dbg) {
+			System.out.println ("   nig.replicate.check : iterate through " + results.size() + " results and build list for replication.");
+		}
+		for (XmlDoc.Element res : results) {
+			System.out.println("res="+res);
+			
+			// Fetch the rid and pull out the id
+			String rid = res.value("@rid");
+			String[] t = rid.split("\\.");
+			String primaryID = t[1];
+
+			/*
+			System.out.println("rid="+rid);
+			System.out.println("id="+primaryID);
+			System.out.println("value="+res.booleanValue());
+			 */
+
+			if (res.booleanValue()==false) {
+				w.add("id", new String[]{"exists", "false"},  primaryID);
+				assetList.add(primaryID);
+			} else {
+
+				// The asset exists as a replica, but perhaps it's been modified.
+				// Very time consuming...
+				if (checkMod) {
+					// See if the primary has been modified since the replica was made
+					XmlDoc.Element asset = AssetUtil.getAsset(executor, null, primaryID);
+					Date mtime = asset.dateValue("asset/mtime");
+
+					// To get the remote asset we have to know its id... There is no asset.get :id rid
+					// We have to query for it !
+					dm = new XmlDocMaker("args");
+					dm.add("where", "rid='" + rid + "'");;
+					dm.add("action", "get-value");
+					dm.add("xpath", "mtime");
+					XmlDoc.Element remoteAsset = executor.execute(sr, "asset.query", dm.root());
+					Date mtimeRep = remoteAsset.dateValue("asset/value");
+					if (dbg) {
+						System.out.println("      nig.replicate.check : mtimes=" + mtime + ", " + mtimeRep);
+					}
+					if (mtime.after(mtimeRep)) {
+						w.add("id", new String[]{"exists", "true", "mtime-primary", mtime.toString(), "mtime-replica", mtimeRep.toString()},  primaryID);
+						assetList.add(primaryID);	
+					}
+				}
+			}
+
+			/*
 		for (XmlDoc.Element asset : assets) {
 			// Get the asset id, and the rid (asset may already be a replica from elsewhere)
 			String id = asset.value("@id");
@@ -200,6 +273,7 @@ public class SvcReplicateCheck extends PluginService {
 					}
 				}
 			}
+			*/
 		}
 		//
 		return more;
