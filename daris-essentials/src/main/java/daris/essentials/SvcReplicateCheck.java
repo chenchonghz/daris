@@ -191,7 +191,7 @@ public class SvcReplicateCheck extends PluginService {
 			System.out.println ("   nig.replicate.check : iterate through " + results.size() + " results and build list for replication.");
 		}
 		for (XmlDoc.Element res : results) {
-			System.out.println("res="+res);
+			// System.out.println("res="+res);
 			
 			// Fetch the rid and pull out the id
 			String rid = res.value("@rid");
