@@ -72,7 +72,7 @@ public class SvcReplicateCheck extends PluginService {
 		Boolean checkMod = args.booleanValue("mod", false);
 		Boolean processed = args.booleanValue("processed", false);
 		Boolean useIndexes = args.booleanValue("use-indexes", true);
-		Boolean dbg = args.booleanValue("debug", true);
+		Boolean dbg = args.booleanValue("debug", false);
 
 
 		// Find route to peer. Exception if can't reach and build in extra checks to make sure we are 
@@ -132,7 +132,7 @@ public class SvcReplicateCheck extends PluginService {
 
 		// Find local  assets  with the given query. We work through the cursor else
 		// we may run out of memory
-		if (dbg) System.out.println("nig.replicate.check : find assets on primary in chunk starting with idx = " + idx_);
+		System.out.println("nig.replicate.check : find assets on primary in chunk starting with idx = " + idx_);
 		XmlDocMaker dm = new XmlDocMaker("args");
 		if (!processed) {
 			// Drop processed DataSets from query
