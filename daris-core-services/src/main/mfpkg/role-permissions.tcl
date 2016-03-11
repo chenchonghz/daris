@@ -70,6 +70,7 @@ grantRoleReadAccessServices   daris:pssd.model.user \
       server.version server.database.describe \
       package.describe package.list package.exists \
       type.list \
+      type.describe \
       type.ext.types \
       user.self.* \
       secure.wallet.* \
