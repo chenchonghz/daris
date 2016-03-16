@@ -20,6 +20,7 @@ public class SvcReplicateCheck extends PluginService {
 
 	private Interface _defn;
 	private Integer idx_ = 1;
+	private Integer count_ = 0;
 
 
 	public SvcReplicateCheck() {
@@ -63,6 +64,7 @@ public class SvcReplicateCheck extends PluginService {
 
 		// Init
 		idx_ = 1;
+		count_ = 0;
 
 		// Get inputs
 		String where = args.value("where");
@@ -117,6 +119,7 @@ public class SvcReplicateCheck extends PluginService {
 				}
 			}
 		}
+		w.add("total-checked", count_);
 	}
 
 
@@ -151,6 +154,7 @@ public class SvcReplicateCheck extends PluginService {
 		if (r==null) return false;  
 		Collection<XmlDoc.Element> assets = r.elements("asset");
 		if (assets==null) return false;
+		count_ += assets.size();
 
 		// Get the cursor and increment for next time
 		XmlDoc.Element cursor = r.element("cursor");
