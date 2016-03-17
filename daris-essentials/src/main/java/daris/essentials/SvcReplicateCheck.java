@@ -20,6 +20,7 @@ public class SvcReplicateCheck extends PluginService {
 
 	private Interface _defn;
 	private Integer idx_ = 1;
+	private Integer count_ = 0;
 
 
 	public SvcReplicateCheck() {
@@ -63,6 +64,7 @@ public class SvcReplicateCheck extends PluginService {
 
 		// Init
 		idx_ = 1;
+		count_ = 0;
 
 		// Get inputs
 		String where = args.value("where");
@@ -113,10 +115,11 @@ public class SvcReplicateCheck extends PluginService {
 				try {
 					executor().execute("asset.replicate.to", dm.root());
 				} catch (Throwable t) {
-					System.out.println("Failed to send asset with error " + t.getMessage());
+					System.out.println("Failed to send asset " + id + " with error " + t.getMessage());
 				}
 			}
 		}
+		w.add("total-checked", count_);
 	}
 
 
@@ -151,6 +154,7 @@ public class SvcReplicateCheck extends PluginService {
 		if (r==null) return false;  
 		Collection<XmlDoc.Element> assets = r.elements("asset");
 		if (assets==null) return false;
+		count_ += assets.size();
 
 		// Get the cursor and increment for next time
 		XmlDoc.Element cursor = r.element("cursor");
@@ -183,6 +187,7 @@ public class SvcReplicateCheck extends PluginService {
 			System.out.println("   nig.replicate.check : checking if " + assets.size() + " assets exist on DR");
 		}
 		XmlDoc.Element r2 = executor.execute(sr, "asset.exists", dm.root());
+		if (r2==null) return more;
 		Collection<XmlDoc.Element> results = r2.elements("exists");
 
 		
@@ -190,11 +195,10 @@ public class SvcReplicateCheck extends PluginService {
 		if (dbg) {
 			System.out.println ("   nig.replicate.check : iterate through " + results.size() + " results and build list for replication.");
 		}
-		for (XmlDoc.Element res : results) {
-			// System.out.println("res="+res);
+		for (XmlDoc.Element result : results) {
 			
 			// Fetch the rid and pull out the id
-			String rid = res.value("@rid");
+			String rid = result.value("@rid");
 			String[] t = rid.split("\\.");
 			String primaryID = t[1];
 
@@ -204,9 +208,12 @@ public class SvcReplicateCheck extends PluginService {
 			System.out.println("value="+res.booleanValue());
 			 */
 
-			if (res.booleanValue()==false) {
+			if (result.booleanValue()==false) {
 				w.add("id", new String[]{"exists", "false"},  primaryID);
 				assetList.add(primaryID);
+				if (dbg) {
+					System.out.println("      nig.replicate.check : id '" + primaryID + "' is not found on the DR server");
+				}
 			} else {
 
 				// The asset exists as a replica, but perhaps it's been modified.
@@ -215,20 +222,24 @@ public class SvcReplicateCheck extends PluginService {
 					// See if the primary has been modified since the replica was made
 					XmlDoc.Element asset = AssetUtil.getAsset(executor, null, primaryID);
 					Date mtime = asset.dateValue("asset/mtime");
+					String csize = asset.value("asset/content/size");
 
 					// To get the remote asset we have to know its id... There is no asset.get :id rid
 					// We have to query for it !
 					dm = new XmlDocMaker("args");
 					dm.add("where", "rid='" + rid + "'");;
-					dm.add("action", "get-value");
-					dm.add("xpath", "mtime");
+					dm.add("action", "get-meta");
 					XmlDoc.Element remoteAsset = executor.execute(sr, "asset.query", dm.root());
-					Date mtimeRep = remoteAsset.dateValue("asset/value");
+					Date mtimeRep = remoteAsset.dateValue("asset/mtime");
+					String csizeRep = remoteAsset.value("asset/content/size");
+					String cidRep = remoteAsset.value("asset/cid");            // Same for primary and replica
 					if (dbg) {
 						System.out.println("      nig.replicate.check : mtimes=" + mtime + ", " + mtimeRep);
+						System.out.println("      nig.replicate.check : sizes =" + csize + ", " + csizeRep);
 					}
 					if (mtime.after(mtimeRep)) {
-						w.add("id", new String[]{"exists", "true", "mtime-primary", mtime.toString(), "mtime-replica", mtimeRep.toString()},  primaryID);
+						w.add("id", new String[]{"exists", "true", "cid", cidRep, "mtime-primary", mtime.toString(), "mtime-replica", mtimeRep.toString(),
+								"csize-primary", csize, "csize-replica", csizeRep},  primaryID);
 						assetList.add(primaryID);	
 					}
 				}
