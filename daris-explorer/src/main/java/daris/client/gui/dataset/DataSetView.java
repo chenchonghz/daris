@@ -10,6 +10,9 @@ import daris.client.model.dataset.DataSet;
 import daris.client.model.dataset.DerivedDataSet;
 import daris.client.model.dataset.PrimaryDataSet;
 import daris.client.model.mime.MimeTypes;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.ChangeListener;
+import javafx.concurrent.Worker;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
@@ -31,6 +34,12 @@ public class DataSetView extends DObjectView<DataSet> {
             StackPane dicomViewerPane = new StackPane();
             WebView web = new WebView();
             web.getEngine().load(dataset.dicomViewerUrl());
+            web.getEngine().getLoadWorker().stateProperty()
+                    .addListener((ov, oldState, newState) -> {
+                        System.out.println(web.getEngine().getLoadWorker()
+                                .exceptionProperty());
+                    });
+
             dicomViewerPane.getChildren().add(web);
             dicomViewerTab = new Tab("DICOM", dicomViewerPane);
             ContextMenu menu = new ContextMenu();

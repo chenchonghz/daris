@@ -22,6 +22,7 @@ public class MainApp extends Application {
     public static final String APP = "daris-explorer";
 
     public static void main(String[] args) {
+        SSL.setTrustAllCertificates(true);
         launch(args);
     }
 
