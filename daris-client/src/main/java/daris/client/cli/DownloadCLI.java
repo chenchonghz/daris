@@ -279,7 +279,13 @@ public class DownloadCLI {
                     public String format(LogRecord record) {
                         return record.getMessage() + "\n";
                     }
-                });
+                }) {
+            @Override
+            public synchronized void publish(LogRecord record) {
+                super.publish(record);
+                super.flush();
+            }
+        };
         consoleHandler.setLevel(Level.INFO);
         logger.addHandler(consoleHandler);
         return logger;
