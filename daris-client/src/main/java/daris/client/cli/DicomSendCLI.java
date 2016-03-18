@@ -1,4 +1,4 @@
-package daris.client.dicom;
+package daris.client.cli;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -23,7 +23,7 @@ import com.pixelmed.dicom.TransferSyntax;
 import com.pixelmed.network.MultipleInstanceTransferStatusHandler;
 import com.pixelmed.network.StorageSOPClassSCU;
 
-public class DicomSend {
+public class DicomSendCLI {
 
     public static void main(String[] args) {
         String callingAET = null;

@@ -1,4 +1,4 @@
-package daris.client.dicom;
+package daris.client.cli;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -18,7 +18,7 @@ import arc.mf.client.archive.Archive;
 import arc.streams.StreamCopy.AbortCheck;
 import arc.xml.XmlStringWriter;
 
-public class DicomIngest {
+public class DicomIngestCLI {
 
     public static final int COMPRESSION_LEVEL = 6;
     public static final String MIME_TYPE_AAR = "application/arc-archive";

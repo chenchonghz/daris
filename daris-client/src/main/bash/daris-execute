@@ -5,4 +5,4 @@
 JAR=$(dirname $0)/daris-client.jar
 [[ ! -f $JAR ]] && echo "${JAR} is not found." >&2 && exit 2
 
-java -cp $JAR daris.client.cli.DicomSendCLI ${1+"$@"}
+java -cp $JAR daris.client.cli.ExecuteCLI ${1+"$@"}

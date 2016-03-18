@@ -1,4 +1,4 @@
-package daris.client;
+package daris.client.cli;
 
 import java.io.File;
 import java.net.URL;
@@ -25,7 +25,7 @@ import arc.utils.URLUtil;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDoc.Element;
 
-public class Execute {
+public class ExecuteCLI {
 
 	public static class ArgumentParseException extends Exception {
 
@@ -483,7 +483,7 @@ public class Execute {
 		}
 	}
 
-	public static final String DEFAULT_PREFIX = "daris-client";
+	public static final String DEFAULT_PREFIX = "daris-execute";
 
 	public static String prefix() {
 		String prefix = System.getProperty("dc.prefix");

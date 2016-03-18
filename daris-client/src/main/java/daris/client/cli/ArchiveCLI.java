@@ -1,4 +1,4 @@
-package daris.client;
+package daris.client.cli;
 
 import java.io.File;
 import java.util.Set;
@@ -11,7 +11,7 @@ import arc.mf.client.archive.Archive;
 import arc.mime.NamedMimeType;
 import arc.streams.StreamCopy;
 
-public class ArchiveUtil {
+public class ArchiveCLI {
 
     public static void main(String[] args) throws Throwable {
         if (args.length < 2) {
@@ -23,9 +23,9 @@ public class ArchiveUtil {
          * action
          */
         String action = args[0];
-        if (!"extract".equals(action) && !"archive".equals(action)) {
+        if (!"extract".equals(action) && !"create".equals(action)) {
             System.err.println("Error: invalid action: " + action
-                    + ". Expects 'extract' or 'archive'.");
+                    + ". Expects 'extract' or 'create'.");
             showUsage();
             System.exit(2);
         }
@@ -70,7 +70,7 @@ public class ArchiveUtil {
                     System.exit(6);
                 }
             }
-            extract(arcFile, outputDir, quiet);
+            extractArchive(arcFile, outputDir, quiet);
         } else {
             int start = quiet ? 3 : 2;
             if (args.length == start) {
@@ -86,12 +86,12 @@ public class ArchiveUtil {
                         "No input file is found in the specified directories.");
                 System.exit(8);
             }
-            archive(arcFile, new File(System.getProperty("user.dir")),
+            createArchive(arcFile, new File(System.getProperty("user.dir")),
                     inputFiles, quiet);
         }
     }
 
-    private static void extract(File arcFile, File outputDir, boolean quiet)
+    private static void extractArchive(File arcFile, File outputDir, boolean quiet)
             throws Throwable {
         Archive.declareSupportForAllTypes();
         ArchiveInput ai = ArchiveRegistry.createInput(arcFile,
@@ -125,7 +125,7 @@ public class ArchiveUtil {
         }
     }
 
-    private static void archive(File arcFile, File baseDir,
+    private static void createArchive(File arcFile, File baseDir,
             Set<File> inputFiles, boolean quiet) throws Throwable {
         Archive.declareSupportForAllTypes();
         ArchiveOutput ao = ArchiveRegistry.createOutput(arcFile,
@@ -205,16 +205,17 @@ public class ArchiveUtil {
     private static void showUsage() {
         System.out.println("Usage:");
         System.out.println(
-                "    darc extract [--quiet] <archive-file> [output-directory]");
+                "    daris-archive extract [--quiet] <archive-file> [output-directory]");
         System.out.println(
-                "    darc archive [--quiet] <archive-file> <files/directories>");
+                "    daris-archive create [--quiet] <archive-file> <files/directories>");
         System.out.println("Examples:");
-        System.out.println("    darc extract book.zip");
-        System.out.println("    darc extract book.aar /home/wilson/Documents");
+        System.out.println("    daris-archive extract book.zip");
         System.out.println(
-                "    darc archive book.zip /home/wilson/Downloads/book");
+                "    daris-archive extract book.aar /home/wilson/Documents");
         System.out.println(
-                "    darc archive book.aar /home/wilson/Downloads/book");
+                "    daris-archive create book.zip /home/wilson/Downloads/book");
+        System.out.println(
+                "    daris-archive create book.aar /home/wilson/Downloads/book");
 
     }
 }
