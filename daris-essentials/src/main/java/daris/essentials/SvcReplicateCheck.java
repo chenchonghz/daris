@@ -2,7 +2,6 @@ package daris.essentials;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Vector;
 
 import nig.mf.plugin.util.AssetUtil;
@@ -29,7 +28,7 @@ public class SvcReplicateCheck extends PluginService {
 		_defn.add(new Interface.Element("where",StringType.DEFAULT, "Query predicate to restrict the selected assets on the local host. If unset, all assets are considered.", 0, 1));
 		_defn.add(new Interface.Element("size",IntegerType.DEFAULT, "Limit the accumulation loop to this number of assets per iteration (if too large, the VM may run out of virtual memory).  Defaults to 500.", 0, 1));
 		_defn.add(new Interface.Element("dst", StringType.DEFAULT, "The destination parent namespace. If supplied (use '/' for root namespace), assets will actually be replicated (one at a time; not efficient). The default is no replication.", 0, 1));
-		_defn.add(new Interface.Element("mod", BooleanType.DEFAULT, "Check modification time of existing replicas (default false) as well as there existence.", 0, 1));
+		_defn.add(new Interface.Element("mod", BooleanType.DEFAULT, "Check modification time of existing replicas (default false) as well as their existence (hugely slows the process if activated).", 0, 1));
 		_defn.add(new Interface.Element("exclude-daris-proc", BooleanType.DEFAULT, "By default, processed DaRIS DataSets (ones for which (pssd-derivation/processed)='true' AND mf-dicom-series is absent) are included. Set to true to exclude these.", 0, 1));
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
