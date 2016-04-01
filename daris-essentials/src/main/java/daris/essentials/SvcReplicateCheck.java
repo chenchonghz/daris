@@ -32,6 +32,7 @@ public class SvcReplicateCheck extends PluginService {
 		_defn.add(new Interface.Element("exclude-daris-proc", BooleanType.DEFAULT, "By default, processed DaRIS DataSets (ones for which (pssd-derivation/processed)='true' AND mf-dicom-series is absent) are included. Set to true to exclude these.", 0, 1));
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
+		_defn.add(new Interface.Element("include-destroyed", BooleanType.DEFAULT, "Include soft destroyed assets. Default to false.", 0, 1));
 	}
 	public String name() {
 		return "nig.replicate.check";
@@ -74,6 +75,7 @@ public class SvcReplicateCheck extends PluginService {
 		Boolean exclDaRISProc = args.booleanValue("exclude-daris-proc", false);
 		Boolean useIndexes = args.booleanValue("use-indexes", true);
 		Boolean dbg = args.booleanValue("debug", false);
+		Boolean includeDestroyed = args.booleanValue("include-destroyed", false);
 
 
 		// Find route to peer. Exception if can't reach and build in extra checks to make sure we are 
@@ -91,7 +93,8 @@ public class SvcReplicateCheck extends PluginService {
 		boolean more = true;
 		Vector<String> assetIDs = new Vector<String>();
 		while (more) {
-			more = find (executor(),  where, peer, sr, uuidLocal, size, assetIDs, checkMod, exclDaRISProc, useIndexes,dbg,  w);
+			more = find (executor(),  where, peer, sr, uuidLocal, size, assetIDs, checkMod, exclDaRISProc, useIndexes, 
+					dbg,  includeDestroyed, w);
 			if (dbg) {
 				System.out.println("nig.replicate.check : checking for abort \n");
 			}
@@ -119,6 +122,7 @@ public class SvcReplicateCheck extends PluginService {
 			}
 		}
 		w.add("total-checked", count_);
+		w.add("total-to-replicate", assetIDs.size());
 	}
 
 
@@ -129,8 +133,8 @@ public class SvcReplicateCheck extends PluginService {
 	}
 
 	private boolean find (ServiceExecutor executor,  String where, String peer, ServerRoute sr, String uuidLocal, String size, 
-			Vector<String> assetList, Boolean checkMod, Boolean exclDaRISProc, Boolean useIndexes, Boolean dbg, XmlWriter w)
-					throws Throwable {
+			Vector<String> assetList, Boolean checkMod, Boolean exclDaRISProc, Boolean useIndexes, Boolean dbg,
+			Boolean includeDestroyed, XmlWriter w)	throws Throwable {
 
 		// Find local  assets  with the given query. We work through the cursor else
 		// we may run out of memory
@@ -143,7 +147,16 @@ public class SvcReplicateCheck extends PluginService {
 			// (not(xpath(pssd-derivation/processed)='true') or (mf-dicom-series has value))
 			where += " and ( (xpath(daris:pssd-derivation/processed)='false' or daris:pssd-derivation hasno value or daris:pssd-derivation/processed hasno value) or (mf-dicom-series has value) )";
 		}
+		if (includeDestroyed) {
+			if (where==null) {
+				where = "asset has been destroyed";
+			} else {
+				where += "and (asset has been destroyed)";
+			}
+			dm.add("include-destroyed", true);
+		}
 		if (where!=null) dm.add("where", where);
+
 		dm.add("idx", idx_);
 		dm.add("size", size);
 		dm.add("pdist", 0);
@@ -211,7 +224,7 @@ public class SvcReplicateCheck extends PluginService {
 				w.add("id", new String[]{"exists", "false"},  primaryID);
 				assetList.add(primaryID);
 				if (dbg) {
-					System.out.println("      nig.replicate.check : id '" + primaryID + "' is not found on the DR server");
+//					System.out.println("      nig.replicate.check : id '" + primaryID + "' is not found on the DR server");
 				}
 			} else {
 
