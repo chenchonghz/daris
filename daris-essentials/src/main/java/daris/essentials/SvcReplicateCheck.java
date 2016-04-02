@@ -33,6 +33,7 @@ public class SvcReplicateCheck extends PluginService {
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
 		_defn.add(new Interface.Element("include-destroyed", BooleanType.DEFAULT, "Include soft destroyed assets. Default to false.", 0, 1));
+		_defn.add(new Interface.Element("rep-inc", IntegerType.DEFAULT, "When debug is true, messages are written to the server log. This parameter specifies the increment to report that assets have been replicated.  Defaults to 1000. ", 0, 1));
 	}
 	public String name() {
 		return "nig.replicate.check";
@@ -78,6 +79,7 @@ public class SvcReplicateCheck extends PluginService {
 		Boolean useIndexes = args.booleanValue("use-indexes", true);
 		Boolean dbg = args.booleanValue("debug", false);
 		Boolean includeDestroyed = args.booleanValue("include-destroyed", false);
+		Integer repInc = args.intValue("rep-inc", 1000);
 
 
 		// Find route to peer. Exception if can't reach and build in extra checks to make sure we are 
@@ -106,16 +108,19 @@ public class SvcReplicateCheck extends PluginService {
 		// Replicate one at a time
 		w.add("total-checked", count_);
 		w.add("total-to-replicate", assetIDs.size());
+		if (dbg) {
+			log(dateTime, "   nig.replicate.check : total checked = " + count_);
+			log(dateTime, "   nig.replicate.check : total to replicate = " + assetIDs.size());
+		}
 		if (dst!=null) {
 			if (dbg) {
 				log(dateTime,"Starting replication of " + assetIDs.size() + " assets");
 			}
-			int inc = 1000;
 			int c = 1;
 			int nRep = 0;
 			for (String id : assetIDs) {
 				if (dbg) {
-					int rem = c % inc; 
+					int rem = c % repInc; 
 					if (c==1 || rem==1) {
 						log(dateTime, "nig.replicate.check: replicating asset # " + c);
 					}
@@ -132,7 +137,7 @@ public class SvcReplicateCheck extends PluginService {
 				dm.add("update-doc-types", false);
 				dm.add("update-models", false);
 				if (includeDestroyed) dm.add("include-destroyed", true);
-				
+
 				try {
 					executor().execute("asset.replicate.to", dm.root());
 					nRep++;
@@ -142,6 +147,9 @@ public class SvcReplicateCheck extends PluginService {
 				c++;
 			}
 			w.add("total-replicated", nRep);
+			if (dbg) {
+				log(dateTime, "   nig.replicate.check : total replicated = " + nRep);
+			}
 		}
 	}
 
