@@ -32,7 +32,7 @@ public class SvcReplicateCheck extends PluginService {
 		_defn.add(new Interface.Element("exclude-daris-proc", BooleanType.DEFAULT, "By default, processed DaRIS DataSets (ones for which (pssd-derivation/processed)='true' AND mf-dicom-series is absent) are included. Set to true to exclude these.", 0, 1));
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
-		_defn.add(new Interface.Element("include-destroyed", BooleanType.DEFAULT, "Include soft destroyed assets. Default to false.", 0, 1));
+		_defn.add(new Interface.Element("include-destroyed", BooleanType.DEFAULT, "Include soft destroyed assets (so don't include soft destroy selection in the where predicate. Default to false.", 0, 1));
 		_defn.add(new Interface.Element("rep-inc", IntegerType.DEFAULT, "When debug is true, messages are written to the server log. This parameter specifies the increment to report that assets have been replicated.  Defaults to 1000. ", 0, 1));
 	}
 	public String name() {
@@ -40,7 +40,7 @@ public class SvcReplicateCheck extends PluginService {
 	}
 
 	public String description() {
-		return "Lists assets (both primaries, and replicas from other hosts) that haven't been replicated to the remote peer. You can abort during the accumulation phase once per size chunk.";
+		return "Lists assets (both primaries, and replicas from other hosts) that haven't been replicated to the remote peer. You can abort during the accumulation phase once per size chunk and also during actual replication of assets (between each asset). Assets can also be actually replicated rather than juyst listed by specifying the destinational root namespace.";
 	}
 
 	public Interface definition() {
@@ -119,13 +119,18 @@ public class SvcReplicateCheck extends PluginService {
 			int c = 1;
 			int nRep = 0;
 			for (String id : assetIDs) {
+				// Check for abort
+				PluginTask.checkIfThreadTaskAborted();
+
+				// Print out stuff
 				if (dbg) {
 					int rem = c % repInc; 
 					if (c==1 || rem==1) {
 						log(dateTime, "nig.replicate.check: replicating asset # " + c);
 					}
 				}
-
+				
+				// Replicate
 				XmlDocMaker dm = new XmlDocMaker("args");
 				dm.add("id", id);
 				dm.add("cmode", "push");
