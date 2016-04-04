@@ -18,13 +18,15 @@ import daris.client.download.DownloadOptions.Parts;
 import daris.client.download.DownloadUtil;
 import daris.client.util.BooleanUtil;
 import daris.client.util.CiteableIdUtils;
+// /home/meduser/MR/daris-client-0.0.5
+// /home/meduser/MR/jre8
+// /home/meduser/MR/Amanda/tmp/
 
 public class DownloadCLI {
 
-    public static final String LOG_DIR = System.getProperty("user.home")
-            + File.pathSeparator + ".daris";
-
     public static void main(String[] args) throws Throwable {
+
+        Logger logger = createLogger();
 
         if (args == null || args.length == 0) {
             showHelp();
@@ -228,48 +230,50 @@ public class DownloadCLI {
                 } else {
                     cxn.reconnect(mfSid);
                 }
-                DownloadUtil.download(cxn, createLogger(), cids, options);
+                DownloadUtil.download(cxn, logger, cids, options);
             } finally {
                 cxn.closeAndDiscard();
                 System.exit(0);
             }
-        } catch (IllegalArgumentException ex) {
-            System.err.println("Error: " + ex.getMessage());
+        } catch (Throwable ex) {
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
+            ex.printStackTrace(System.err);
             showHelp();
             System.exit(1);
         }
 
     }
 
-    private static Logger createLogger() throws Throwable {
-        File dir = new File(LOG_DIR);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
+    static Logger createLogger() throws Throwable {
         Logger logger = Logger.getLogger("daris-download");
         logger.setLevel(Level.ALL);
         logger.setUseParentHandlers(false);
         /*
-         * file handler
+         * add file handler
          */
-        FileHandler fileHandler = new FileHandler(
-                "%h/.daris/daris-download.%g.log", 5000000, 2);
-        fileHandler.setLevel(Level.ALL);
-        fileHandler.setFormatter(new Formatter() {
+        try {
+            FileHandler fileHandler = new FileHandler(
+                    "%t/.daris-download.%g.log", 5000000, 2);
+            fileHandler.setLevel(Level.ALL);
+            fileHandler.setFormatter(new Formatter() {
 
-            @Override
-            public String format(LogRecord record) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(new Date(record.getMillis())).append(" ");
-                sb.append("[thread: ").append(record.getThreadID())
-                        .append("] ");
-                sb.append(record.getLevel().getName()).append(" ");
-                sb.append(record.getMessage());
-                sb.append("\n");
-                return sb.toString();
-            }
-        });
-        logger.addHandler(fileHandler);
+                @Override
+                public String format(LogRecord record) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(new Date(record.getMillis())).append(" ");
+                    sb.append("[thread: ").append(record.getThreadID())
+                            .append("] ");
+                    sb.append(record.getLevel().getName()).append(" ");
+                    sb.append(record.getMessage());
+                    sb.append("\n");
+                    return sb.toString();
+                }
+            });
+            logger.addHandler(fileHandler);
+        } catch (Throwable e) {
+            System.err.println("Warning: failed to create .daris-download.*.log file.");
+            e.printStackTrace(System.err);
+        }
         /*
          * console handler
          */
