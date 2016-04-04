@@ -2,6 +2,7 @@
 # sys.path.append('/path/to/darisc.py')
 import darisc
 
+
 def create_derived_dataset(study, type=None, name=None, description=None, input_file_path=None):  # @ReservedAssignment
     """ Creates/Uploads a dataset in the specified study. 
     """
@@ -19,4 +20,15 @@ def create_derived_dataset(study, type=None, name=None, description=None, input_
 
 if __name__ == '__main__':
     # darisc.set_daris_client_jar_path('/path/to/daris-client.jar')
-    create_derived_dataset(study='39.1.2.1.1.2', type='nifti/series', name='dataset1', input_file_path='/tmp/1.nii.gz')
+    #create_derived_dataset(study='39.1.2.1.1.2', type='nifti/series', name='dataset1', input_file_path='/tmp/1.nii.gz')
+    session = darisc.Session(host='localhost', port='8086', transport='http')
+    session.logon('system', 'manager', 'change_me')
+    w = darisc.XmlStringWriter();
+    w.add('name', '1 2 3.txt')
+    w.push('meta')
+    w.push('daris:pssd-filename')
+    w.add('original', '1 2 3.txt')
+    w.pop()
+    w.pop()
+    re = session.execute('asset.create',args=w.doc_text(),inputs=['file:/tmp/1 2 3.txt'])
+    print(re)
