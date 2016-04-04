@@ -2,7 +2,6 @@ package daris.essentials;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Vector;
 
 import nig.mf.plugin.util.AssetUtil;
@@ -29,17 +28,19 @@ public class SvcReplicateCheck extends PluginService {
 		_defn.add(new Interface.Element("where",StringType.DEFAULT, "Query predicate to restrict the selected assets on the local host. If unset, all assets are considered.", 0, 1));
 		_defn.add(new Interface.Element("size",IntegerType.DEFAULT, "Limit the accumulation loop to this number of assets per iteration (if too large, the VM may run out of virtual memory).  Defaults to 500.", 0, 1));
 		_defn.add(new Interface.Element("dst", StringType.DEFAULT, "The destination parent namespace. If supplied (use '/' for root namespace), assets will actually be replicated (one at a time; not efficient). The default is no replication.", 0, 1));
-		_defn.add(new Interface.Element("mod", BooleanType.DEFAULT, "Check modification time of existing replicas (default false) as well as there existence.", 0, 1));
+		_defn.add(new Interface.Element("mod", BooleanType.DEFAULT, "Check modification time of existing replicas (default false) as well as their existence (hugely slows the process if activated).", 0, 1));
 		_defn.add(new Interface.Element("exclude-daris-proc", BooleanType.DEFAULT, "By default, processed DaRIS DataSets (ones for which (pssd-derivation/processed)='true' AND mf-dicom-series is absent) are included. Set to true to exclude these.", 0, 1));
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
+		_defn.add(new Interface.Element("include-destroyed", BooleanType.DEFAULT, "Include soft destroyed assets (so don't include soft destroy selection in the where predicate. Default to false.", 0, 1));
+		_defn.add(new Interface.Element("rep-inc", IntegerType.DEFAULT, "When debug is true, messages are written to the server log. This parameter specifies the increment to report that assets have been replicated.  Defaults to 1000. ", 0, 1));
 	}
 	public String name() {
 		return "nig.replicate.check";
 	}
 
 	public String description() {
-		return "Lists assets (both primaries, and replicas from other hosts) that haven't been replicated to the remote peer. You can abort during the accumulation phase once per size chunk.";
+		return "Lists assets (both primaries, and replicas from other hosts) that haven't been replicated to the remote peer. You can abort during the accumulation phase once per size chunk and also during actual replication of assets (between each asset). Assets can also be actually replicated rather than juyst listed by specifying the destinational root namespace.";
 	}
 
 	public Interface definition() {
@@ -65,6 +66,8 @@ public class SvcReplicateCheck extends PluginService {
 		// Init
 		idx_ = 1;
 		count_ = 0;
+		Date date = new Date();
+		String dateTime = date.toString();     // Just used to tag message in log file
 
 		// Get inputs
 		String where = args.value("where");
@@ -75,6 +78,8 @@ public class SvcReplicateCheck extends PluginService {
 		Boolean exclDaRISProc = args.booleanValue("exclude-daris-proc", false);
 		Boolean useIndexes = args.booleanValue("use-indexes", true);
 		Boolean dbg = args.booleanValue("debug", false);
+		Boolean includeDestroyed = args.booleanValue("include-destroyed", false);
+		Integer repInc = args.intValue("rep-inc", 1000);
 
 
 		// Find route to peer. Exception if can't reach and build in extra checks to make sure we are 
@@ -92,16 +97,40 @@ public class SvcReplicateCheck extends PluginService {
 		boolean more = true;
 		Vector<String> assetIDs = new Vector<String>();
 		while (more) {
-			more = find (executor(),  where, peer, sr, uuidLocal, size, assetIDs, checkMod, exclDaRISProc, useIndexes,dbg,  w);
+			more = find (executor(),  dateTime, where, peer, sr, uuidLocal, size, assetIDs, checkMod, exclDaRISProc, useIndexes, 
+					dbg,  includeDestroyed, w);
 			if (dbg) {
-				System.out.println("nig.replicate.check : checking for abort \n");
+				log(dateTime, "nig.replicate.check : checking for abort \n");
 			}
 			PluginTask.checkIfThreadTaskAborted();
 		}
 
 		// Replicate one at a time
+		w.add("total-checked", count_);
+		w.add("total-to-replicate", assetIDs.size());
+		if (dbg) {
+			log(dateTime, "   nig.replicate.check : total checked = " + count_);
+			log(dateTime, "   nig.replicate.check : total to replicate = " + assetIDs.size());
+		}
 		if (dst!=null) {
+			if (dbg) {
+				log(dateTime,"Starting replication of " + assetIDs.size() + " assets");
+			}
+			int c = 1;
+			int nRep = 0;
 			for (String id : assetIDs) {
+				// Check for abort
+				PluginTask.checkIfThreadTaskAborted();
+
+				// Print out stuff
+				if (dbg) {
+					int rem = c % repInc; 
+					if (c==1 || rem==1) {
+						log(dateTime, "nig.replicate.check: replicating asset # " + c);
+					}
+				}
+				
+				// Replicate
 				XmlDocMaker dm = new XmlDocMaker("args");
 				dm.add("id", id);
 				dm.add("cmode", "push");
@@ -111,17 +140,27 @@ public class SvcReplicateCheck extends PluginService {
 				dm.pop();
 				dm.add("related", "0");
 				dm.add("update-doc-types", false);
-				if (dbg) System.out.println("nig.replicate.check: replicating asset id " + id);
+				dm.add("update-models", false);
+				if (includeDestroyed) dm.add("include-destroyed", true);
+
 				try {
 					executor().execute("asset.replicate.to", dm.root());
+					nRep++;
 				} catch (Throwable t) {
-					System.out.println("Failed to send asset " + id + " with error " + t.getMessage());
+					log(dateTime, "Failed to send asset " + id + " with error " + t.getMessage());
 				}
+				c++;
+			}
+			w.add("total-replicated", nRep);
+			if (dbg) {
+				log(dateTime, "   nig.replicate.check : total replicated = " + nRep);
 			}
 		}
-		w.add("total-checked", count_);
 	}
 
+	private static void log (String dateTime, String message) {
+		System.out.println(dateTime + " : " + message);
+	}
 
 	private static String serverUUID(ServiceExecutor executor, String proute) throws Throwable {
 
@@ -129,13 +168,13 @@ public class SvcReplicateCheck extends PluginService {
 		return r.value("uuid");
 	}
 
-	private boolean find (ServiceExecutor executor,  String where, String peer, ServerRoute sr, String uuidLocal, String size, 
-			Vector<String> assetList, Boolean checkMod, Boolean exclDaRISProc, Boolean useIndexes, Boolean dbg, XmlWriter w)
-					throws Throwable {
+	private boolean find (ServiceExecutor executor,  String dateTime, String where, String peer, ServerRoute sr, String uuidLocal, String size, 
+			Vector<String> assetList, Boolean checkMod, Boolean exclDaRISProc, Boolean useIndexes, Boolean dbg,
+			Boolean includeDestroyed, XmlWriter w)	throws Throwable {
 
 		// Find local  assets  with the given query. We work through the cursor else
 		// we may run out of memory
-		if (dbg) System.out.println("nig.replicate.check : find assets on primary in chunk starting with idx = " + idx_);
+		if (dbg) log(dateTime, "nig.replicate.check : find assets on primary in chunk starting with idx = " + idx_);
 		XmlDocMaker dm = new XmlDocMaker("args");
 		if (exclDaRISProc) {
 			// Drop processed DataSets from query
@@ -144,7 +183,16 @@ public class SvcReplicateCheck extends PluginService {
 			// (not(xpath(pssd-derivation/processed)='true') or (mf-dicom-series has value))
 			where += " and ( (xpath(daris:pssd-derivation/processed)='false' or daris:pssd-derivation hasno value or daris:pssd-derivation/processed hasno value) or (mf-dicom-series has value) )";
 		}
+		if (includeDestroyed) {
+			if (where==null) {
+				where = "asset has been destroyed";
+			} else {
+				where += "and (asset has been destroyed)";
+			}
+			dm.add("include-destroyed", true);
+		}
 		if (where!=null) dm.add("where", where);
+
 		dm.add("idx", idx_);
 		dm.add("size", size);
 		dm.add("pdist", 0);
@@ -166,7 +214,7 @@ public class SvcReplicateCheck extends PluginService {
 
 		// See if the replicas exist on the peer. 
 		// One query per asset
-		
+
 		// Make a list of rids to find
 		dm = new XmlDocMaker("args");	
 		for (XmlDoc.Element asset : assets) {
@@ -181,22 +229,22 @@ public class SvcReplicateCheck extends PluginService {
 			if (rid==null) rid = uuidLocal + "." + id;
 			dm.add("rid", rid);
 		}
-		
+
 		// Now check if they exist
 		if (dbg) {
-			System.out.println("   nig.replicate.check : checking if " + assets.size() + " assets exist on DR");
+			log(dateTime, "   nig.replicate.check : checking if " + assets.size() + " assets exist on DR");
 		}
 		XmlDoc.Element r2 = executor.execute(sr, "asset.exists", dm.root());
 		if (r2==null) return more;
 		Collection<XmlDoc.Element> results = r2.elements("exists");
 
-		
+
 		// Create a list of assets to replicate
 		if (dbg) {
-			System.out.println ("   nig.replicate.check : iterate through " + results.size() + " results and build list for replication.");
+			log(dateTime, "   nig.replicate.check : iterate through " + results.size() + " results and build list for replication.");
 		}
 		for (XmlDoc.Element result : results) {
-			
+
 			// Fetch the rid and pull out the id
 			String rid = result.value("@rid");
 			String[] t = rid.split("\\.");
@@ -211,9 +259,6 @@ public class SvcReplicateCheck extends PluginService {
 			if (result.booleanValue()==false) {
 				w.add("id", new String[]{"exists", "false"},  primaryID);
 				assetList.add(primaryID);
-				if (dbg) {
-					System.out.println("      nig.replicate.check : id '" + primaryID + "' is not found on the DR server");
-				}
 			} else {
 
 				// The asset exists as a replica, but perhaps it's been modified.
@@ -234,8 +279,8 @@ public class SvcReplicateCheck extends PluginService {
 					String csizeRep = remoteAsset.value("asset/content/size");
 					String cidRep = remoteAsset.value("asset/cid");            // Same for primary and replica
 					if (dbg) {
-						System.out.println("      nig.replicate.check : mtimes=" + mtime + ", " + mtimeRep);
-						System.out.println("      nig.replicate.check : sizes =" + csize + ", " + csizeRep);
+						log(dateTime, "      nig.replicate.check : mtimes=" + mtime + ", " + mtimeRep);
+						log(dateTime, "      nig.replicate.check : sizes =" + csize + ", " + csizeRep);
 					}
 					if (mtime.after(mtimeRep)) {
 						w.add("id", new String[]{"exists", "true", "cid", cidRep, "mtime-primary", mtime.toString(), "mtime-replica", mtimeRep.toString(),
