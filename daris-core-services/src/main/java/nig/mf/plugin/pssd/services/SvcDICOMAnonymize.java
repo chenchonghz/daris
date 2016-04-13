@@ -73,7 +73,6 @@ public class SvcDICOMAnonymize extends PluginService {
 			throw new Exception ("Can't supply 'id' and 'cid'");
 		}
 		if (id==null && cid==null) {
-			System.out.println("om.pssd.dicom.anonymize - no id or cid=" + cid);
 			throw new Exception ("Must supply 'id' or 'cid'");
 		}
 		if (cid==null) cid = CiteableIdUtil.idToCid(executor(), id);
