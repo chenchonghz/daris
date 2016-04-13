@@ -71,9 +71,9 @@ public class DistributedAsset {
 	public DistributedAsset(String route, String cid) throws Throwable {
 
 		// CIDs include the Project root (depth 2)
-		if (nig.mf.pssd.CiteableIdUtil.getIdDepth(cid) < (nig.mf.pssd.CiteableIdUtil.PROJECT_ID_DEPTH - 1)) {
+		if (nig.mf.pssd.CiteableIdUtil.getIdDepth(cid) < (nig.mf.pssd.CiteableIdUtil.projectDepth() - 1)) {
 			throw new Exception("The CID " + cid + " must be at least of depth = "
-					+ (nig.mf.pssd.CiteableIdUtil.PROJECT_ID_DEPTH - 1));
+					+ (nig.mf.pssd.CiteableIdUtil.projectDepth() - 1));
 		}
 		_cid = cid;
 		_route = route;
@@ -104,9 +104,9 @@ public class DistributedAsset {
 		_cid = cid.value();
 
 		// CIDs include the Project root (depth 2)
-		if (nig.mf.pssd.CiteableIdUtil.getIdDepth(_cid) < (nig.mf.pssd.CiteableIdUtil.PROJECT_ID_DEPTH - 1)) {
+		if (nig.mf.pssd.CiteableIdUtil.getIdDepth(_cid) < (nig.mf.pssd.CiteableIdUtil.projectDepth() - 1)) {
 			throw new Exception("The CID " + cid + " must be at least of depth = "
-					+ (nig.mf.pssd.CiteableIdUtil.PROJECT_ID_DEPTH - 1));
+					+ (nig.mf.pssd.CiteableIdUtil.projectDepth() - 1));
 		}
 		//
 		_route = cid.value("@proute");
@@ -141,7 +141,7 @@ public class DistributedAsset {
 		// other CID trees could
 		// have the same Depth).
 		int depth = nig.mf.pssd.CiteableIdUtil.getIdDepth(_cid);
-		if (depth == nig.mf.pssd.CiteableIdUtil.PROJECT_ID_DEPTH) {
+		if (depth == nig.mf.pssd.CiteableIdUtil.projectDepth()) {
 			_parentProject = this;
 			return _parentProject;
 		}
@@ -198,10 +198,10 @@ public class DistributedAsset {
 		// other CID trees could
 		// have the same Depth).
 		int depth = nig.mf.pssd.CiteableIdUtil.getIdDepth(_cid);
-		if (depth == nig.mf.pssd.CiteableIdUtil.SUBJECT_ID_DEPTH) {
+		if (depth == nig.mf.pssd.CiteableIdUtil.subjectDepth()) {
 			_parentSubject = this;
 			return _parentSubject;
-		} else if (depth < nig.mf.pssd.CiteableIdUtil.SUBJECT_ID_DEPTH) {
+		} else if (depth < nig.mf.pssd.CiteableIdUtil.subjectDepth()) {
 			throw new Exception("The object " + _cid + " is a Project so you cannot find its parent Subject");
 		}
 
