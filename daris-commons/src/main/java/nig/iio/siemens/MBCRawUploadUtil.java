@@ -8,6 +8,7 @@ import java.util.Date;
 
 import nig.mf.client.util.AssetUtil;
 import nig.mf.pssd.client.util.PSSDUtil;
+import nig.mf.pssd.CiteableIdUtil;
 
 import org.apache.commons.io.FileUtils;
 
@@ -84,9 +85,12 @@ public class MBCRawUploadUtil {
 			SUBJECT_FIND_METHOD method, String firstName, String lastName, String patientID,  PrintWriter logger) throws Throwable {
 
 		// Does an asset exist for the supplied CID ?
-		int depth = nig.mf.pssd.CiteableIdUtil.getIdDepth(cid);
-		if (depth!=2 && depth!=3 && depth!=4) {
-			throw new Exception ("The depth of the supplied id must be 2 (Repository), 3 (Project) or 4 (Subject)");
+		int depth = CiteableIdUtil.getIdDepth(cid);
+		if (depth!=CiteableIdUtil.repositoryDepth() && 
+				depth!=CiteableIdUtil.projectDepth() && depth!=CiteableIdUtil.subjectDepth()) {
+			throw new Exception ("The depth of the supplied id must be " + CiteableIdUtil.repositoryDepth() + 
+					" (Repository), " + CiteableIdUtil.projectDepth() + " (Project) or " +
+					CiteableIdUtil.subjectDepth() + "(Subject)");
 		}
 		boolean exists = AssetUtil.exists(cxn, cid, true);
 
@@ -98,7 +102,7 @@ public class MBCRawUploadUtil {
 			// We are going to handle the special case that the CID is the repository (depth 2)
 			// for which an asset does not exist. Under these conditions, we will try to 
 			// find the Subject pre-existing in some PSSD project.  
-			if (depth==2) {
+			if (depth==CiteableIdUtil.repositoryDepth()) {
 				// Null if can't find or multiples
 				subjectCID = MBCRawUploadUtil.findPatientAssetFromDICOM(cxn, method, firstName, lastName, patientID, cid, 
 						DICOMNameSpace, logger);
