@@ -23,8 +23,6 @@ import arc.xml.XmlDocMaker;
 
 public class StudyProxyFactory {
 
-	private static final Integer MIN_CID_DEPTH = 3;
-
 	/**
 	 * Creates the "right" (PSSD or DICOM/PSS) study proxy for the incoming study.
 	 * 
@@ -287,6 +285,8 @@ public class StudyProxyFactory {
 
 	}
 
+	
+
 
 	/**
 	 * If possible, generate a citeable identifier from the
@@ -307,7 +307,7 @@ public class StudyProxyFactory {
 				sid = ic.cidPrefix() + "." + sid;       // Stick on the server.namespace prefix
 			}
 			if ( CiteableIdUtil.isCiteableId(sid)) {
-				if ( CiteableIdUtil.getIdDepth(sid)>= MIN_CID_DEPTH) {
+				if ( CiteableIdUtil.getIdDepth(sid)>=CiteableIdUtil.projectDepth()) {
 					cms.setCID (sid);
 					return cms;
 				} else {
@@ -346,7 +346,7 @@ public class StudyProxyFactory {
 						cms.setCID(sid);
 					}
 					boolean sidOK = CiteableIdUtil.isCiteableId(sid) && 
-							CiteableIdUtil.getIdDepth(sid)>= MIN_CID_DEPTH;
+							CiteableIdUtil.getIdDepth(sid)>= CiteableIdUtil.projectDepth();
 							boolean stepOK = true;        // Null is ok
 							if (step!=null) {
 								stepOK = isValidStepPath(step);
