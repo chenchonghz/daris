@@ -152,8 +152,6 @@ public class SvcDataSetClone extends PluginService {
 		dm = new XmlDocMaker("args");
 		dm.add ("cid", newID);
 		dm.add("clone", nig.mf.pssd.plugin.util.CiteableIdUtil.cidToId(executor, oldID));
-		System.out.println(executor!=null);
-		System.out.println(dm.root());
 		executor.execute("asset.set", dm.root());
 
 		// Re-fetch meta-data after cloning
