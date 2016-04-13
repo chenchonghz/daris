@@ -23,6 +23,9 @@ public class Layout {
 
     public static class Pattern {
 
+    	/**
+    	 * TBD-CID: this static pattern assumes fixed CID depths. Needs to work with dynamically retrieved depths
+    	 */
         public static final Pattern PSSD_DEFAULT = new Pattern(
                 "pssd-default",
                 "The default shopping cart layout pattern.",
