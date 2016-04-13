@@ -77,7 +77,7 @@ public class SvcArchiveContentList extends PluginService {
             if (ce == null || so == null) {
                 throw new Exception(
                         "asset(" + (id == null ? ("cid=" + cid) : ("id=" + id))
-                                + ") has not content.");
+                                + ") has no content.");
             }
             String cType = ce.value("type");
             String cExt = ce.value("type/@ext");
