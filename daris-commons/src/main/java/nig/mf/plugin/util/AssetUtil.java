@@ -215,10 +215,8 @@ public class AssetUtil {
 		XmlDocMaker doc = new XmlDocMaker("args");
 		doc.add("id", id);
 		doc.add("pdist", 0); // Force local
-		XmlDoc.Element r = executor
-				.execute("asset.get", doc.root());
+		XmlDoc.Element r = executor.execute("asset.get", doc.root());
 		return r.value("asset/cid");
-
 	}
 
 	/**
