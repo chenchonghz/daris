@@ -223,15 +223,15 @@ public class MBCMRUpload {
 
 		// CHeck CID ois Subject or Study
 		int depth = CiteableIdUtil.getIdDepth(ops.id);
-		if (depth != CiteableIdUtil.STUDY_ID_DEPTH
-				&& depth != CiteableIdUtil.SUBJECT_ID_DEPTH
-				&& depth != CiteableIdUtil.PROJECT_ID_DEPTH) {
+		if (depth != CiteableIdUtil.studyDepth()
+				&& depth != CiteableIdUtil.subjectDepth()
+				&& depth != CiteableIdUtil.projectDepth()) {
 			throw new Exception(
 					"The depth of the supplied id must be 2 (Repository), 3 (Project), 4 (Subject) or (6 Study)");
 		}
 
 		// Check is raw Study
-		if (depth == CiteableIdUtil.STUDY_ID_DEPTH) {
+		if (depth == CiteableIdUtil.studyDepth()) {
 			XmlDoc.Element meta = AssetUtil.getMeta(cxn, null, ops.id);
 			XmlDoc.Element rawMeta = meta
 					.element("asset/meta/daris:siemens-raw-mr-study");
@@ -397,7 +397,7 @@ public class MBCMRUpload {
 
 			// Try and find the Subject pre-existing when the CID is for
 			// repos,project or subject
-			if (depth < CiteableIdUtil.STUDY_ID_DEPTH) {
+			if (depth < CiteableIdUtil.studyDepth()) {
 
 				// See if we can find the subject. Null if we didn't find it or
 				// multiples
