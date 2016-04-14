@@ -18,7 +18,7 @@
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<maven.build.timestamp.format>dd-MMM-yyyy HH:mm:ss z</maven.build.timestamp.format>
 		<require.mflux.version>4.3.073</require.mflux.version>
-		<daris-commons.version>1.0.3</daris-commons.version>
+		<daris-commons.version>1.0.4</daris-commons.version>
 		<daris-dcmtools.version>1.0.1</daris-dcmtools.version>
 		<daris-essentials.version>1.0.5</daris-essentials.version>
 		<daris-core-services.version>3.2.3</daris-core-services.version>
