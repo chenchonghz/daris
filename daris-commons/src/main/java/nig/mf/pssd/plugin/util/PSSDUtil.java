@@ -22,146 +22,171 @@ public class PSSDUtil {
 	public static final String DATA_OBJECT_MODEL = "om.pssd.dataobject";
 	public static final String R_SUBJECT_MODEL = "om.pssd.r-subject";
 	public static final String METHOD_MODEL = "om.pssd.method";
+	public static final String MODEL_PREFIX = "om.pssd";
+
+
+
+	public static boolean isValidPSSDObject(ServiceExecutor executor, String cid) throws Throwable {
+
+		String model = AssetUtil.getModel(executor, cid, true);
+		if (model == null) return false;
+		if (model.startsWith(MODEL_PREFIX)) return true;
+		return false;
+	}
+
+	public static boolean isValidPSSDObject(ServiceExecutor executor, String cid, String model, Boolean throwIt) throws Throwable {
+
+		Boolean ok = true;
+		if (model == null) {
+			ok = false;
+		} else {
+			if (!model.startsWith(MODEL_PREFIX)) ok = false;
+		}
+		if (ok) {
+			return true;
+		} else {
+			if (throwIt) {
+				throw new Exception("No or wrong asset/model found. Asset(cid=" + cid + ") is not a valid PSSD object.");
+			} else {
+				return false;
+			}
+		}
+	}
 
 	public static boolean isValidProject(ServiceExecutor executor, String cid, boolean throwIt) throws Throwable {
 
 		String model = AssetUtil.getModel(executor, cid, true);
-		if (model == null) {
-			throw new Exception("No asset/model found. Asset(cid=" + cid + ") is not a valid PSSD object.");
-		}
+		if (!isValidPSSDObject (executor, cid, model, throwIt)) return false;
 		if (!model.equals(PROJECT_MODEL)) {
 			if (throwIt) {
 				throw new Exception("Wrong asset/model. Asset(cid=" + cid + ", model=" + model
-						+ ") is not a valid PSSD project asset.");
+						+ ") is not a valid PSSD Project asset.");
 			} else {
 				return false;
 			}
 		} else {
 			return true;
 		}
-
 	}
 
 	public static boolean isValidSubject(ServiceExecutor executor, String cid, boolean throwIt) throws Throwable {
 
 		String model = AssetUtil.getModel(executor, cid, true);
-		if (model == null) {
-			throw new Exception("No asset/model found. Asset(cid=" + cid + ") is not a valid PSSD object.");
-		}
+		if (!isValidPSSDObject (executor, cid, model, throwIt)) return false;
 		if (!model.equals(SUBJECT_MODEL)) {
 			if (throwIt) {
 				throw new Exception("Wrong asset/model. Asset(cid=" + cid + ", model=" + model
-						+ ") is not a valid PSSD subject asset.");
+						+ ") is not a valid PSSD Subject asset.");
 			} else {
 				return false;
 			}
 		} else {
 			return true;
 		}
-
 	}
 
+	
+	
 	public static boolean isValidExMethod(ServiceExecutor executor, String cid, boolean throwIt) throws Throwable {
 
 		String model = AssetUtil.getModel(executor, cid, true);
-		if (model == null) {
-			throw new Exception("No asset/model found. Asset(cid=" + cid + ") is not a valid PSSD object.");
-		}
+		if (!isValidPSSDObject (executor, cid, model, throwIt)) return false;
 		if (!model.equals(EX_METHOD_MODEL)) {
 			if (throwIt) {
 				throw new Exception("Wrong asset/model. Asset(cid=" + cid + ", model=" + model
-						+ ") is not a valid PSSD ex-method asset.");
+						+ ") is not a valid PSSD ExMethod asset.");
 			} else {
 				return false;
 			}
 		} else {
 			return true;
 		}
-
 	}
 
+	
 	public static boolean isValidStudy(ServiceExecutor executor, String cid, boolean throwIt) throws Throwable {
 
 		String model = AssetUtil.getModel(executor, cid, true);
-		if (model == null) {
-			throw new Exception("No asset/model found. Asset(cid=" + cid + ") is not a valid PSSD object.");
-		}
+		if (!isValidPSSDObject (executor, cid, model, throwIt)) return false;
 		if (!model.equals(STUDY_MODEL)) {
 			if (throwIt) {
 				throw new Exception("Wrong asset/model. Asset(cid=" + cid + ", model=" + model
-						+ ") is not a valid PSSD study asset.");
+						+ ") is not a valid PSSD Study asset.");
 			} else {
 				return false;
 			}
 		} else {
 			return true;
 		}
-
 	}
 
 	public static boolean isValidDataSet(ServiceExecutor executor, String cid, boolean throwIt) throws Throwable {
 
 		String model = AssetUtil.getModel(executor, cid, true);
-		if (model == null) {
-			throw new Exception("No asset/model found. Asset(cid=" + cid + ") is not a valid PSSD object.");
-		}
+		if (!isValidPSSDObject (executor, cid, model, throwIt)) return false;
 		if (!model.equals(DATASET_MODEL)) {
 			if (throwIt) {
 				throw new Exception("Wrong asset/model. Asset(cid=" + cid + ", model=" + model
-						+ ") is not a valid PSSD dataset asset.");
+						+ ") is not a valid PSSD DataSet asset.");
 			} else {
 				return false;
 			}
 		} else {
 			return true;
 		}
-
 	}
 
-	public static boolean isValidDataObject(ServiceExecutor executor, String cid) throws Throwable {
+	
+	public static boolean isValidDataObject(ServiceExecutor executor, String cid, boolean throwIt) throws Throwable {
 
 		String model = AssetUtil.getModel(executor, cid, true);
-		if (model == null) {
-			throw new Exception("No asset/model found. Asset(cid=" + cid + ") is not a valid PSSD object.");
-		}
+		if (!isValidPSSDObject (executor, cid, model, throwIt)) return false;
 		if (!model.equals(DATA_OBJECT_MODEL)) {
-			throw new Exception("Wrong asset/model. Asset(cid=" + cid + ", model=" + model
-					+ ") is not a valid PSSD data-object asset.");
+			if (throwIt) {
+				throw new Exception("Wrong asset/model. Asset(cid=" + cid + ", model=" + model
+						+ ") is not a valid PSSD DataObject asset.");
+			} else {
+				return false;
+			}
 		} else {
 			return true;
 		}
-
 	}
 
-	public static boolean isValidMethod(ServiceExecutor executor, String cid) throws Throwable {
+	public static boolean isValidMethod (ServiceExecutor executor, String cid, boolean throwIt) throws Throwable {
 
 		String model = AssetUtil.getModel(executor, cid, true);
-		if (model == null) {
-			throw new Exception("No asset/model found. Asset(cid=" + cid + ") is not a valid PSSD object.");
-		}
+		if (!isValidPSSDObject (executor, cid, model, throwIt)) return false;
 		if (!model.equals(METHOD_MODEL)) {
-			throw new Exception("Wrong asset/model. Asset(cid=" + cid + ", model=" + model
-					+ ") is not a valid PSSD method asset.");
+			if (throwIt) {
+				throw new Exception("Wrong asset/model. Asset(cid=" + cid + ", model=" + model
+						+ ") is not a valid PSSD Method asset.");
+			} else {
+				return false;
+			}
 		} else {
 			return true;
 		}
-
 	}
 
-	public static boolean isValidRSubject(ServiceExecutor executor, String cid) throws Throwable {
+	public static boolean isValidRSubject(ServiceExecutor executor, String cid, boolean throwIt) throws Throwable {
 
 		String model = AssetUtil.getModel(executor, cid, true);
-		if (model == null) {
-			throw new Exception("No asset/model found. Asset(cid=" + cid + ") is not a valid PSSD object.");
-		}
+		if (!isValidPSSDObject (executor, cid, model, throwIt)) return false;
 		if (!model.equals(R_SUBJECT_MODEL)) {
-			throw new Exception("Wrong asset/model. Asset(cid=" + cid + ", model=" + model
-					+ ") is not a valid PSSD r-subject asset.");
+			if (throwIt) {
+				throw new Exception("Wrong asset/model. Asset(cid=" + cid + ", model=" + model
+						+ ") is not a valid PSSD RSubject asset.");
+			} else {
+				return false;
+			}
 		} else {
 			return true;
 		}
-
 	}
+
+	
+
 
 	/**
 	 * Is the asset associated with this CID a replica ?
@@ -281,13 +306,13 @@ public class PSSDUtil {
 	 */
 	public static void  isSystemAdminORGiven (ServiceExecutor executor, String role) throws Throwable {
 		if (!hasRole (null, executor, "system-administrator") &&
-			!hasRole (null, executor, role)) {
+				!hasRole (null, executor, role)) {
 			throw new Exception ("You do not hold the system-administrator " +
-			" or the " + role + " role.");
+					" or the " + role + " role.");
 		}
 	}
 
-	
+
 	/**
 	 * Establish if the calling user has the given role
 	 * 

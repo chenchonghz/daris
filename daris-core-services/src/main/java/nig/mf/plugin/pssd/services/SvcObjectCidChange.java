@@ -74,8 +74,8 @@ public class SvcObjectCidChange extends PluginService {
 		}
 		// check if the cid is for subject, ex-method, study or dataset.
 		int depth = CiteableIdUtil.getIdDepth(from);
-		if (depth < CiteableIdUtil.PROJECT_ID_DEPTH
-				|| depth > CiteableIdUtil.DATASET_ID_DEPTH) {
+		if (depth < CiteableIdUtil.projectDepth()
+				|| depth > CiteableIdUtil.dataSetDepth()) {
 			throw new IllegalArgumentException(
 					"The citeable id must be an id of subject/ex-method/study/dataset.");
 		}

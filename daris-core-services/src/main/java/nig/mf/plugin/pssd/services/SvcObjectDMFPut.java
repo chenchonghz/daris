@@ -47,9 +47,9 @@ public class SvcObjectDMFPut extends PluginService {
 
 		String id = args.value("id");
 		if (nig.mf.pssd.CiteableIdUtil.getIdDepth(id) < 
-				nig.mf.pssd.CiteableIdUtil.PROJECT_ID_DEPTH) {
+				nig.mf.pssd.CiteableIdUtil.projectDepth()) {
 			throw new Exception("Depth of citeable id must be at least "
-					+nig.mf.pssd.CiteableIdUtil.PROJECT_ID_DEPTH + "(Project ID depth). ");
+					+nig.mf.pssd.CiteableIdUtil.projectDepth() + "(Project ID depth). ");
 		}
 
 		boolean async = false;

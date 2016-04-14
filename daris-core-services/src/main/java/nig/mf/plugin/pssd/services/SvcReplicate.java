@@ -2,6 +2,7 @@ package nig.mf.plugin.pssd.services;
 
 import java.util.Collection;
 
+import nig.mf.pssd.plugin.util.PSSDUtil;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.ServiceExecutor;
 import arc.mf.plugin.dtype.BooleanType;
@@ -84,16 +85,19 @@ public class SvcReplicate extends PluginService {
 		if (model == null) {
 			throw new Exception("No asset/model found. Asset(cid=" + pid.value() + ") is not a valid PSSD object.");
 		}
-		int depth = nig.mf.pssd.CiteableIdUtil.getIdDepth(pid.value());
-		if (depth<3 || depth>6) {
-			throw new Exception ("Parent object must be project,subject,study, or exmethod");
+		
+		String id = pid.value();
+		if (!PSSDUtil.isValidProject(executor, id, false) &&
+			!PSSDUtil.isValidSubject(executor, id, false) &&
+			!PSSDUtil.isValidExMethod(executor, id, false) &&
+			!PSSDUtil.isValidStudy(executor, id, false)) {	    
+			throw new Exception ("Parent object must be project,subject,exmethod or study.");
 		}
 
 
 		// Fetch DMF files that are offline. If the dmf services are not not installed on the server,
 		// then we want it to fail so don't catch anything
 		Boolean dmf = pid.booleanValue("@dmf");
-		String id = pid.value();
 		Boolean inclusive = pid.booleanValue("@inclusive", true);
 		XmlDoc.Element dmfStatus = null;
 		if (dmf) {
@@ -159,6 +163,9 @@ public class SvcReplicate extends PluginService {
 	}
 
 	private void replicateAsset (ServiceExecutor executor, String parts, String id, String peer, String dst, XmlWriter w) throws Throwable {
+		if (!PSSDUtil.isValidPSSDObject(executor, id)) {
+			throw new Exception ("The specified object is not a PSSD object");
+		}
 		XmlDocMaker dm = new XmlDocMaker("args");
 		dm.push("peer");
 		dm.add("name", peer);

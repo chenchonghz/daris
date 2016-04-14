@@ -145,7 +145,7 @@ public class SvcObjectDestroy extends PluginService {
 
         // TRy not to destroy the repository :-)
         int depth = CiteableIdUtil.getIdDepth(cid);
-        if (depth < CiteableIdUtil.PROJECT_ID_DEPTH) {
+        if (depth < CiteableIdUtil.projectDepth()) {
             throw new Exception(
                     "You are attempting to destroy objects at a level higher than Projects (e.g. the entire repository). This is not allowed");
         }
