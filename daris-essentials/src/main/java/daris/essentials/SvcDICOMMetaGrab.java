@@ -17,6 +17,9 @@ import arc.xml.XmlDoc;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
 
+/*
+ * TBD : this service has knowledge about PSSD. It should really be in the daris-core-services not here in essentials
+ */
 public class SvcDICOMMetaGrab extends PluginService {
 
 	// Pull out into own class if need to be re-used

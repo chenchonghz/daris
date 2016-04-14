@@ -45,6 +45,10 @@ import com.pixelmed.dicom.FileMetaInformation;
 import com.pixelmed.dicom.TagFromName;
 import com.pixelmed.dicom.TransferSyntax;
 
+/*
+ * TBD - this service has PSSD knowledge.  It shoulod really be in daris-core-services not here in essentials
+ * 
+ */
 public class SvcDicomDownload extends PluginService {
 
     public static final String SERVICE_NAME = "daris.dicom.download";
