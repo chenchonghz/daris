@@ -64,12 +64,6 @@ public class SvcAssetDMFGet extends PluginService {
 		if (cid == null) {
 			cid = AssetUtil.getCid(executor(), id);
 		}
-		if (cid != null) {
-			if (CiteableIdUtil.getIdDepth(cid) < CiteableIdUtil.PROJECT_ID_DEPTH) {
-				throw new Exception("Depth of citeable id must be at least " + CiteableIdUtil.PROJECT_ID_DEPTH
-						+ "(Project ID depth). ");
-			}
-		}
 
 		if (cid == null) {
 			if (async) {
