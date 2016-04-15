@@ -28,9 +28,11 @@ import com.pixelmed.network.StorageSOPClassSCU;
 import arc.archive.ArchiveExtractor;
 import arc.archive.ArchiveInput;
 import arc.archive.ArchiveRegistry;
+import arc.mf.plugin.PluginLog;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.PluginTask;
 import arc.mf.plugin.ServiceExecutor;
+import arc.mf.plugin.Session;
 import arc.mf.plugin.dtype.AssetType;
 import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.CiteableIdType;
@@ -52,6 +54,50 @@ import arc.xml.XmlWriter;
 public class SvcDicomSend extends PluginService {
 
     public static final String SERVICE_NAME = "daris.dicom.send";
+
+    public static final String LOG_NAME = "dicom-send";
+
+    static class Logger {
+
+        private String _prefix;
+
+        Logger(String callingAET, String calledAET, String host, int port)
+                throws Throwable {
+            StringBuilder sb = new StringBuilder();
+            if (Session.user() != null) {
+                sb.append("[").append(Session.user().domain()).append(":")
+                        .append(Session.user().name()).append("]");
+            }
+            sb.append("[calling AE:").append(callingAET).append(", called AE:")
+                    .append(calledAET).append("@").append(host).append(":")
+                    .append(port).append("] ");
+            _prefix = sb.toString();
+        }
+
+        public void logInfo(String msg) {
+            StringBuilder sb = new StringBuilder(_prefix);
+            PluginLog.log(LOG_NAME).add(PluginLog.WARNING,
+                    sb.append(msg).toString());
+        }
+
+        public void logWarning(String msg) {
+            StringBuilder sb = new StringBuilder(_prefix);
+            PluginLog.log(LOG_NAME).add(PluginLog.WARNING,
+                    sb.append(msg).toString());
+        }
+
+        public void logError(String msg, Throwable t) {
+            StringBuilder sb = new StringBuilder(_prefix);
+            PluginLog.log(LOG_NAME).add(PluginLog.ERROR,
+                    sb.append(msg).toString(), t);
+        }
+
+        public void logError(String msg) {
+            StringBuilder sb = new StringBuilder(_prefix);
+            PluginLog.log(LOG_NAME).add(PluginLog.ERROR,
+                    sb.append(msg).toString());
+        }
+    }
 
     public static enum ElementName {
         PATIENT_NAME("patient.name", "00100010"), PATIENT_ID("patient.id",
@@ -205,6 +251,8 @@ public class SvcDicomSend extends PluginService {
                 0, 1));
         override.add(ee);
         _defn.add(override);
+        _defn.add(new Interface.Element("log", BooleanType.DEFAULT,
+                "On/off logging. Defaults to true.", 0, 1));
     }
 
     @Override
@@ -236,20 +284,30 @@ public class SvcDicomSend extends PluginService {
     @Override
     public void execute(Element args, Inputs inputs, Outputs outputs,
             XmlWriter w) throws Throwable {
+
         /*
          * parse args
          */
+        boolean log = args.booleanValue("log", true);
         Collection<String> ids = args.values("id");
         Collection<String> cids = args.values("cid");
         String where = args.value("where");
         if ((ids == null || ids.isEmpty()) && (cids == null || cids.isEmpty())
                 && where == null) {
-            throw new Exception("Argument 'id', 'cid' or 'where' is required.");
+            Exception ex = new Exception(
+                    "Argument 'id', 'cid' or 'where' is required.");
+            if (log) {
+                PluginLog.log(LOG_NAME).add(PluginLog.ERROR, ex.getMessage(),
+                        ex);
+            }
+            throw ex;
         }
         String callingAETitle = args.value("calling-ae/title");
         String calledAETitle = args.value("called-ae/title");
         String calledAEHost = args.value("called-ae/host");
         int calledAEPort = args.intValue("called-ae/port");
+        final Logger logger = log ? new Logger(callingAETitle, calledAETitle,
+                calledAEHost, calledAEPort) : null;
         /*
          * elements to override
          */
@@ -268,14 +326,20 @@ public class SvcDicomSend extends PluginService {
         if (ids != null) {
             PluginTask.checkIfThreadTaskAborted();
             for (String id : ids) {
-                ensureAssetExists(executor(), id, false);
+                ensureAssetExists(executor(), id, false, logger);
+                if (logger != null) {
+                    logger.logInfo("Adding dicom dataset " + id);
+                }
                 addByAssetId(executor(), id, datasetAssetIds);
             }
         }
         if (cids != null) {
             PluginTask.checkIfThreadTaskAborted();
             for (String cid : cids) {
-                ensureAssetExists(executor(), cid, true);
+                ensureAssetExists(executor(), cid, true, logger);
+                if (logger != null) {
+                    logger.logInfo("adding dicom dataset " + cid);
+                }
                 addByCiteableId(executor(), cid, datasetAssetIds);
             }
         }
@@ -285,6 +349,9 @@ public class SvcDicomSend extends PluginService {
         }
         if (datasetAssetIds.isEmpty()) {
             // No DICOM dataset/series found.
+            if (logger != null) {
+                logger.logInfo("no dicom dataset is found. Finish.");
+            }
             return;
         }
 
@@ -303,6 +370,10 @@ public class SvcDicomSend extends PluginService {
                 PluginTask.checkIfThreadTaskAborted();
                 File assetDir = new File(dir, datasetAssetId);
                 assetDir.mkdir();
+                if (logger != null) {
+                    logger.logInfo(
+                            "extracting dicom dataset " + datasetAssetId);
+                }
                 extractAssetContent(executor(), datasetAssetId, assetDir);
                 if (override != null && !override.isEmpty()) {
                     PluginTask.setCurrentThreadActivity(
@@ -310,8 +381,17 @@ public class SvcDicomSend extends PluginService {
                                     + "...");
                     PluginTask.checkIfThreadTaskAborted();
                     if (hasValueRefs) {
+                        if (logger != null) {
+                            logger.logInfo(
+                                    "resolve value reference for dicom dataset "
+                                            + datasetAssetId);
+                        }
                         updateOverriddenElementsWithValueRefs(executor(),
                                 datasetAssetId, override);
+                    }
+                    if (logger != null) {
+                        logger.logInfo(
+                                "editing dicom dataset " + datasetAssetId);
                     }
                     editDicomFiles(assetDir, override, callingAETitle);
                 }
@@ -321,6 +401,9 @@ public class SvcDicomSend extends PluginService {
             PluginTask.checkIfThreadTaskAborted();
             PluginTask.setCurrentThreadActivity("Sending dicom data...");
             final int[] result = new int[4];
+            if (logger != null) {
+                logger.logInfo("sending 0/" + total + " dicom files...");
+            }
             new StorageSOPClassSCU(calledAEHost, calledAEPort, calledAETitle,
                     callingAETitle, dicomFiles, 0,
                     new MultipleInstanceTransferStatusHandler() {
@@ -335,6 +418,11 @@ public class SvcDicomSend extends PluginService {
                             result[1] = nCompleted;
                             result[2] = nFailed;
                             result[3] = nWarning;
+                            if (logger != null && nCompleted % 100 == 0) {
+                                logger.logInfo("sending " + nCompleted + "/"
+                                        + (nRemaining + nCompleted)
+                                        + " dicom files...");
+                            }
                         }
                     }, null, 0, 0);
             int nCompleted = result[1];
@@ -344,15 +432,27 @@ public class SvcDicomSend extends PluginService {
                             "failed", Integer.toString(nFailed), "total",
                             Integer.toString(total) },
                     nFailed <= 0);
+            if (logger != null) {
+                logger.logInfo(
+                        "sent " + nCompleted + "/" + total + " dicom files.");
+            }
+            if (nFailed > 0) {
+                if (logger != null) {
+                    logger.logError("failed " + nFailed + " of " + total
+                            + " dicom files.");
+                }
+            }
             PluginTask.threadTaskCompleted();
+        } catch (Throwable t) {
+            PluginLog.log(LOG_NAME).add(PluginLog.ERROR, t.getMessage(), t);
+            throw t;
         } finally {
             forceDelete(dir);
         }
-
     }
 
     private static void ensureAssetExists(ServiceExecutor executor, String id,
-            boolean cid) throws Throwable {
+            boolean cid, Logger logger) throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
         if (cid) {
             dm.add("cid", id);
@@ -370,7 +470,11 @@ public class SvcDicomSend extends PluginService {
             }
             sb.append(id);
             sb.append(") does not exist.");
-            throw new IllegalArgumentException(sb.toString());
+            Exception ex = new IllegalArgumentException(sb.toString());
+            if (logger != null) {
+                logger.logError(ex.getMessage());
+            }
+            throw ex;
         }
     }
 
@@ -558,7 +662,7 @@ public class SvcDicomSend extends PluginService {
         if (ees != null) {
             Map<AttributeTag, Object> map = new TreeMap<AttributeTag, Object>();
             for (XmlDoc.Element ee : ees) {
-                ElementName name = ElementName.fromString(ee.value("name"));
+                ElementName name = ElementName.fromString(ee.value("@name"));
                 String tagStr = ee.value("@tag");
                 if (name == null && tagStr == null) {
                     throw new Exception(

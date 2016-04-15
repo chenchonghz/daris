@@ -11,7 +11,7 @@ import arc.mf.plugin.http.HttpServlet;
 import arc.mf.plugin.http.HttpServletPluginModule;
 import nig.mf.plugin.pssd.announcement.events.PSSDAnnouncementEvent;
 import nig.mf.plugin.pssd.announcement.events.PSSDAnnouncementEventFilterFactory;
-import nig.mf.plugin.pssd.dicom.DicomAssetHandlerFactory;
+import nig.mf.plugin.pssd.dicom.NIGDicomAssetEngineFactory;
 import nig.mf.plugin.pssd.services.*;
 import nig.mf.plugin.pssd.servlets.ArchiveServlet;
 import nig.mf.plugin.pssd.servlets.DicomServlet;
@@ -327,7 +327,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcProjectCitableRootCreate());
 
         // Register a DICOM handler specific to NIG.
-        DicomAssetEngineRegistry.register(new DicomAssetHandlerFactory());
+        DicomAssetEngineRegistry.register(new NIGDicomAssetEngineFactory());
 
         // register system events
         registerSystemEvents();
