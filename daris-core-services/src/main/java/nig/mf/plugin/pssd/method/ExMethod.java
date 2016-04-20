@@ -151,11 +151,12 @@ public class ExMethod extends PSSDObject {
      * @param dMID
      *            Distributed citeable ID for Method
      * @param reUse
+     * @param meta Generic meta that can be set on the ExMethod. Will get namespace pssd.ex-method and tag pssd.meta
      * @return
      * @throws Throwable
      */
     public static String create(ServiceExecutor executor, DistributedAsset dSID, long exMethodNumber,
-            DistributedAsset dMID, boolean reUse) throws Throwable {
+            DistributedAsset dMID, boolean reUse, XmlDoc.Element meta) throws Throwable {
 
         Method m = Method.lookup(executor, dMID);
 
@@ -184,8 +185,12 @@ public class ExMethod extends PSSDObject {
         dm.add("cid", cid);
         dm.add("name", "ex-method " + cid);
         dm.add("model", MODEL);
+        
 
         dm.push("meta");
+
+        // Set the generic, optional meta-data
+        PSSDUtils.setObjectOptionalMeta(dm, meta, "om.pssd.ex-method");
 
         XmlDocWriter dw = new XmlDocWriter(dm);
 

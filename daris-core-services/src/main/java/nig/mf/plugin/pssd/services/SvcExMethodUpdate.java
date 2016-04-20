@@ -8,9 +8,11 @@ import nig.mf.plugin.pssd.util.PSSDUtils;
 import nig.mf.pssd.Role;
 import nig.mf.pssd.plugin.util.DistributedAsset;
 import arc.mf.plugin.PluginService;
+import arc.mf.plugin.PluginService.Interface;
 import arc.mf.plugin.dtype.CiteableIdType;
 import arc.mf.plugin.dtype.EnumType;
 import arc.mf.plugin.dtype.StringType;
+import arc.mf.plugin.dtype.XmlDocType;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
@@ -27,6 +29,9 @@ public class SvcExMethodUpdate extends PluginService {
                 0, 1));
         _defn.add(new Interface.Element("state", new EnumType(new String[] { "incomplete", "waiting", "complete",
                 "abandoned" }), "The workflow status of the method.", 1, 1));
+        
+        //
+        _defn.add(new Interface.Element("meta", XmlDocType.DEFAULT, "Optional metadata - a list of asset documents.", 0, 1));
     }
 
     public String name() {
@@ -34,7 +39,7 @@ public class SvcExMethodUpdate extends PluginService {
     }
 
     public String description() {
-        return "Updates the named, description and status of a locally managed ExMethod object.";
+        return "Updates (via a merge) the named, description and status of a locally managed ExMethod object.";
     }
 
     public Interface definition() {
@@ -87,6 +92,10 @@ public class SvcExMethodUpdate extends PluginService {
         // This metadata must merge, otherwise we will override
         // the other essential information..
         dm.push("meta");
+        
+        // Generic meta-data in "meta/<doc type>
+        PSSDUtils.setObjectOptionalMeta(dm, args.element("meta"), "om.pssd.ex-method");
+
         dm.push("daris:pssd-ex-method");
         dm.add("state", state);
         dm.pop();
