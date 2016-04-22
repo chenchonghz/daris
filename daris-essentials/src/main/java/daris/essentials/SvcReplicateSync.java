@@ -101,10 +101,10 @@ public class SvcReplicateSync extends PluginService {
 
 		// Destroy assets on remote peer bottom up in DICOM data model
 		// FOr PSSD, 'members=false' so it does not destroy children
-		int n = destroyOrListAssets(executor(), sr, destroyDICOMSeries, "DICOM Series", destroy);
-		n += destroyOrListAssets(executor(), sr, destroyDICOMStudy, "DICOM Study", destroy);
-		n += destroyOrListAssets(executor(), sr, destroyDICOMPatient, "DICOM Patient", destroy);
-		n += destroyOrListAssets(executor(), sr, destroyOther, "Other", destroy);
+		int n = destroyOrListAssets(executor(), sr, destroyDICOMSeries, "DICOM Series", destroy, w);
+		n += destroyOrListAssets(executor(), sr, destroyDICOMStudy, "DICOM Study", destroy, w);
+		n += destroyOrListAssets(executor(), sr, destroyDICOMPatient, "DICOM Patient", destroy, w);
+		n += destroyOrListAssets(executor(), sr, destroyOther, "Other", destroy, w);
 
 		System.out.println("");
 		if (destroy) {
@@ -116,7 +116,8 @@ public class SvcReplicateSync extends PluginService {
 
 
 
-	private static int destroyOrListAssets (ServiceExecutor executor, ServerRoute sr, XmlDocMaker list, String type, Boolean destroy) throws Throwable {
+	private static int destroyOrListAssets (ServiceExecutor executor, ServerRoute sr, XmlDocMaker list, String type, 
+			Boolean destroy, XmlWriter w) throws Throwable {
 		Collection<String> t = list.root().values("id");
 		if (t==null) return 0;
 		//
@@ -145,10 +146,12 @@ public class SvcReplicateSync extends PluginService {
 					dm.add("id", id);
 					executor.execute(sr, "asset.destroy", dm.root());
 					PluginTask.checkIfThreadTaskAborted();
+					w.add("id", new String[]{"destroyed", "true"}, id);
 				}
 			} else {
 				for (String id : t) {
 					System.out.println("   Replica id = " + id);
+					w.add("id", new String[]{"destroyed", "false"}, id);
 				}
 			}
 		}
@@ -227,7 +230,7 @@ public class SvcReplicateSync extends PluginService {
 		}
 
 		// See if the primaries for the found replicas exist on the local server
-		System.out.println("  Find primaries");
+		System.out.println("  Look for primaries matching replicas.");
 
 		dm = new XmlDocMaker("args");
 		for (XmlDoc.Element rAsset : rAssets) {
