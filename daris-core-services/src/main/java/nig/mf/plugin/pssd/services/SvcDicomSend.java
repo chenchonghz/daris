@@ -322,13 +322,13 @@ public class SvcDicomSend extends PluginService {
          * find dicom datasets
          */
         Set<String> datasetAssetIds = new TreeSet<String>();
-        PluginTask.setCurrentThreadActivity("Adding DICOM datasets/series...");
+        PluginTask.setCurrentThreadActivity("adding dicom datasets/series...");
         if (ids != null) {
             PluginTask.checkIfThreadTaskAborted();
             for (String id : ids) {
                 ensureAssetExists(executor(), id, false, logger);
                 if (logger != null) {
-                    logger.logInfo("Adding dicom dataset " + id);
+                    logger.logInfo("adding dicom dataset " + id);
                 }
                 addByAssetId(executor(), id, datasetAssetIds);
             }
@@ -338,7 +338,7 @@ public class SvcDicomSend extends PluginService {
             for (String cid : cids) {
                 ensureAssetExists(executor(), cid, true, logger);
                 if (logger != null) {
-                    logger.logInfo("adding dicom dataset " + cid);
+                    logger.logInfo("adding dicom asset " + cid);
                 }
                 addByCiteableId(executor(), cid, datasetAssetIds);
             }
