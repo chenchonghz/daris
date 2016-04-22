@@ -72,16 +72,15 @@ public class SvcTest extends PluginService {
 
 		// Iterate through cursor and build list of assets 
 		boolean more = true;
-		Vector<String> assetIDs = new Vector<String>();
 		while (more) {
-			more = find (executor(),  dateTime, where,  size, assetIDs, useIndexes, 
-					dbg,   w);
+			more = find (executor(),  dateTime, where,  size, useIndexes, 
+					dbg, w);
 			if (dbg) {
-				log(dateTime, "nig.replicate.check : checking for abort \n");
+				log(dateTime, "nig.testing : checking for abort \n");
 			}
 			PluginTask.checkIfThreadTaskAborted();
 		}
-		w.add("total-checked", count_);
+		w.add("total-counted", count_);
 
 	}
 
@@ -92,28 +91,32 @@ public class SvcTest extends PluginService {
 
 
 	private boolean find (ServiceExecutor executor,  String dateTime, String where,  String size, 
-			Vector<String> assetList,  Boolean useIndexes, Boolean dbg,
+			 Boolean useIndexes, Boolean dbg,
 			XmlWriter w)	throws Throwable {
 
 		// Find local  assets  with the given query. We work through the cursor else
 		// we may run out of memory
-		if (dbg) log(dateTime, "nig.replicate.check : find assets on primary in chunk starting with idx = " + idx_);
+		if (dbg) log(dateTime, "nig.testing : find assets on primary in chunk starting with idx = " + idx_);
 		XmlDocMaker dm = new XmlDocMaker("args");
 		if (where!=null) dm.add("where", where);
-
 		dm.add("idx", idx_);
 		dm.add("size", size);
 		dm.add("pdist", 0);
 		dm.add("use-indexes", useIndexes);
 		XmlDoc.Element r = executor().execute("asset.query", dm.root());
 		if (r==null) return false;  
-		Collection<XmlDoc.Element> assets = r.elements("asset");
-		if (assets==null) return false;
-		count_ += assets.size();
+		/*
+		Collection<XmlDoc.Element> ids = r.elements("id");
+		if (ids==null) {
+			return false;
+		}
+		count_ += ids.size();
+		*/
 
 		// Get the cursor and increment for next time
 		XmlDoc.Element cursor = r.element("cursor");
 		boolean more = !(cursor.booleanValue("total/@complete"));
+		count_ += cursor.intValue("count");
 		if (more) {
 			Integer next = cursor.intValue("next");
 			idx_ = next;
