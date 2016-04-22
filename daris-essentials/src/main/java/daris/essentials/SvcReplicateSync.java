@@ -202,6 +202,8 @@ public class SvcReplicateSync extends PluginService {
 		// Find replica assets on  the remote peer.  We work through the cursor else
 		// we may run out of memory
 		System.out.println("CHunk starting with idx = " + idx_);
+		System.out.println("  Find replicas");
+
 		XmlDocMaker dm = new XmlDocMaker("args");
 		String query = "(rid in '" + uuidLocal + "')";
 		if (where!=null) query += " and " + where;
@@ -225,6 +227,8 @@ public class SvcReplicateSync extends PluginService {
 		}
 
 		// See if the primaries for the found replicas exist on the local server
+		System.out.println("  Find primaries");
+
 		dm = new XmlDocMaker("args");
 		for (XmlDoc.Element rAsset : rAssets) {
 			String rid = rAsset.value("rid");       // This will be, e.g. <primary>.<id>
@@ -235,6 +239,7 @@ public class SvcReplicateSync extends PluginService {
 
 		// Build a list of  assets to destroy on the remote peer.   I.e. the ones that don't exist
 		// on the local server but do exist on the peer
+		System.out.println("  Check list for missing primaries.");
 		Iterator<XmlDoc.Element> rIt = rAssets.iterator();
 		for (XmlDoc.Element lAsset : lAssets) {
 			XmlDoc.Element rAsset = rIt.next();      // rAssets and lAssets have the same order
