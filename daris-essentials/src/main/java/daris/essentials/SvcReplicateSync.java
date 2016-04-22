@@ -101,10 +101,10 @@ public class SvcReplicateSync extends PluginService {
 
 		// Destroy assets on remote peer bottom up in DICOM data model
 		// FOr PSSD, 'members=false' so it does not destroy children
-		int n = destroyAssets(executor(), sr, destroyDICOMSeries, "DICOM Series", destroy);
-		n += destroyAssets(executor(), sr, destroyDICOMStudy, "DICOM Study", destroy);
-		n += destroyAssets(executor(), sr, destroyDICOMPatient, "DICOM Patient", destroy);
-		n += destroyAssets(executor(), sr, destroyOther, "Other", destroy);
+		int n = destroyOrListAssets(executor(), sr, destroyDICOMSeries, "DICOM Series", destroy);
+		n += destroyOrListAssets(executor(), sr, destroyDICOMStudy, "DICOM Study", destroy);
+		n += destroyOrListAssets(executor(), sr, destroyDICOMPatient, "DICOM Patient", destroy);
+		n += destroyOrListAssets(executor(), sr, destroyOther, "Other", destroy);
 
 		System.out.println("");
 		if (destroy) {
@@ -116,7 +116,7 @@ public class SvcReplicateSync extends PluginService {
 
 
 
-	private static int destroyAssets (ServiceExecutor executor, ServerRoute sr, XmlDocMaker list, String type, Boolean destroy) throws Throwable {
+	private static int destroyOrListAssets (ServiceExecutor executor, ServerRoute sr, XmlDocMaker list, String type, Boolean destroy) throws Throwable {
 		Collection<String> t = list.root().values("id");
 		if (t==null) return 0;
 		//
