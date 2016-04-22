@@ -169,7 +169,7 @@ public class MBCPETCTUpload {
 		//
 		ops.print();
 		ops.printToWriter(logger);
-		
+
 		// Have a sleep
 		if (ops.sleep!=null) {
 			MBCRawUploadUtil.log (logger, "\nSleeping for " + ops.sleep + " minutes");
@@ -216,8 +216,19 @@ public class MBCPETCTUpload {
 		if (path.isDirectory()) {
 			File[] files = path.listFiles();
 			if (files.length> 0) { 
+				// From April 2016, the PET Raw data are in a directory of their own.
 				for (int i=0; i<files.length; i++) {
-					uploadFile (cxn, files[i], ops, cred, logger);
+					if (files[i].isDirectory()) {
+						File[] petFiles = files[i].listFiles();
+						if (petFiles.length> 0) { 
+							for (int j=0; j<petFiles.length; j++) {
+								uploadFile (cxn, petFiles[j], ops, cred, logger);
+							}
+						}
+
+					} else {
+						uploadFile (cxn, files[i], ops, cred, logger);
+					}
 				}
 			} else {
 				MBCRawUploadUtil.log (logger,"*** No files to upload in : " + path.toString());
@@ -243,6 +254,7 @@ public class MBCPETCTUpload {
 			pm.parse();
 		} catch (Throwable t) {
 			MBCRawUploadUtil.log (logger, "   *** Failed to parse file name into meta-data - skipping file");
+			MBCRawUploadUtil.log (logger, "   ***    with error " + t.getMessage() + "'");
 			return;
 		}
 		pm.print();

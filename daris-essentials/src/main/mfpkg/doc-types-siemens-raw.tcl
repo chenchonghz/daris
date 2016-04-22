@@ -67,12 +67,18 @@ asset.doc.type.update :create yes :type daris:siemens-raw-petct-series \
         :description "The series number set by the scanner" > \
     :element -name "type" -type "enumeration" -max-occurs "1" < \
         :description "The acquisition type" \
+        :instructions "The types changed in April 2016 to include the new ones starting with PETCT. The old ones remain for backwards compatibility" \
         :restriction -base "enumeration" < \
             :value "RAW" \
             :value "LM" \
             :value "NORM" \
             :value "PROTOCOL" \
             :value "SINO" \
+            :value "PET_CALIBRATION" \
+            :value "PET_COUNTRATE" \
+            :value "PET_LISTMODE" \
+            :value "PETCT_SPL" \
+            :value "PET_EM_SINO" \
             :case-sensitive "true" > > \
     :element -name "instance" -type "string" -index "true" -max-occurs "1" < \
         :description "The instance number assigned by the scanner" > \

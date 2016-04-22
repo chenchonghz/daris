@@ -548,7 +548,7 @@ public class MBCPETCTDownload {
 		os.println("   " + ENDDATE_ARG + "           Specify end date (dd-MMM-yyyy; inclusive; one date required)");
 		os.println("   " + MODALITY_ARG + "      Specify modality ('PT' or 'CT'; optional)");
 		os.println("   " + DESCRIPTION_ARG + "          Specify description of series (free text; optional; partial matches allowed)");
-		os.println("   " + TYPE_ARG + "          Specify acquisition type ('RAW', 'LM', 'NORM', 'PROTOCOL', 'SINO'; optional)");
+		os.println("   " + TYPE_ARG + "          Specify acquisition type ('RAW', 'LM', 'NORM', 'PROTOCOL', 'SINO','PET_CALIBRATION', 'PET_COUNTRATE', 'PET_LISTMODE', 'PETCT_SPL'; optional)");
 		os.println("   " + UUID_ARG + "          Specify UUID of acquisitionl optional");
 		os.println("   " + PATH_ARG + "          Specify path of directory to put downloaded files in (optional; default is /Volumes/SiteData/PETRawData)");
 		os.println("   " + NOCHK_ARG + "        Disable checksum comparison.");

@@ -17,7 +17,11 @@ public class PETCTMetaData {
 	private String _lastName;
 	private String _modality;        // PT or CT
 	private String _description;     // SUpplied by operator
+	// CHanged in April 2016 to include also the following. 
+	// ACquisition type; PET_CALIBRATION, PET_COUNTRATE, PET_LISTMODE, PETCT_SPL, PET_EM_SINO
+	// So both are allowed in the doc type daris:siemens-raw-petct-series
 	private String _acquisitionType; // ACquisition type; RAW (PT&CT), LM (PT), NORM (PT), PROTOCOL (PT), SINO (PT)
+	//
 	private String _seriesNumber;    // Series number supplied by scanner
 	private String _instanceNumber;  // Instance number supplied by scanner
 	private Date _dateTime;          // Date/time of acquisition
@@ -31,6 +35,7 @@ public class PETCTMetaData {
 	}
 
 	public void parse () throws Throwable {
+		// Original
 		// Path must be a directory of the form
 		// <Last>_<First>.<Modality>.<Description>.<Series Number>.<Acquisition Type>.
 		//          0          1         2              3                4
@@ -38,7 +43,17 @@ public class PETCTMetaData {
 		//       5                6              7              8-10           11-13
 		// <UUID>.<Extension>
 		//   14-15    16
-		
+		//
+		// From April 2016
+		// <Last>_<First>.<Modality>.<Description>.<Series Number>.<Acquisition Type>.
+		//          0          1         2              3                4
+		// <Date Acquired>.<Time Acquired>.<Instance Number>.<DateExported>.<TimeExported>.
+		//       5                6              7              8-10           11-13
+		// <Unknown>.<Unknown>.<Unknown>.<Unknown>.<Extension>
+		//   14          15      16         17         18
+		// Possibly the UUID is now just the last 4 fields and I will assume this until otherwise instructed.
+
+
 
 		// Find child part of path
 		_fileName = _path.getName();
@@ -46,8 +61,8 @@ public class PETCTMetaData {
 		// Split
 		String[] parts = _fileName.split("\\.");
 		int nParts = parts.length;
-		if (nParts != 17) {
-			throw new Exception ("Could not parse meta-data; expecting 17 parts, found " + nParts);
+		if (nParts != 17 && nParts!=19) {
+			throw new Exception ("Could not parse meta-data; expecting 17 [old] or 19 [new] parts, found " + nParts + " in name '" + _fileName + "'");
 		}
 
 		// Names
@@ -55,7 +70,7 @@ public class PETCTMetaData {
 		String[] nameParts = name.split("_");
 		int nPartsName = nameParts.length;
 		if (nPartsName > 2) {
-			throw new Exception ("Could not parse meta-data; name field does not have 1 or 2 parts.");
+			throw new Exception ("Could not parse meta-data; name field does not have 1 or 2 parts" + " in name '" + _fileName + "'");
 
 		}
 
@@ -89,10 +104,15 @@ public class PETCTMetaData {
 
 		// Instance and UUID
 		_instanceNumber = parts[7];
-		_uuid = parts[14]+ "." + parts[15];
+		if (nParts==17) {
+			_uuid = parts[14]+ "." + parts[15];
+			_ext = parts[16];
+		} else {
+			// To be verified
+			_uuid = parts[14]+ "." + parts[15] + "." + parts[16] + "." + parts[17];
+			_ext = parts[18];
+		}
 
-		// Extension
-		_ext = parts[16];
 	}
 
 	public static String reconstituteFileName (String lastName, String firstName, String modality, String description,
@@ -116,7 +136,10 @@ public class PETCTMetaData {
 		// Convert date/times  back to Strings in original format
 		String ta = DateUtil.formatDate (dateTimeAcquisition, "yyyyMMdd.HHmmss");
 		String te = DateUtil.formatDate (dateTimeExported, "yyyy.MM.dd.HH.mm.ss");
+		// Before April 2016
 		//               5  6            7            8 9 10 11 12 13       14 15
+		// After April 2016
+		//               5  6            7            8 9 10 11 12 13       14 15 16 17
 		fileName += "." + ta +"." + instanceNumber + "." +  te + "."      + uuid;
 		return fileName;
 	}
