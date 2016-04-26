@@ -182,6 +182,7 @@ public class MBCPETCTUpload {
 		}
 
 		// Upload data
+		MBCRawUploadUtil.log (logger, "");
 		upload(logger, ops);
 		if (logger!=null) {
 			logger.flush();
@@ -219,6 +220,8 @@ public class MBCPETCTUpload {
 				// From April 2016, the PET Raw data are in a directory of their own.
 				for (int i=0; i<files.length; i++) {
 					if (files[i].isDirectory()) {
+						MBCRawUploadUtil.log (logger,"Descending into directory : " + files[i].getAbsolutePath().toString());
+
 						File[] petFiles = files[i].listFiles();
 						if (petFiles.length> 0) { 
 							for (int j=0; j<petFiles.length; j++) {
@@ -226,6 +229,16 @@ public class MBCPETCTUpload {
 							}
 						}
 
+						// See if we can delete the directory as well (if no longer holds any files)
+						if (ops.delete) {
+							petFiles = files[i].listFiles();
+							if (petFiles.length==0) {
+								MBCRawUploadUtil.log (logger,"     Deleting directory : " + files[i].getAbsolutePath().toString());
+								MBCRawUploadUtil.deleteFile(files[i], logger);		
+							} else {
+								MBCRawUploadUtil.log (logger,"*** Directory : " + files[i].getAbsolutePath().toString() + " is not empty; cannot delete");
+							}
+						}
 					} else {
 						uploadFile (cxn, files[i], ops, cred, logger);
 					}
@@ -453,7 +466,7 @@ public class MBCPETCTUpload {
 		}
 		//
 		// Clean up
-		if (ops.delete && chkSumOK) MBCRawUploadUtil.deleteFile(file, logger);
+		if (ops.delete && chkSumOK) MBCRawUploadUtil.deleteFile(file, logger);		
 		//
 		return null;
 	}
