@@ -41,8 +41,8 @@ public class MBCPETCTUpload {
 		"Positron Emission Tomography","Computed Tomography", "Quality Assurance", "Unspecified"};
 
 	// The authenticating security token must be made with :app == to this string.
-	// The token must also hold the appropriate permissions to allow it to access the
-	// PSSD Project or namespace into which it is uploading data.
+	// The token must also hold the appropriate permissions (roles daris:pssd.object.admin and daris:pssd.model.user)
+	//	to allow it to access the PSSD Project or namespace into which it is uploading data.
 	private static final String TOKEN_APP = "MBIC-PETCT-Raw-Upload";
 
 	// This class sets the defaults for arguments that can be passed in
