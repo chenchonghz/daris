@@ -296,31 +296,6 @@ public class MailHandler {
 	}
 
 
-	/**
-	 * Useful utility. Send mail 
-	 * 
-	 * @param executor
-	 * @param to  email address to send to
-	 * @param subject
-	 * @param body
-	 * @throws Throwable
-	 */
-	public static void sendMessage(ServiceExecutor executor, String to, String subject, String body)
-			throws Throwable {
-
-		XmlDocMaker dm = new XmlDocMaker("args");
-		dm.add("subject", subject);
-		dm.add("body", body);
-		dm.add("async", true);
-		dm.add("to", to);
-		try {
-			executor.execute("mail.send", dm.root());
-		} catch (Throwable t) {
-			// Just drop. Don't want exceptions just because we can't send mail
-			System.out.println("Exception caught sending message " + body);
-		}
-	}
-
 
 
 
@@ -350,7 +325,36 @@ public class MailHandler {
 		return email;
 	}
 
-	private void sendMessage(ServiceExecutor executor, String email, String subject, String msg, boolean async)
+	
+	/**
+	 * Useful utility. Send mail 
+	 * 
+	 * @param executor
+	 * @param to  email address to send to
+	 * @param subject
+	 * @param body
+	 * @throws Throwable
+	 */
+	/*
+	public static void sendMessage(ServiceExecutor executor, String to, String subject, String body)
+			throws Throwable {
+
+		XmlDocMaker dm = new XmlDocMaker("args");
+		dm.add("subject", subject);
+		dm.add("body", body);
+		dm.add("async", true);
+		dm.add("to", to);
+		try {
+			executor.execute("mail.send", dm.root());
+		} catch (Throwable t) {
+			// Just drop. Don't want exceptions just because we can't send mail
+			System.out.println("Exception caught sending message " + body);
+		}
+	}
+*/
+
+	
+	public static void sendMessage(ServiceExecutor executor, String email, String subject, String msg, boolean async)
 			throws Throwable {
 
 		XmlDocMaker dm = new XmlDocMaker("args");

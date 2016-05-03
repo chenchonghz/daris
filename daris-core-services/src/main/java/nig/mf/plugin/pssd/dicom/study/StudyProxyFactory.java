@@ -786,7 +786,7 @@ public class StudyProxyFactory {
             String subject, String message) throws Throwable {
         String email = ModelUser.email(executor);
         if (email != null) {
-            MailHandler.sendMessage(executor, email, subject, message);
+            MailHandler.sendMessage(executor, email, subject, message, false);
         }
     }
 
