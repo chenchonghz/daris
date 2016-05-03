@@ -18,6 +18,7 @@ import org.apache.commons.io.FileUtils;
 import com.pixelmed.dicom.Attribute;
 import com.pixelmed.dicom.AttributeList;
 import com.pixelmed.dicom.AttributeTag;
+import com.pixelmed.dicom.DicomException;
 import com.pixelmed.dicom.FileMetaInformation;
 import com.pixelmed.dicom.SetOfDicomFiles;
 import com.pixelmed.dicom.TagFromName;
@@ -436,11 +437,14 @@ public class SvcDicomSend extends PluginService {
                 logger.logInfo(
                         "sent " + nCompleted + "/" + total + " dicom files.");
             }
-            if (nFailed > 0) {
+            if (nCompleted < total || nFailed > 0) {
                 if (logger != null) {
-                    logger.logError("failed " + nFailed + " of " + total
-                            + " dicom files.");
+                    logger.logError("failed. " + nCompleted + " of " + total
+                            + " dicom files were sent.");
                 }
+                throw new DicomException(
+                        "Failed to send DICOM files to " + calledAETitle + "@"
+                                + calledAEHost + ":" + calledAEPort);
             }
             PluginTask.threadTaskCompleted();
         } catch (Throwable t) {
