@@ -402,8 +402,10 @@ public class SvcDicomSend extends PluginService {
             PluginTask.checkIfThreadTaskAborted();
             PluginTask.setCurrentThreadActivity("Sending dicom data...");
             final int[] result = new int[4];
+            String activity = "sending 0/" + total + " dicom files...";
+            PluginTask.setCurrentThreadActivity(activity);
             if (logger != null) {
-                logger.logInfo("sending 0/" + total + " dicom files...");
+                logger.logInfo(activity);
             }
             new StorageSOPClassSCU(calledAEHost, calledAEPort, calledAETitle,
                     callingAETitle, dicomFiles, 0,
@@ -419,10 +421,12 @@ public class SvcDicomSend extends PluginService {
                             result[1] = nCompleted;
                             result[2] = nFailed;
                             result[3] = nWarning;
+                            String activity = "sending " + nCompleted + "/"
+                                    + (nRemaining + nCompleted)
+                                    + " dicom files...";
+                            PluginTask.setCurrentThreadActivity(activity);
                             if (logger != null && nCompleted % 100 == 0) {
-                                logger.logInfo("sending " + nCompleted + "/"
-                                        + (nRemaining + nCompleted)
-                                        + " dicom files...");
+                                logger.logInfo(activity);
                             }
                         }
                     }, null, 0, 0);
@@ -433,14 +437,17 @@ public class SvcDicomSend extends PluginService {
                             "failed", Integer.toString(nFailed), "total",
                             Integer.toString(total) },
                     nFailed <= 0);
+            activity = "sent " + nCompleted + "/" + total + " dicom files.";
+            PluginTask.setCurrentThreadActivity(activity);
             if (logger != null) {
-                logger.logInfo(
-                        "sent " + nCompleted + "/" + total + " dicom files.");
+                logger.logInfo(activity);
             }
             if (nCompleted < total || nFailed > 0) {
+                activity = "failed. " + nCompleted + " of " + total
+                        + " dicom files were sent.";
+                PluginTask.setCurrentThreadActivity(activity);
                 if (logger != null) {
-                    logger.logError("failed. " + nCompleted + " of " + total
-                            + " dicom files were sent.");
+                    logger.logError(activity);
                 }
                 throw new DicomException(
                         "Failed to send DICOM files to " + calledAETitle + "@"
