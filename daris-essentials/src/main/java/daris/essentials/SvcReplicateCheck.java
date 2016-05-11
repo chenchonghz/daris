@@ -28,7 +28,7 @@ public class SvcReplicateCheck extends PluginService {
 		_defn.add(new Interface.Element("where",StringType.DEFAULT, "Query predicate to restrict the selected assets on the local host. If unset, all assets are considered.", 0, 1));
 		_defn.add(new Interface.Element("size",IntegerType.DEFAULT, "Limit the accumulation loop to this number of assets per iteration (if too large, the host may run out of virtual memory).  Defaults to 10000.", 0, 1));
 		_defn.add(new Interface.Element("dst", StringType.DEFAULT, "The destination parent namespace. If supplied (use '/' for root namespace), assets will actually be replicated (one at a time; not efficient). The default is no replication.", 0, 1));
-		_defn.add(new Interface.Element("mod", BooleanType.DEFAULT, "Check modification time of existing replicas (default false) as well as their existence (hugely slows the process if activated).", 0, 1));
+		_defn.add(new Interface.Element("check-asset", BooleanType.DEFAULT, "Check modification time and size of existing replicas (default false) as well as their existence (hugely slows the process if activated).", 0, 1));
 		_defn.add(new Interface.Element("exclude-daris-proc", BooleanType.DEFAULT, "By default, processed DaRIS DataSets (ones for which (pssd-derivation/processed)='true' AND mf-dicom-series is absent) are included. Set to true to exclude these.", 0, 1));
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
@@ -74,7 +74,7 @@ public class SvcReplicateCheck extends PluginService {
 		String peer = args.value("peer");
 		String size = args.stringValue("size", "10000");
 		String dst = args.value("dst");
-		Boolean checkMod = args.booleanValue("mod", false);
+		Boolean checkAsset = args.booleanValue("check-asset", false);
 		Boolean exclDaRISProc = args.booleanValue("exclude-daris-proc", false);
 		Boolean useIndexes = args.booleanValue("use-indexes", true);
 		Boolean dbg = args.booleanValue("debug", false);
@@ -97,7 +97,8 @@ public class SvcReplicateCheck extends PluginService {
 		boolean more = true;
 		Vector<String> assetIDs = new Vector<String>();
 		while (more) {
-			more = find (executor(),  dateTime, where, peer, sr, uuidLocal, size, assetIDs, checkMod, exclDaRISProc, useIndexes, 
+			more = find (executor(),  dateTime, where, peer, sr, uuidLocal, size, 
+					assetIDs, checkAsset, exclDaRISProc, useIndexes, 
 					dbg,  includeDestroyed, w);
 			if (dbg) {
 				log(dateTime, "nig.replicate.check : checking for abort \n");
@@ -128,7 +129,7 @@ public class SvcReplicateCheck extends PluginService {
 						log(dateTime, "nig.replicate.check: replicating asset # " + c);
 					}
 				}
-				
+
 				// Replicate
 				XmlDocMaker dm = new XmlDocMaker("args");
 				dm.add("id", id);
@@ -168,7 +169,8 @@ public class SvcReplicateCheck extends PluginService {
 	}
 
 	private boolean find (ServiceExecutor executor,  String dateTime, String where, String peer, ServerRoute sr, String uuidLocal, String size, 
-			Vector<String> assetList, Boolean checkMod, Boolean exclDaRISProc, Boolean useIndexes, Boolean dbg,
+			Vector<String> assetList, Boolean checkAsset, Boolean exclDaRISProc, 
+			Boolean useIndexes, Boolean dbg,
 			Boolean includeDestroyed, XmlWriter w)	throws Throwable {
 
 		// Find local  assets  with the given query. We work through the cursor else
@@ -262,7 +264,7 @@ public class SvcReplicateCheck extends PluginService {
 
 				// The asset exists as a replica, but perhaps it's been modified.
 				// Very time consuming...
-				if (checkMod) {
+				if (checkAsset) {
 					// See if the primary has been modified since the replica was made
 					XmlDoc.Element asset = AssetUtil.getAsset(executor, null, primaryID);
 					Date mtime = asset.dateValue("asset/mtime");
@@ -281,7 +283,7 @@ public class SvcReplicateCheck extends PluginService {
 						log(dateTime, "      nig.replicate.check : mtimes=" + mtime + ", " + mtimeRep);
 						log(dateTime, "      nig.replicate.check : sizes =" + csize + ", " + csizeRep);
 					}
-					if (mtime.after(mtimeRep)) {
+					if (mtime.after(mtimeRep) || !csize.equals(csizeRep)) {
 						w.add("id", new String[]{"exists", "true", "cid", cidRep, "mtime-primary", mtime.toString(), "mtime-replica", mtimeRep.toString(),
 								"csize-primary", csize, "csize-replica", csizeRep},  primaryID);
 						assetList.add(primaryID);	
