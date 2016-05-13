@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<module rename-to="DaRIS">
-  <!-- Inherit our applications main module.                      -->
-  <inherits name='daris.DaRIS' />
-
-  <!-- Specify the path to any remote services.                   -->
-  <servlet path="/DaRIS/greet" class="daris.server.GreetingServiceImpl" />
-
-</module>
