@@ -27,7 +27,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		_defn.add(new Interface.Element("peer",StringType.DEFAULT, "Name of peer that objects have been replicated to.", 1, 1));
 		_defn.add(new Interface.Element("where",StringType.DEFAULT, "Query predicate to restrict the selected assets on the local host. If unset, all assets are considered.", 0, 1));
 		_defn.add(new Interface.Element("size",IntegerType.DEFAULT, "Limit the accumulation loop to this number of assets per iteration (if too large, the host may run out of virtual memory).  Defaults to 10000.", 0, 1));
-		_defn.add(new Interface.Element("move", BooleanType.DEFAULT, "The destination parent namespace. If true, (default false) assets will actually be moved to the correct namespace (one at a time; not efficient).", 0, 1));
+		_defn.add(new Interface.Element("move", BooleanType.DEFAULT, "The destination parent namespace. If true, (default false) assets will actually be moved to the correct namespace (one at a time; not efficient) rather than just listed.", 0, 1));
 		_defn.add(new Interface.Element("exclude-daris-proc", BooleanType.DEFAULT, "By default, processed DaRIS DataSets (ones for which (pssd-derivation/processed)='true' AND mf-dicom-series is absent) are included. Set to true to exclude these.", 0, 1));
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
@@ -39,7 +39,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 	}
 
 	public String description() {
-		return "Lists assets (both primaries, and replicas from other hosts) that have been replicated but for which the namespaces don't agree. Can optionally move them into the correct namespace (primary prefixed by primary server UUID).";
+		return "Lists assets (both primaries, and replicas from other hosts) that have been replicated but for which the namespaces don't agree. Can optionally move them into the correct namespace (replica namespaces by our convention is prefixed by the primary server UUID).";
 	}
 
 	public Interface definition() {
@@ -132,7 +132,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 				String replicaID = asset.value("replica/id");
 				XmlDocMaker dm = new XmlDocMaker("args");
 				dm.add("id", replicaID);
-				dm.add("namespace", "/" + remoteSR.target() + asset.value("primary/namespace"));
+				dm.add("namespace", asset.value("replica/expected-namespace"));
 
 				try {
 					executor().execute(remoteSR, "asset.move", dm.root());
@@ -206,7 +206,6 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 
 		// See if the replicas exist on the peer. 
 		// One query per asset
-
 		// Make a list of rids to find
 		dm = new XmlDocMaker("args");	
 		for (XmlDoc.Element asset : assets) {
