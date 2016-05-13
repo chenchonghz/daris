@@ -28,6 +28,7 @@ import arc.mf.client.xml.XmlStringWriter;
 import arc.mf.dtype.DateType;
 import arc.mf.dtype.IntegerType;
 import arc.mf.dtype.TextType;
+import arc.mf.model.authentication.Actor;
 import arc.mf.object.ObjectResolveHandler;
 import arc.mf.session.ServiceResponseHandler;
 import arc.mf.session.Session;
@@ -35,6 +36,7 @@ import daris.client.model.collection.archive.ArchiveOptions;
 import daris.client.model.dataset.DataSet;
 import daris.client.model.object.DObject;
 import daris.client.model.object.DObjectRef;
+import daris.client.model.user.Self;
 
 public class CollectionShareForm extends CollectionArchiveOptionsForm
         implements AsynchronousAction {
@@ -154,9 +156,20 @@ public class CollectionShareForm extends CollectionArchiveOptionsForm
 
     @Override
     public void execute(final ActionListener al) {
+        Self.getActor(new ObjectResolveHandler<Actor>() {
+
+            @Override
+            public void resolved(Actor actor) {
+                generateSecureIdentityToken(actor, al);
+            }
+        });
+    }
+
+    private void generateSecureIdentityToken(Actor actor,
+            final ActionListener al) {
         XmlStringWriter w = new XmlStringWriter();
-        w.add("role", new String[] { "type", "user" },
-                Session.domainName() + ":" + Session.userName());
+        w.add("role", new String[] { "type", actor.actorType() },
+                actor.actorName());
         DObjectRef o = object();
         ArchiveOptions options = archiveOptions();
         w.push("service",
@@ -245,7 +258,7 @@ public class CollectionShareForm extends CollectionArchiveOptionsForm
         dp.setButtonAction(this);
         dp.setButtonLabel("Generate");
         dp.setActionEnabled(true);
-        dp.setModal(true);
+        dp.setModal(false);
         dp.setOwner(owner);
         dp.setCancelLabel("Dismiss");
         dp.setSize(640, 380);
