@@ -75,6 +75,7 @@ grantRoleReadAccessServices   daris:pssd.model.user \
       user.self.* \
       secure.wallet.* \
       secure.shell.* \
+      secure.identity.token.* \
 	  sink.* \
       actor.self.* \
       dictionary.*  }
@@ -99,6 +100,7 @@ grantRoleWriteAccessServices  daris:pssd.model.user \
       user.self.* \
       secure.wallet.* \
       secure.shell.* \
+      secure.identity.token.* \
       actor.self.* \
       dictionary.* }
 grantRoleAdminAccessService daris:pssd.model.user actor.revoke
