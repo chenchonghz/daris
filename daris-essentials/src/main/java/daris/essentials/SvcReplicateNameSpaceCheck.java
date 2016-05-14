@@ -117,7 +117,6 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 			int c = 1;
 			int nRep = 0;
 			for (XmlDoc.Element asset : assets) {
-				System.out.println("asset="+asset);
 				// Check for abort
 				PluginTask.checkIfThreadTaskAborted();
 
