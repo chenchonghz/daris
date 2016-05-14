@@ -6,6 +6,10 @@
 2. updated dicom asset engine to add adate to mf-dicom-series
 3. enhanced ExMethod create/update interfaces to allow  generic meta-data to be set on the ExMethod. No further integration (with the Method) at this time.
 
+### daris-essentials:
+1. New service nig.replicate.namespace.check
+2. Enhanced nig.replicate.check to be faster and also look at file size
+
 ### daris-portal:
 1. enabled AAF support in the login dialog.
 2. enabled streamed downloads.
