@@ -110,13 +110,14 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 			log(dateTime, "   nig.replicate.namespace.check : total checked = " + count_);
 			log(dateTime, "   nig.replicate.namespace.check : total to move = " + assets.size());
 		}
-		if (move!=null) {
+		if (move) {
 			if (dbg) {
 				log(dateTime,"Starting replication of " + assets.size() + " assets");
 			}
 			int c = 1;
 			int nRep = 0;
 			for (XmlDoc.Element asset : assets) {
+				System.out.println("asset="+asset);
 				// Check for abort
 				PluginTask.checkIfThreadTaskAborted();
 
@@ -130,12 +131,14 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 
 				// Move
 				String replicaID = asset.value("replica/id");
-				XmlDocMaker dm = new XmlDocMaker("args");
-				dm.add("id", replicaID);
-				dm.add("namespace", asset.value("replica/expected-namespace"));
+				String newRemoteNameSpace = asset.value("replica/expected-namespace");
 
 				try {
-					executor().execute(remoteSR, "asset.move", dm.root());
+					// Time consuming to create destination namespace...
+					createNameSpace (remoteSR, executor(), newRemoteNameSpace);
+
+					// Move it
+					moveAsset (remoteSR, executor(), newRemoteNameSpace, replicaID);
 					nRep++;
 				} catch (Throwable t) {
 					log(dateTime, "Failed to move remote asset " + replicaID + " with error " + t.getMessage());
@@ -279,12 +282,32 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 					dm.add("rid", rid);
 					dm.pop();
 					dm.pop();
-					w.add(dm.root());
-					assetList.add(dm.root());	
+					w.add(dm.root().element("asset"));
+					assetList.add(dm.root().element("asset"));	
 				}
 			}
 		}
 		//
 		return more;
+	}
+
+
+	private void createNameSpace (ServerRoute sr, ServiceExecutor executor, String namespace) throws Throwable {
+		XmlDocMaker dm = new XmlDocMaker("args");
+		dm.add("namespace", namespace);
+		XmlDoc.Element r = executor.execute(sr, "asset.namespace.exists", dm.root());
+		if (r.booleanValue("exists")) return;
+		//
+		dm = new XmlDocMaker("args");
+		dm.add("namespace", new String[]{"all", "true"}, namespace);
+		executor.execute(sr, "asset.namespace.create", dm.root());		
+	}
+
+	private void moveAsset (ServerRoute sr, ServiceExecutor executor, String namespace, String id) throws Throwable {
+
+		XmlDocMaker dm = new XmlDocMaker("args");
+		dm.add("id", id);
+		dm.add("namespace",namespace);
+		executor().execute(sr, "asset.move", dm.root());
 	}
 }
