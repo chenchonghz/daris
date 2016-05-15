@@ -7,6 +7,7 @@ import java.util.Vector;
 import nig.mf.plugin.util.AssetUtil;
 import nig.mf.pssd.plugin.util.DistributedAssetUtil;
 import arc.mf.plugin.*;
+import arc.mf.plugin.PluginService.Interface;
 import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.IntegerType;
 import arc.mf.plugin.dtype.StringType;
@@ -27,6 +28,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		_defn.add(new Interface.Element("peer",StringType.DEFAULT, "Name of peer that objects have been replicated to.", 1, 1));
 		_defn.add(new Interface.Element("where",StringType.DEFAULT, "Query predicate to restrict the selected assets on the local host. If unset, all assets are considered.", 0, 1));
 		_defn.add(new Interface.Element("size",IntegerType.DEFAULT, "Limit the accumulation loop to this number of assets per iteration (if too large, the host may run out of virtual memory).  Defaults to 10000.", 0, 1));
+		_defn.add(new Interface.Element("dst", StringType.DEFAULT, "The destination parent namespace that assets will be replicated to (use '/' for root namespace).", 1, 1));
 		_defn.add(new Interface.Element("move", BooleanType.DEFAULT, "The destination parent namespace. If true, (default false) assets will actually be moved to the correct namespace (one at a time; not efficient) rather than just listed.", 0, 1));
 		_defn.add(new Interface.Element("exclude-daris-proc", BooleanType.DEFAULT, "By default, processed DaRIS DataSets (ones for which (pssd-derivation/processed)='true' AND mf-dicom-series is absent) are included. Set to true to exclude these.", 0, 1));
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
@@ -72,6 +74,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		String where = args.value("where");
 		String peer = args.value("peer");
 		String size = args.stringValue("size", "10000");
+		String dst = args.stringValue("dst");
 		Boolean exclDaRISProc = args.booleanValue("exclude-daris-proc", false);
 		Boolean useIndexes = args.booleanValue("use-indexes", true);
 		Boolean dbg = args.booleanValue("debug", false);
@@ -95,9 +98,9 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		boolean more = true;
 		Vector<XmlDoc.Element> assets = new Vector<XmlDoc.Element>();
 		while (more) {
-			more = find (executor(),  dateTime, where, peer, remoteSR, uuidLocal, size, 
+			more = find (executor(),  dateTime, where, peer, remoteSR, dst, uuidLocal, size, 
 					assets, exclDaRISProc, useIndexes, 
-					dbg,  includeDestroyed, w);
+					dbg, includeDestroyed, w);
 			if (dbg) {
 				log(dateTime, "nig.replicate.namespace.check : checking for abort \n");
 			}
@@ -161,7 +164,8 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		return r.value("uuid");
 	}
 
-	private boolean find (ServiceExecutor executor,  String dateTime, String where, String peer, ServerRoute sr, String uuidLocal, String size, 
+	private boolean find (ServiceExecutor executor,  String dateTime, String where, String peer, 
+			ServerRoute sr, String dst, String uuidLocal, String size, 
 			Vector<XmlDoc.Element> assetList, Boolean exclDaRISProc, 
 			Boolean useIndexes, Boolean dbg,
 			Boolean includeDestroyed, XmlWriter w)	throws Throwable {
@@ -266,7 +270,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 				if (dbg) {
 					log(dateTime, "      nig.replicate.check :namespaces=" + assetNameSpace + ", " +remoteAssetNameSpace);
 				}
-				String expectedRemoteAssetNameSpace = "/" + uuidLocal + assetNameSpace;
+				String expectedRemoteAssetNameSpace = dst + assetNameSpace;
 				if (!expectedRemoteAssetNameSpace.equals(remoteAssetNameSpace)) {
 					dm = new XmlDocMaker("args");
 					dm.push("asset");
