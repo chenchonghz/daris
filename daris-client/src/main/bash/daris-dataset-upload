@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[[ -z $(which java) ]] && echo "Error: Java is not installed." >&2 && exit 1
+
+JAR=$(dirname $0)/daris-client.jar
+
+[[ ! -f ${JAR} ]] && echo "Error: ${JAR} is not found." >&2 && exit 2
+
+java -cp ${JAR} daris.client.cli.DatasetUploadCLI ${1+"$@"}

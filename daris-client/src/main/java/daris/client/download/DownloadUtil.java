@@ -22,7 +22,7 @@ import arc.xml.XmlDoc;
 import arc.xml.XmlDoc.Element;
 import arc.xml.XmlStringWriter;
 import daris.client.download.DownloadOptions.Parts;
-import daris.client.util.CiteableIdUtils;
+import daris.client.pssd.CiteableIdUtils;
 import daris.client.util.XmlUtils;
 
 public class DownloadUtil {

@@ -15,12 +15,9 @@ import arc.mf.client.RemoteServer;
 import arc.mf.client.ServerClient;
 import daris.client.download.DownloadOptions;
 import daris.client.download.DownloadOptions.Parts;
+import daris.client.pssd.CiteableIdUtils;
 import daris.client.download.DownloadUtil;
 import daris.client.util.BooleanUtil;
-import daris.client.util.CiteableIdUtils;
-// /home/meduser/MR/daris-client-0.0.5
-// /home/meduser/MR/jre8
-// /home/meduser/MR/Amanda/tmp/
 
 public class DownloadCLI {
 

@@ -1,4 +1,4 @@
-package daris.client.util;
+package daris.client.pssd;
 
 public class CiteableIdUtils {
 
