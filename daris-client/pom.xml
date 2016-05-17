@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>com.arcitecta</groupId>
 			<artifactId>mfclient</artifactId>
-			<version>4.2.026</version>
+			<version>4.4.012</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
