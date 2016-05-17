@@ -22,7 +22,7 @@ public class Self {
                     String actorType = xe.value("actor/@type");
                     String actorName = xe.value("actor/@name");
                     if (actorName != null) {
-                        rh.resolved(new Actor(actorType, actorName));
+                        rh.resolved(new Actor(actorName, actorType));
                         return;
                     }
                 }
