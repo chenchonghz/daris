@@ -12,6 +12,7 @@ import java.util.Vector;
 import daris.transcode.dcmtools.DCMToolsTranscodeProvider;
 import daris.transcode.debabeler.DebabelerTranscodeProvider;
 import daris.transcode.minctools.DCM2MNCTranscodeProvider;
+import daris.transcode.mricron.MricronTranscodeProvider;
 import daris.transcode.mrtrix.MRConvertTranscodeProvider;
 import daris.transcode.pvconv.PVCONVTranscodeProvider;
 import arc.mf.plugin.transcode.Transcoder;
@@ -90,6 +91,8 @@ public class DarisTranscodeRegistry {
                     DCM2MNCTranscodeProvider.INSTANCE, true);
             DarisTranscodeRegistry.addProvider(
                     DCMToolsTranscodeProvider.INSTANCE, true);
+            DarisTranscodeRegistry.addProvider(
+                    MricronTranscodeProvider.INSTANCE, true);
             _initialized = true;
         }
     }

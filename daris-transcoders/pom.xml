@@ -42,7 +42,7 @@
 		<dependency>
 			<groupId>com.arcitecta</groupId>
 			<artifactId>aplugin</artifactId>
-			<version>4.2.026</version>
+			<version>4.4.011</version>
 			<!-- provided so that we do not deploy -->
 			<scope>provided</scope>
 		</dependency>
@@ -51,12 +51,6 @@
 			<artifactId>loni-debabeler</artifactId>
 			<version>2.11</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>

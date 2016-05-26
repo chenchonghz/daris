@@ -101,7 +101,7 @@ public class DarisTranscodePluginModule implements PluginModule,
      * The version of this module.
      */
     public String version() {
-        return "2.0.1";
+        return "2.0.2";
     }
 
     /**
