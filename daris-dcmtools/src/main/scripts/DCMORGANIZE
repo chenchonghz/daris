@@ -10,4 +10,4 @@ if [[ -z "`which java`" ]]; then
         exit 1
 fi
 
-java -cp `dirname $0`/../lib/dcmtools.jar nig.dicom.util.DicomFileOrganize $@
+java -cp `dirname $0`/../lib/dcmtools.jar nig.dicom.util.DicomFileOrganize ${1+"$@"}

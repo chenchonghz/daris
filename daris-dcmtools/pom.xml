@@ -29,7 +29,7 @@
 		<dependency>
 			<groupId>com.pixelmed</groupId>
 			<artifactId>pixelmed</artifactId>
-			<version>20150512</version>
+			<version>20160516</version>
 		</dependency>
 		<dependency>
 			<groupId>au.edu.unimelb.daris</groupId>

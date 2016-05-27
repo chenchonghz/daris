@@ -1,4 +1,4 @@
-/* Copyright (c) 2001-2009, David A. Clunie DBA Pixelmed Publishing. All rights reserved. */
+/* Copyright (c) 2001-2016, David A. Clunie DBA Pixelmed Publishing. All rights reserved. */
 
 package com.pixelmed.network;
 
@@ -10,6 +10,9 @@ import java.util.ListIterator;
 import java.util.LinkedList;
 import java.util.Set;
 import java.io.*;
+
+import com.pixelmed.slf4j.Logger;
+import com.pixelmed.slf4j.LoggerFactory;
 
 /**
  * <p>This class implements the SCU role of SOP Classes of the Storage Service Class.</p>
@@ -23,44 +26,49 @@ import java.io.*;
  * <p>For example:</p>
  * <pre>
 try {
-    new StorageSOPClassSCU("theirhost","11112","STORESCP","STORESCU","/tmp/testfile.dcm","1.2.840.10008.5.1.4.1.1.7","1.3.6.1.4.1.5962.1.1.0.0.0.1064923879.2077.3232235877",0,0);
+    new StorageSOPClassSCU("theirhost",11112,"STORESCP","STORESCU","/tmp/testfile.dcm","1.2.840.10008.5.1.4.1.1.7","1.3.6.1.4.1.5962.1.1.0.0.0.1064923879.2077.3232235877",0,0);
 }
 catch (Exception e) {
-    e.printStackTrace(System.err);
+    slf4jlogger.error("",e);
 }
  * </pre>
  *
  * <p>From the command line, sending multiple files:</p>
  * <pre>
-find /tmp -name '*.dcm' | java -cp pixelmed.jar:lib/additional/commons-codec-1.3.jar:lib/additional/excalibur-bzip2-1.0.jar com/pixelmed.network.StorageSOPClassSCU theirhost 11112 STORESCP STORESCU -  0 0
+find /tmp -name '*.dcm' | java -cp pixelmed.jar:lib/additional/commons-codec-1.3.jar:lib/additional/commons-compress-1.9.jar com.pixelmed.network.StorageSOPClassSCU theirhost 11112 STORESCP STORESCU -  0 0
  * </pre>
  *
  *
  * @author	dclunie
  */
 public class StorageSOPClassSCU extends SOPClass {
+	private static final String identString = "@(#) $Header: /userland/cvs/pixelmed/imgbook/com/pixelmed/network/StorageSOPClassSCU.java,v 1.58 2016/02/04 09:05:34 dclunie Exp $";
 
-	/***/
-	private static final String identString = "@(#) $Header$";
-
-	/***/
-	protected int debugLevel;
+	private static final Logger slf4jlogger = LoggerFactory.getLogger(StorageSOPClassSCU.class);
 	
 	/***/
 	protected boolean trappedExceptions;
 	
 	/**
-	 * @return	true if in multiple instance constructors exceptions were trapped, e.g., connection or association failure before transfers attempyed
+	 * @return	true if in multiple instance constructors exceptions were trapped, e.g., connection or association failure before transfers attempted
 	 */
 	public boolean encounteredTrappedExceptions() { return trappedExceptions; } 
 	
 	/***/
 	protected class CStoreResponseHandler extends CompositeResponseHandler {
 		/**
-		 * @param	debugLevel
+		 * @deprecated			SLF4J is now used instead of debugLevel parameters to control debugging - use {@link #CStoreResponseHandler()} instead.
+		 * @param	debugLevel	ignored
 		 */
 		CStoreResponseHandler(int debugLevel) {
-			super(debugLevel);
+			this();
+			slf4jlogger.warn("CStoreResponseHandler(): Debug level supplied as constructor argument ignored");
+		}
+		
+		/**
+		 */
+		CStoreResponseHandler() {
+			super();
 		}
 		
 		/**
@@ -92,10 +100,10 @@ public class StorageSOPClassSCU extends SOPClass {
 	 * @param	din
 	 * @param	presentationContextID
 	 * @param	outputTransferSyntaxUID
-	 * @exception	IOException
-	 * @exception	DicomException
-	 * @exception	DicomNetworkException
-	 * @exception	AReleaseException
+	 * @throws	IOException
+	 * @throws	DicomException
+	 * @throws	DicomNetworkException
+	 * @throws	AReleaseException
 	 */
 	protected boolean sendOneSOPInstance(Association association,
 			String affectedSOPClass,String affectedSOPInstance,
@@ -116,10 +124,10 @@ public class StorageSOPClassSCU extends SOPClass {
 	 * @param	outputTransferSyntaxUID
 	 * @param	moveOriginatorApplicationEntityTitle	the AET of the C-MOVE that originated this C-STORE, or null if none
 	 * @param	moveOriginatorMessageID					the MessageID of the C-MOVE that originated this C-STORE, or -1 if none
-	 * @exception	IOException
-	 * @exception	DicomException
-	 * @exception	DicomNetworkException
-	 * @exception	AReleaseException
+	 * @throws	IOException
+	 * @throws	DicomException
+	 * @throws	DicomNetworkException
+	 * @throws	AReleaseException
 	 */
 	protected boolean sendOneSOPInstance(Association association,
 			String affectedSOPClass,String affectedSOPInstance,
@@ -127,26 +135,25 @@ public class StorageSOPClassSCU extends SOPClass {
 			byte presentationContextID,String outputTransferSyntaxUID,
 			String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID) throws AReleaseException, DicomNetworkException, DicomException, IOException {
 		byte cStoreRequestCommandMessage[] = new CStoreRequestCommandMessage(affectedSOPClass,affectedSOPInstance,moveOriginatorApplicationEntityTitle,moveOriginatorMessageID).getBytes();
-		CStoreResponseHandler receivedDataHandler = new CStoreResponseHandler(debugLevel);
+		CStoreResponseHandler receivedDataHandler = new CStoreResponseHandler();
 		association.setReceivedDataHandler(receivedDataHandler);
 		association.send(presentationContextID,cStoreRequestCommandMessage,null);
 		OutputStream out = association.getAssociationOutputStream(presentationContextID);
 		if (inputTransferSyntaxUID.equals(outputTransferSyntaxUID)) {
-		//if (false) {
-//if (debugLevel > 0) System.err.println("StorageSOPClassSCU.sendOneSOPInstance(): same transfer syntax so raw binary copy");
+			slf4jlogger.trace("sendOneSOPInstance(): same transfer syntax so raw binary copy");
 			CopyStream.copy(din,out);		// be careful ... this will not remove DataSetTrailingPadding, which will kill GE AW
-//if (debugLevel > 0) System.err.println("StorageSOPClassSCU.sendOneSOPInstance(): back from raw binary copy");
+			slf4jlogger.trace("sendOneSOPInstance(): back from raw binary copy");
 			out.close();
 		}
 		else {
-if (debugLevel > 0) System.err.println("StorageSOPClassSCU.sendOneSOPInstance(): different transfer syntaxes; converting "+inputTransferSyntaxUID+" to "+outputTransferSyntaxUID);
+			slf4jlogger.trace("sendOneSOPInstance(): different transfer syntaxes; converting {} to {}",inputTransferSyntaxUID,outputTransferSyntaxUID);
 			// din will already be positioned after meta-header and set for reading data set
 			// copier will push any transfer syntax specific decompression filter onto the stream before reading
 			DicomOutputStream dout = new DicomOutputStream(out,null/*meta*/,outputTransferSyntaxUID/*dataset*/);
 			new DicomStreamCopier(din,dout);
 			// Do not need dout.close() since DicomStreamCopier always closes output stream itself
 		}
-if (debugLevel > 0) System.err.println("StorageSOPClassSCU.sendOneSOPInstance(): about to wait for PDUs");
+		slf4jlogger.trace("sendOneSOPInstance(): about to wait for PDUs");
 		association.waitForCommandPDataPDUs();
 		return receivedDataHandler.wasSuccessful();
 	}
@@ -160,10 +167,10 @@ if (debugLevel > 0) System.err.println("StorageSOPClassSCU.sendOneSOPInstance():
 	 * @param	outputTransferSyntaxUID
 	 * @param	moveOriginatorApplicationEntityTitle	the AET of the C-MOVE that originated this C-STORE, or null if none
 	 * @param	moveOriginatorMessageID					the MessageID of the C-MOVE that originated this C-STORE, or -1 if none
-	 * @exception	IOException
-	 * @exception	DicomException
-	 * @exception	DicomNetworkException
-	 * @exception	AReleaseException
+	 * @throws	IOException
+	 * @throws	DicomException
+	 * @throws	DicomNetworkException
+	 * @throws	AReleaseException
 	 */
 	protected boolean sendOneSOPInstance(Association association,
 			String affectedSOPClass,String affectedSOPInstance,
@@ -171,13 +178,13 @@ if (debugLevel > 0) System.err.println("StorageSOPClassSCU.sendOneSOPInstance():
 			byte presentationContextID,String outputTransferSyntaxUID,
 			String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID) throws AReleaseException, DicomNetworkException, DicomException, IOException {
 		byte cStoreRequestCommandMessage[] = new CStoreRequestCommandMessage(affectedSOPClass,affectedSOPInstance,moveOriginatorApplicationEntityTitle,moveOriginatorMessageID).getBytes();
-		CStoreResponseHandler receivedDataHandler = new CStoreResponseHandler(debugLevel);
+		CStoreResponseHandler receivedDataHandler = new CStoreResponseHandler();
 		association.setReceivedDataHandler(receivedDataHandler);
 		association.send(presentationContextID,cStoreRequestCommandMessage,null);
 		OutputStream out = association.getAssociationOutputStream(presentationContextID);
-if (debugLevel > 0) System.err.println("StorageSOPClassSCU.sendOneSOPInstance(): writing attribute list as "+outputTransferSyntaxUID);
+		slf4jlogger.trace("sendOneSOPInstance(): writing attribute list as {}",outputTransferSyntaxUID);
 		list.write(out,outputTransferSyntaxUID,false/*useMeta*/,true/*useBufferedStream*/,false/*closeAfterWrite*/);
-if (debugLevel > 0) System.err.println("StorageSOPClassSCU.sendOneSOPInstance(): about to wait for PDUs");
+		slf4jlogger.trace("sendOneSOPInstance(): about to wait for PDUs");
 		association.waitForCommandPDataPDUs();
 		return receivedDataHandler.wasSuccessful();
 	}
@@ -192,23 +199,72 @@ if (debugLevel > 0) System.err.println("StorageSOPClassSCU.sendOneSOPInstance():
 	/**
 	 * <p>Establish an association to the specified AE, send the instance contained in the file, and release the association.</p>
 	 *
+	 * @deprecated							SLF4J is now used instead of debugLevel parameters to control debugging - use {@link #StorageSOPClassSCU(String,int,String,String,String,String,String,int)} instead.
 	 * @param	hostname					their hostname or IP address
 	 * @param	port						their port
 	 * @param	calledAETitle				their AE Title
 	 * @param	callingAETitle				our AE Title
 	 * @param	fileName					the name of the file containing the data set to send
-	 * @param	affectedSOPClass			must be the same as the SOP Class UID contained within the data set
-	 * @param	affectedSOPInstance			must be the same as the SOP Instance UID contained within the data set
+	 * @param	affectedSOPClass			must be the same as the SOP Class UID contained within the data set, may be null if file has a meta information header
+	 * @param	affectedSOPInstance			must be the same as the SOP Instance UID contained within the data set, may be null if file has a meta information header
 	 * @param	compressionLevel			0=none,1=propose deflate,2=propose deflate and bzip2
-	 * @param	debugLevel					zero for no debugging messages, higher values more verbose messages
-	 * @exception	IOException
-	 * @exception	DicomException
-	 * @exception	DicomNetworkException
+	 * @param	debugLevel					ignored
+	 * @throws	IOException
+	 * @throws	DicomException
+	 * @throws	DicomNetworkException
 	 */
 	public StorageSOPClassSCU(String hostname,int port,String calledAETitle,String callingAETitle,String fileName,
 			String affectedSOPClass,String affectedSOPInstance,int compressionLevel,
 			int debugLevel) throws DicomNetworkException, DicomException, IOException {
-		this(hostname,port,calledAETitle,callingAETitle,fileName,affectedSOPClass,affectedSOPInstance,compressionLevel,null,-1,debugLevel);
+		this(hostname,port,calledAETitle,callingAETitle,fileName,affectedSOPClass,affectedSOPInstance,compressionLevel);
+		slf4jlogger.warn("Debug level supplied as constructor argument ignored");
+	}
+	
+	/**
+	 * <p>Establish an association to the specified AE, send the instance contained in the file, and release the association.</p>
+	 *
+	 * @param	hostname					their hostname or IP address
+	 * @param	port						their port
+	 * @param	calledAETitle				their AE Title
+	 * @param	callingAETitle				our AE Title
+	 * @param	fileName					the name of the file containing the data set to send
+	 * @param	affectedSOPClass			must be the same as the SOP Class UID contained within the data set, may be null if file has a meta information header
+	 * @param	affectedSOPInstance			must be the same as the SOP Instance UID contained within the data set, may be null if file has a meta information header
+	 * @param	compressionLevel			0=none,1=propose deflate,2=propose deflate and bzip2
+	 * @throws	IOException
+	 * @throws	DicomException
+	 * @throws	DicomNetworkException
+	 */
+	public StorageSOPClassSCU(String hostname,int port,String calledAETitle,String callingAETitle,String fileName,
+			String affectedSOPClass,String affectedSOPInstance,int compressionLevel
+			) throws DicomNetworkException, DicomException, IOException {
+		this(hostname,port,calledAETitle,callingAETitle,fileName,affectedSOPClass,affectedSOPInstance,compressionLevel,null,-1);
+	}
+	
+	/**
+	 * <p>Establish an association to the specified AE, send the instance contained in the file, and release the association.</p>
+	 *
+	 * @deprecated										SLF4J is now used instead of debugLevel parameters to control debugging - use {@link #StorageSOPClassSCU(String,int,String,String,String,String,String,int,String,int)} instead.
+	 * @param	hostname								their hostname or IP address
+	 * @param	port									their port
+	 * @param	calledAETitle							their AE Title
+	 * @param	callingAETitle							our AE Title
+	 * @param	fileName								the name of the file containing the data set to send
+	 * @param	affectedSOPClass						must be the same as the SOP Class UID contained within the data set, may be null if file has a meta information header
+	 * @param	affectedSOPInstance						must be the same as the SOP Instance UID contained within the data set, may be null if file has a meta information header
+	 * @param	compressionLevel						0=none,1=propose deflate,2=propose deflate and bzip2
+	 * @param	moveOriginatorApplicationEntityTitle	the AET of the C-MOVE that originated this C-STORE, or null if none
+	 * @param	moveOriginatorMessageID					the MessageID of the C-MOVE that originated this C-STORE, or -1 if none
+	 * @param	debugLevel								ignored
+	 * @throws	IOException
+	 * @throws	DicomException
+	 * @throws	DicomNetworkException
+	 */
+	public StorageSOPClassSCU(String hostname,int port,String calledAETitle,String callingAETitle,String fileName,
+			String affectedSOPClass,String affectedSOPInstance,int compressionLevel,String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID,
+			int debugLevel) throws DicomNetworkException, DicomException, IOException {
+		this(hostname,port,calledAETitle,callingAETitle,fileName,affectedSOPClass,affectedSOPInstance,compressionLevel,moveOriginatorApplicationEntityTitle,moveOriginatorMessageID);
+		slf4jlogger.warn("Debug level supplied as constructor argument ignored");
 	}
 	
 	/**
@@ -219,22 +275,19 @@ if (debugLevel > 0) System.err.println("StorageSOPClassSCU.sendOneSOPInstance():
 	 * @param	calledAETitle							their AE Title
 	 * @param	callingAETitle							our AE Title
 	 * @param	fileName								the name of the file containing the data set to send
-	 * @param	affectedSOPClass						must be the same as the SOP Class UID contained within the data set
-	 * @param	affectedSOPInstance						must be the same as the SOP Instance UID contained within the data set
+	 * @param	affectedSOPClass						must be the same as the SOP Class UID contained within the data set, may be null if file has a meta information header
+	 * @param	affectedSOPInstance						must be the same as the SOP Instance UID contained within the data set, may be null if file has a meta information header
 	 * @param	compressionLevel						0=none,1=propose deflate,2=propose deflate and bzip2
 	 * @param	moveOriginatorApplicationEntityTitle	the AET of the C-MOVE that originated this C-STORE, or null if none
 	 * @param	moveOriginatorMessageID					the MessageID of the C-MOVE that originated this C-STORE, or -1 if none
-	 * @param	debugLevel								zero for no debugging messages, higher values more verbose messages
-	 * @exception	IOException
-	 * @exception	DicomException
-	 * @exception	DicomNetworkException
+	 * @throws	IOException
+	 * @throws	DicomException
+	 * @throws	DicomNetworkException
 	 */
 	public StorageSOPClassSCU(String hostname,int port,String calledAETitle,String callingAETitle,String fileName,
-			String affectedSOPClass,String affectedSOPInstance,int compressionLevel,String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID,
-			int debugLevel) throws DicomNetworkException, DicomException, IOException {
-		this.debugLevel=debugLevel;
-		
-if (debugLevel > 0) System.err.println("StorageSOPClassSCU: storing "+fileName);
+			String affectedSOPClass,String affectedSOPInstance,int compressionLevel,String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID
+			) throws DicomNetworkException, DicomException, IOException {
+		slf4jlogger.trace("StorageSOPClassSCU: storing {}",fileName);
 		// Don't even begin until we know we can open the file ...
 		InputStream in = new BufferedInputStream(new FileInputStream(fileName));
 		try {
@@ -243,7 +296,7 @@ if (debugLevel > 0) System.err.println("StorageSOPClassSCU: storing "+fileName);
 			if (din.haveMetaHeader()) {
 				AttributeList metaList = new AttributeList();
 				metaList.readOnlyMetaInformationHeader(din);
-if (debugLevel > 0) System.err.println("Meta header information = "+metaList);
+				slf4jlogger.trace("Meta header information = {}",metaList);
 				affectedSOPClass=Attribute.getSingleStringValueOrNull(metaList,TagFromName.MediaStorageSOPClassUID);
 				affectedSOPInstance=Attribute.getSingleStringValueOrNull(metaList,TagFromName.MediaStorageSOPInstanceUID);
 				inputTransferSyntax=Attribute.getSingleStringValueOrNull(metaList,TagFromName.TransferSyntaxUID);
@@ -251,7 +304,7 @@ if (debugLevel > 0) System.err.println("Meta header information = "+metaList);
 			else {
 				inputTransferSyntax=din.getTransferSyntaxToReadDataSet().getUID();
 			}
-if (debugLevel > 0) System.err.println("Using inputTransferSyntax "+inputTransferSyntax);
+			slf4jlogger.trace("Using inputTransferSyntax {}",inputTransferSyntax);
 
 			if (affectedSOPClass == null || affectedSOPClass.length() == 0) {
 				throw new DicomNetworkException("Can't C-STORE SOP Instance - can't determine Affected SOP Class UID");
@@ -266,14 +319,17 @@ if (debugLevel > 0) System.err.println("Using inputTransferSyntax "+inputTransfe
 			PresentationContextListFactory presentationContextListFactory = new PresentationContextListFactory();
 			LinkedList presentationContexts = presentationContextListFactory.createNewPresentationContextList(affectedSOPClass,inputTransferSyntax,compressionLevel);
 
-			Association association = AssociationFactory.createNewAssociation(hostname,port,calledAETitle,callingAETitle,presentationContexts,null,false,debugLevel);
-if (debugLevel > 0) System.err.println(association);
+			Association association = AssociationFactory.createNewAssociation(hostname,port,calledAETitle,callingAETitle,presentationContexts,null,false);
+			if (slf4jlogger.isTraceEnabled()) slf4jlogger.trace(association.toString());
 			// Decide which presentation context we are going to use ...
 			byte presentationContextID = association.getSuitablePresentationContextID(affectedSOPClass);
 			//int presentationContextID = association.getSuitablePresentationContextID(affectedSOPClass,TransferSyntax.Default);
-if (debugLevel > 0) System.err.println("Using context ID "+presentationContextID);
+			slf4jlogger.trace("Using context ID {}",presentationContextID);
 			String outputTransferSyntax = association.getTransferSyntaxForPresentationContextID(presentationContextID);
-if (debugLevel > 0) System.err.println("Using outputTransferSyntax "+outputTransferSyntax);
+			slf4jlogger.trace("Using outputTransferSyntax {}",outputTransferSyntax);
+			if (outputTransferSyntax == null || outputTransferSyntax.length() == 0) {
+				throw new DicomNetworkException("Can't C-STORE SOP Instance - can't determine Transfer Syntax (no Presentation Context for Affected SOP Class UID)");
+			}
 			boolean success = false;
 			try {
 				success = sendOneSOPInstance(association,affectedSOPClass,affectedSOPInstance,
@@ -287,7 +343,7 @@ if (debugLevel > 0) System.err.println("Using outputTransferSyntax "+outputTrans
 				// State 1
 				// the other end released and didn't wait for us to do it
 			}
-if (debugLevel > 0) System.err.println("Send "+(success ? "succeeded" : "failed"));
+			slf4jlogger.debug("Send {} {}",fileName,(success ? "succeeded" : "failed"));
 		}
 		finally {
 			in.close();
@@ -297,15 +353,45 @@ if (debugLevel > 0) System.err.println("Send "+(success ? "succeeded" : "failed"
 	/**
 	 * <p>Send the specified instances contained in the files over an existing association.</p>
 	 *
-	 * @param	association				already existing association to SCP
-	 * @param	dicomFiles				the set of DICOM files containing names, SOP Class UIDs, SOP Instance UIDs and optionally Transfer Syntaxes
-	 * @param	debugLevel				zero for no debugging messages, higher values more verbose messages
+	 * @deprecated										SLF4J is now used instead of debugLevel parameters to control debugging - use {@link #StorageSOPClassSCU(Association,SetOfDicomFiles,MultipleInstanceTransferStatusHandler)} instead.
+	 * @param	association								already existing association to SCP
+	 * @param	dicomFiles								the set of DICOM files containing names, SOP Class UIDs, SOP Instance UIDs and optionally Transfer Syntaxes
+	 * @param	multipleInstanceTransferStatusHandler
+	 * @param	debugLevel								ignored
 	 */
 	public StorageSOPClassSCU(Association association,SetOfDicomFiles dicomFiles,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler,
 			int debugLevel) {
-		this(association,dicomFiles,multipleInstanceTransferStatusHandler,null,-1,debugLevel);
+		this(association,dicomFiles,multipleInstanceTransferStatusHandler);
+		slf4jlogger.warn("Debug level supplied as constructor argument ignored");
+	}
+	
+	/**
+	 * <p>Send the specified instances contained in the files over an existing association.</p>
+	 *
+	 * @param	association								already existing association to SCP
+	 * @param	dicomFiles								the set of DICOM files containing names, SOP Class UIDs, SOP Instance UIDs and optionally Transfer Syntaxes
+	 * @param	multipleInstanceTransferStatusHandler
+	 */
+	public StorageSOPClassSCU(Association association,SetOfDicomFiles dicomFiles,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler) {
+		this(association,dicomFiles,multipleInstanceTransferStatusHandler,null,-1);
 	}
 
+	/**
+	 * <p>Send the specified instances contained in the files over an existing association.</p>
+	 *
+	 * @deprecated										SLF4J is now used instead of debugLevel parameters to control debugging - use {@link #StorageSOPClassSCU(Association,SetOfDicomFiles,MultipleInstanceTransferStatusHandler,String,int)} instead.
+	 * @param	association								already existing association to SCP
+	 * @param	dicomFiles								the set of DICOM files containing names, SOP Class UIDs, SOP Instance UIDs and optionally Transfer Syntaxes
+	 * @param	moveOriginatorApplicationEntityTitle	the AET of the C-MOVE that originated this C-STORE, or null if none
+	 * @param	moveOriginatorMessageID					the MessageID of the C-MOVE that originated this C-STORE, or -1 if none
+	 * @param	debugLevel								ignored
+	 */
+	public StorageSOPClassSCU(Association association,SetOfDicomFiles dicomFiles,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler,
+			String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID,int debugLevel) {
+		this(association,dicomFiles,multipleInstanceTransferStatusHandler,moveOriginatorApplicationEntityTitle,moveOriginatorMessageID);
+		slf4jlogger.warn("Debug level supplied as constructor argument ignored");
+	}
+	
 	/**
 	 * <p>Send the specified instances contained in the files over an existing association.</p>
 	 *
@@ -313,11 +399,9 @@ if (debugLevel > 0) System.err.println("Send "+(success ? "succeeded" : "failed"
 	 * @param	dicomFiles								the set of DICOM files containing names, SOP Class UIDs, SOP Instance UIDs and optionally Transfer Syntaxes
 	 * @param	moveOriginatorApplicationEntityTitle	the AET of the C-MOVE that originated this C-STORE, or null if none
 	 * @param	moveOriginatorMessageID					the MessageID of the C-MOVE that originated this C-STORE, or -1 if none
-	 * @param	debugLevel								zero for no debugging messages, higher values more verbose messages
 	 */
 	public StorageSOPClassSCU(Association association,SetOfDicomFiles dicomFiles,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler,
-			String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID,int debugLevel) {
-		this.debugLevel=debugLevel;
+			String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID) {
 		try {
 			sendMultipleSOPInstances(association,dicomFiles,multipleInstanceTransferStatusHandler,moveOriginatorApplicationEntityTitle,moveOriginatorMessageID);
 		}
@@ -327,12 +411,32 @@ if (debugLevel > 0) System.err.println("Send "+(success ? "succeeded" : "failed"
 		}
 		catch (DicomNetworkException e) {
 			trappedExceptions = true;
-			e.printStackTrace(System.err);
+			slf4jlogger.error("",e);
 		}
 		catch (IOException e) {
 			trappedExceptions = true;
-			e.printStackTrace(System.err);
+			slf4jlogger.error("",e);
 		}
+	}
+	
+	/**
+	 * <p>Establish an association to the specified AE, send the instances contained in the files, and release the association.</p>
+	 *
+	 * @deprecated										SLF4J is now used instead of debugLevel parameters to control debugging - use {@link #StorageSOPClassSCU(String,int,String,String,SetOfDicomFiles,int,MultipleInstanceTransferStatusHandler)} instead.
+	 * @param	hostname								their hostname or IP address
+	 * @param	port									their port
+	 * @param	calledAETitle							their AE Title
+	 * @param	callingAETitle							our AE Title
+	 * @param	dicomFiles								the set of DICOM files containing names, SOP Class UIDs, SOP Instance UIDs and optionally Transfer Syntaxes
+	 * @param	compressionLevel						0=none,1=propose deflate,2=propose deflate and bzip2
+	 * @param	multipleInstanceTransferStatusHandler	transfer handler for reporting pending status (may be null if not required)
+	 * @param	debugLevel								ignored
+	 */
+	public StorageSOPClassSCU(String hostname,int port,String calledAETitle,String callingAETitle,
+			SetOfDicomFiles dicomFiles,int compressionLevel,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler,
+			int debugLevel) {
+		this(hostname,port,calledAETitle,callingAETitle,dicomFiles,compressionLevel,multipleInstanceTransferStatusHandler);
+		slf4jlogger.warn("Debug level supplied as constructor argument ignored");
 	}
 	
 	/**
@@ -345,13 +449,32 @@ if (debugLevel > 0) System.err.println("Send "+(success ? "succeeded" : "failed"
 	 * @param	dicomFiles								the set of DICOM files containing names, SOP Class UIDs, SOP Instance UIDs and optionally Transfer Syntaxes
 	 * @param	compressionLevel						0=none,1=propose deflate,2=propose deflate and bzip2
 	 * @param	multipleInstanceTransferStatusHandler	transfer handler for reporting pending status (may be null if not required)
-	 * @param	debugLevel								zero for no debugging messages, higher values more verbose messages
-	 * @throws Throwable 
+	 */
+	public StorageSOPClassSCU(String hostname,int port,String calledAETitle,String callingAETitle,
+			SetOfDicomFiles dicomFiles,int compressionLevel,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler) {
+		this(hostname,port,calledAETitle,callingAETitle,dicomFiles,compressionLevel,multipleInstanceTransferStatusHandler,null,-1);
+	}
+
+	/**
+	 * <p>Establish an association to the specified AE, send the instances contained in the files, and release the association.</p>
+	 *
+	 * @deprecated										SLF4J is now used instead of debugLevel parameters to control debugging - use {@link #StorageSOPClassSCU(String,int,String,String,SetOfDicomFiles,int,MultipleInstanceTransferStatusHandler,String,int)} instead.
+	 * @param	hostname								their hostname or IP address
+	 * @param	port									their port
+	 * @param	calledAETitle							their AE Title
+	 * @param	callingAETitle							our AE Title
+	 * @param	dicomFiles								the set of DICOM files containing names, SOP Class UIDs, SOP Instance UIDs and optionally Transfer Syntaxes
+	 * @param	compressionLevel						0=none,1=propose deflate,2=propose deflate and bzip2
+	 * @param	multipleInstanceTransferStatusHandler	transfer handler for reporting pending status (may be null if not required)
+	 * @param	moveOriginatorApplicationEntityTitle	the AET of the C-MOVE that originated this C-STORE, or null if none
+	 * @param	moveOriginatorMessageID					the MessageID of the C-MOVE that originated this C-STORE, or -1 if none
+	 * @param	debugLevel								ignored
 	 */
 	public StorageSOPClassSCU(String hostname,int port,String calledAETitle,String callingAETitle,
 			SetOfDicomFiles dicomFiles,int compressionLevel,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler,
-			int debugLevel) throws Throwable {
-		this(hostname,port,calledAETitle,callingAETitle,dicomFiles,compressionLevel,multipleInstanceTransferStatusHandler,null,-1,debugLevel);
+			String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID,int debugLevel) {
+		this(hostname,port,calledAETitle,callingAETitle,dicomFiles,compressionLevel,multipleInstanceTransferStatusHandler,moveOriginatorApplicationEntityTitle,moveOriginatorMessageID);
+		slf4jlogger.warn("Debug level supplied as constructor argument ignored");
 	}
 
 	/**
@@ -366,41 +489,72 @@ if (debugLevel > 0) System.err.println("Send "+(success ? "succeeded" : "failed"
 	 * @param	multipleInstanceTransferStatusHandler	transfer handler for reporting pending status (may be null if not required)
 	 * @param	moveOriginatorApplicationEntityTitle	the AET of the C-MOVE that originated this C-STORE, or null if none
 	 * @param	moveOriginatorMessageID					the MessageID of the C-MOVE that originated this C-STORE, or -1 if none
-	 * @param	debugLevel								zero for no debugging messages, higher values more verbose messages
-	 * @throws Throwable 
-	 * @throws DicomNetworkException 
 	 */
 	public StorageSOPClassSCU(String hostname,int port,String calledAETitle,String callingAETitle,
 			SetOfDicomFiles dicomFiles,int compressionLevel,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler,
-			String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID,int debugLevel) throws Throwable {
+			String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID) {
 //long startTime=System.currentTimeMillis();
-		this.debugLevel=debugLevel;
-//		try {
-			PresentationContextListFactory presentationContextListFactory = new PresentationContextListFactory();
-			LinkedList presentationContexts = presentationContextListFactory.createNewPresentationContextList(dicomFiles,compressionLevel);
-			Association association = AssociationFactory.createNewAssociation(hostname,port,calledAETitle,callingAETitle,presentationContexts,null,false,debugLevel);
+		if (!dicomFiles.isEmpty()) {
+			try {
+				PresentationContextListFactory presentationContextListFactory = new PresentationContextListFactory();
+				LinkedList presentationContexts = presentationContextListFactory.createNewPresentationContextList(dicomFiles,compressionLevel);
+				Association association = AssociationFactory.createNewAssociation(hostname,port,calledAETitle,callingAETitle,presentationContexts,null,false);
 //System.err.println("StorageSOPClassSCU.StorageSOPClassSCU() established association in "+(System.currentTimeMillis()-startTime)+" ms");
 			
-			sendMultipleSOPInstances(association,dicomFiles,multipleInstanceTransferStatusHandler,moveOriginatorApplicationEntityTitle,moveOriginatorMessageID);
+				sendMultipleSOPInstances(association,dicomFiles,multipleInstanceTransferStatusHandler,moveOriginatorApplicationEntityTitle,moveOriginatorMessageID);
 			
-			association.release();
-//		}
-//		catch (AReleaseException e) {
-//			// State 1
-//			// the other end released and didn't wait for us to do it
-//		}
-//		catch (DicomNetworkException e) {
-//			trappedExceptions = true;
-//			e.printStackTrace(System.err);
-//		}
-//		catch (IOException e) {
-//			trappedExceptions = true;
-//			e.printStackTrace(System.err);
-//		}
+				association.release();
+			}
+			catch (AReleaseException e) {
+				// State 1
+				// the other end released and didn't wait for us to do it
+			}
+			catch (DicomNetworkException e) {
+				trappedExceptions = true;
+				slf4jlogger.error("",e);
+			}
+			catch (IOException e) {
+				trappedExceptions = true;
+				slf4jlogger.error("",e);
+			}
+		}
+		else {
+			slf4jlogger.trace("Not opening an association since no instances to send");
+		}
 	}
 
 	/**
 	 * <p>Establish an association to the specified AE, send the instances contained in the attribute lists, and release the association.</p>
+	 *
+	 * <p>Deprecated because establishing presentation contexts based on the set of SOP Classes without knowledge of the encoded Transfer Syntax may lead to failure during C-STORE
+	 * because of inability to convert; also SLF4J is now used instead of debugLevel parameters to control debugging.</p>
+	 *
+	 * @deprecated										use {@link #StorageSOPClassSCU(String,int,String,String,SetOfDicomFiles,int,MultipleInstanceTransferStatusHandler)} instead.
+	 * @param	hostname								their hostname or IP address
+	 * @param	port									their port
+	 * @param	calledAETitle							their AE Title
+	 * @param	callingAETitle							our AE Title
+	 * @param	setOfSOPClassUIDs						the set of SOP Classes contained in the attribute lists
+	 * @param	lists									the attribute lists to send
+	 * @param	compressionLevel						0=none,1=propose deflate,2=propose deflate and bzip2
+	 * @param	multipleInstanceTransferStatusHandler	transfer handler for reporting pending status (may be null if not required)
+	 * @param	moveOriginatorApplicationEntityTitle	the AET of the C-MOVE that originated this C-STORE, or null if none
+	 * @param	moveOriginatorMessageID					the MessageID of the C-MOVE that originated this C-STORE, or -1 if none
+	 * @param	debugLevel								ignored
+	 */
+	public StorageSOPClassSCU(String hostname,int port,String calledAETitle,String callingAETitle,
+			Set setOfSOPClassUIDs,AttributeList[] lists,
+			int compressionLevel,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler,
+			String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID,int debugLevel) {
+		this(hostname,port,calledAETitle,callingAETitle,setOfSOPClassUIDs,lists,compressionLevel,multipleInstanceTransferStatusHandler,moveOriginatorApplicationEntityTitle,moveOriginatorMessageID);
+		slf4jlogger.warn("Debug level supplied as constructor argument ignored");
+	}
+	
+	/**
+	 * <p>Establish an association to the specified AE, send the instances contained in the attribute lists, and release the association.</p>
+	 *
+	 * <p>Deprecated because establishing presentation contexts based on the set of SOP Classes without knowledge of the encoded Transfer Syntax may lead to failure during C-STORE
+	 * because of inability to convert.</p>
 	 *
 	 * @param	hostname								their hostname or IP address
 	 * @param	port									their port
@@ -412,35 +566,41 @@ if (debugLevel > 0) System.err.println("Send "+(success ? "succeeded" : "failed"
 	 * @param	multipleInstanceTransferStatusHandler	transfer handler for reporting pending status (may be null if not required)
 	 * @param	moveOriginatorApplicationEntityTitle	the AET of the C-MOVE that originated this C-STORE, or null if none
 	 * @param	moveOriginatorMessageID					the MessageID of the C-MOVE that originated this C-STORE, or -1 if none
-	 * @param	debugLevel								zero for no debugging messages, higher values more verbose messages
+	 * @deprecated use  {@link com.pixelmed.network.StorageSOPClassSCU#StorageSOPClassSCU(String,int,String,String,SetOfDicomFiles,int,MultipleInstanceTransferStatusHandler) StorageSOPClassSCU(String hostname,int port,String calledAETitle,String callingAETitle,
+			SetOfDicomFiles dicomFiles,int compressionLevel,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler,
+			String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID)} instead
 	 */
 	public StorageSOPClassSCU(String hostname,int port,String calledAETitle,String callingAETitle,
 			Set setOfSOPClassUIDs,AttributeList[] lists,
 			int compressionLevel,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler,
-			String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID,int debugLevel) {
+			String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID) {
 //long startTime=System.currentTimeMillis();
-		this.debugLevel=debugLevel;
-		try {
-			PresentationContextListFactory presentationContextListFactory = new PresentationContextListFactory();
-			LinkedList presentationContexts = presentationContextListFactory.createNewPresentationContextList(setOfSOPClassUIDs,compressionLevel);
-			Association association = AssociationFactory.createNewAssociation(hostname,port,calledAETitle,callingAETitle,presentationContexts,null,false,debugLevel);
+		if (lists.length > 0) {
+			try {
+				PresentationContextListFactory presentationContextListFactory = new PresentationContextListFactory();
+				LinkedList presentationContexts = presentationContextListFactory.createNewPresentationContextList(setOfSOPClassUIDs,compressionLevel);
+				Association association = AssociationFactory.createNewAssociation(hostname,port,calledAETitle,callingAETitle,presentationContexts,null,false);
 //System.err.println("StorageSOPClassSCU.StorageSOPClassSCU() established association in "+(System.currentTimeMillis()-startTime)+" ms");
 			
-			sendMultipleSOPInstances(association,lists,multipleInstanceTransferStatusHandler,moveOriginatorApplicationEntityTitle,moveOriginatorMessageID);
+				sendMultipleSOPInstances(association,lists,multipleInstanceTransferStatusHandler,moveOriginatorApplicationEntityTitle,moveOriginatorMessageID);
 			
-			association.release();
+				association.release();
+			}
+			catch (AReleaseException e) {
+				// State 1
+				// the other end released and didn't wait for us to do it
+			}
+			catch (DicomNetworkException e) {
+				trappedExceptions = true;
+				slf4jlogger.error("",e);
+			}
+			catch (IOException e) {
+				trappedExceptions = true;
+				slf4jlogger.error("",e);
+			}
 		}
-		catch (AReleaseException e) {
-			// State 1
-			// the other end released and didn't wait for us to do it
-		}
-		catch (DicomNetworkException e) {
-			trappedExceptions = true;
-			e.printStackTrace(System.err);
-		}
-		catch (IOException e) {
-			trappedExceptions = true;
-			e.printStackTrace(System.err);
+		else {
+			slf4jlogger.trace("Not opening an association since no instances to send");
 		}
 	}
 			
@@ -452,9 +612,9 @@ if (debugLevel > 0) System.err.println("Send "+(success ? "succeeded" : "failed"
 	 * @param	multipleInstanceTransferStatusHandler	handler called after each transfer (may be null if not required)
 	 * @param	moveOriginatorApplicationEntityTitle	the AET of the C-MOVE that originated this C-STORE, or null if none
 	 * @param	moveOriginatorMessageID					the MessageID of the C-MOVE that originated this C-STORE, or -1 if none
-	 * @exception	AReleaseException
-	 * @exception	DicomNetworkException
-	 * @exception	IOException
+	 * @throws	AReleaseException
+	 * @throws	DicomNetworkException
+	 * @throws	IOException
 	 */
 	protected void sendMultipleSOPInstances(Association association,SetOfDicomFiles dicomFiles,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler,
 				String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID)
@@ -465,14 +625,14 @@ if (debugLevel > 0) System.err.println("Send "+(success ? "succeeded" : "failed"
 		int nFailed = 0;
 		int nWarning = 0;
 		{
-if (debugLevel > 0) System.err.println(association);
+			if (slf4jlogger.isTraceEnabled()) slf4jlogger.trace(association.toString());
 			Iterator fi = dicomFiles.iterator();
 			while (fi.hasNext()) {
 				--nRemaining;
 				++nCompleted;
 				SetOfDicomFiles.DicomFile dicomFile = (SetOfDicomFiles.DicomFile)(fi.next());
 				String fileName = dicomFile.getFileName();
-if (debugLevel > 0) System.err.println("Sending "+fileName);
+				slf4jlogger.trace("Sending {}",fileName);
 				boolean success = false;
 				String affectedSOPInstance = null;
 				try {
@@ -484,28 +644,28 @@ if (debugLevel > 0) System.err.println("Sending "+fileName);
 						if (din.haveMetaHeader()) {
 							AttributeList metaList = new AttributeList();
 							metaList.readOnlyMetaInformationHeader(din);
-if (debugLevel > 0) System.err.println("Meta header information = "+metaList);
+							slf4jlogger.trace("Meta header information = \n{}",metaList.toString());
 							affectedSOPClass=Attribute.getSingleStringValueOrNull(metaList,TagFromName.MediaStorageSOPClassUID);
 							affectedSOPInstance=Attribute.getSingleStringValueOrNull(metaList,TagFromName.MediaStorageSOPInstanceUID);
 							inputTransferSyntax=Attribute.getSingleStringValueOrNull(metaList,TagFromName.TransferSyntaxUID);
-							//== TODO: added by Wilson Liu (to handle those DICOM files do have meta header but no file meta information.
-							if(affectedSOPClass==null||affectedSOPInstance==null||inputTransferSyntax==null){
-								affectedSOPClass=dicomFile.getSOPClassUID();
-								affectedSOPInstance=dicomFile.getSOPInstanceUID();
-								inputTransferSyntax=din.getTransferSyntaxInUse().getUID();
-								in = new BufferedInputStream(new FileInputStream(fileName));
-								din = new DicomInputStream(in);	
-							}
-							//==
+	                         //== TODO: added by Wilson Liu (to handle those DICOM files do have meta header but no file meta information.
+                            if(affectedSOPClass==null||affectedSOPInstance==null||inputTransferSyntax==null){
+                                affectedSOPClass=dicomFile.getSOPClassUID();
+                                affectedSOPInstance=dicomFile.getSOPInstanceUID();
+                                inputTransferSyntax=din.getTransferSyntaxInUse().getUID();
+                                in = new BufferedInputStream(new FileInputStream(fileName));
+                                din = new DicomInputStream(in); 
+                            }
+                            //==
 						}
 						else {
 							affectedSOPClass=dicomFile.getSOPClassUID();
 							affectedSOPInstance=dicomFile.getSOPInstanceUID();
 							inputTransferSyntax=din.getTransferSyntaxToReadDataSet().getUID();
 						}
-if (debugLevel > 1) System.err.println("StorageSOPClassSCU(): affectedSOPClass = "+affectedSOPClass);
-if (debugLevel > 1) System.err.println("StorageSOPClassSCU(): affectedSOPInstance = "+affectedSOPInstance);
-if (debugLevel > 1) System.err.println("StorageSOPClassSCU(): inputTransferSyntax = "+inputTransferSyntax);
+						slf4jlogger.trace("affectedSOPClass = {}",affectedSOPClass);
+						slf4jlogger.trace("affectedSOPInstance = {}",affectedSOPInstance);
+						slf4jlogger.trace("inputTransferSyntax = {}",inputTransferSyntax);
 
 						if (affectedSOPClass == null || affectedSOPClass.length() == 0) {
 							throw new DicomNetworkException("Can't C-STORE SOP Instance - can't determine Affected SOP Class UID");
@@ -520,9 +680,12 @@ if (debugLevel > 1) System.err.println("StorageSOPClassSCU(): inputTransferSynta
 						// Decide which presentation context we are going to use ...
 						byte presentationContextID = association.getSuitablePresentationContextID(affectedSOPClass);
 						//int presentationContextID = association.getSuitablePresentationContextID(affectedSOPClass,TransferSyntax.Default);
-if (debugLevel > 0) System.err.println("Using context ID "+presentationContextID);
+						slf4jlogger.trace("Using context ID {}",presentationContextID);
 						String outputTransferSyntax = association.getTransferSyntaxForPresentationContextID(presentationContextID);
-if (debugLevel > 0) System.err.println("Using outputTransferSyntax "+outputTransferSyntax);
+						slf4jlogger.trace("Using outputTransferSyntax {}",outputTransferSyntax);
+						if (outputTransferSyntax == null || outputTransferSyntax.length() == 0) {
+							throw new DicomNetworkException("Can't C-STORE SOP Instance - can't determine Transfer Syntax (no Presentation Context for Affected SOP Class UID)");
+						}
 				
 						success = sendOneSOPInstance(association,affectedSOPClass,affectedSOPInstance,
 							inputTransferSyntax,din,
@@ -534,21 +697,22 @@ if (debugLevel > 0) System.err.println("Using outputTransferSyntax "+outputTrans
 					}
 				}
 				catch (DicomNetworkException e) {
-					e.printStackTrace(System.err);
+					slf4jlogger.error("",e);
 					success=false;
 				}
 				catch (DicomException e) {
-					e.printStackTrace(System.err);
+					slf4jlogger.error("",e);
 					success=false;
 				}
 				catch (IOException e) {
-					e.printStackTrace(System.err);
+					slf4jlogger.error("",e);
 					success=false;
 				}
 				if (!success) {
 					++nFailed;
+					trappedExceptions = true;
 				}
-if (debugLevel > 0) System.err.println("Send "+fileName+" "+(success ? "succeeded" : "failed"));
+				slf4jlogger.debug("Send {} {} between {}",fileName,(success ? "succeeded" : "failed"),association.getEndpointDescription());
 				if (multipleInstanceTransferStatusHandler != null) {
 					if (multipleInstanceTransferStatusHandler instanceof MultipleInstanceTransferStatusHandlerWithFileName) {
 						((MultipleInstanceTransferStatusHandlerWithFileName)multipleInstanceTransferStatusHandler).updateStatus(nRemaining,nCompleted,nFailed,nWarning,affectedSOPInstance,fileName,success);
@@ -558,7 +722,7 @@ if (debugLevel > 0) System.err.println("Send "+fileName+" "+(success ? "succeede
 					}
 				}
 			}
-if (debugLevel > 0) System.err.println("StorageSOPClassSCU(): Finished sending all files nRemaining="+nRemaining+" nCompleted="+nCompleted+" nFailed="+nFailed+" nWarning="+nWarning);
+			slf4jlogger.debug("Finished sending all files nRemaining={} nCompleted={} nFailed={} nWarning={} between {}",nRemaining,nCompleted,nFailed,nWarning,association.getEndpointDescription());
 		}
 //System.err.println("StorageSOPClassSCU.sendMultipleSOPInstances() sent "+nCompleted+" files in "+(System.currentTimeMillis()-startTime)+" ms");
 	}
@@ -571,9 +735,9 @@ if (debugLevel > 0) System.err.println("StorageSOPClassSCU(): Finished sending a
 	 * @param	multipleInstanceTransferStatusHandler	handler called after each transfer (may be null if not required)
 	 * @param	moveOriginatorApplicationEntityTitle	the AET of the C-MOVE that originated this C-STORE, or null if none
 	 * @param	moveOriginatorMessageID					the MessageID of the C-MOVE that originated this C-STORE, or -1 if none
-	 * @exception	AReleaseException
-	 * @exception	DicomNetworkException
-	 * @exception	IOException
+	 * @throws	AReleaseException
+	 * @throws	DicomNetworkException
+	 * @throws	IOException
 	 */
 	protected void sendMultipleSOPInstances(Association association,AttributeList[] lists,MultipleInstanceTransferStatusHandler multipleInstanceTransferStatusHandler,
 				String moveOriginatorApplicationEntityTitle,int moveOriginatorMessageID)
@@ -584,7 +748,7 @@ if (debugLevel > 0) System.err.println("StorageSOPClassSCU(): Finished sending a
 		int nFailed = 0;
 		int nWarning = 0;
 		{
-if (debugLevel > 0) System.err.println(association);
+			if (slf4jlogger.isTraceEnabled()) slf4jlogger.trace(association.toString());
 			for (int i=0; i<lists.length; ++i) {
 				--nRemaining;
 				++nCompleted;
@@ -595,9 +759,8 @@ if (debugLevel > 0) System.err.println(association);
 					String affectedSOPClass = null;
 					affectedSOPClass=Attribute.getSingleStringValueOrNull(list,TagFromName.SOPClassUID);
 					affectedSOPInstance=Attribute.getSingleStringValueOrNull(list,TagFromName.SOPInstanceUID);
-if (debugLevel > 0) System.err.println("Sending "+affectedSOPInstance);
-if (debugLevel > 1) System.err.println("StorageSOPClassSCU(): affectedSOPClass = "+affectedSOPClass);
-//if (debugLevel > 1) System.err.println("StorageSOPClassSCU(): affectedSOPInstance = "+affectedSOPInstance);
+					slf4jlogger.trace("Sending {}",affectedSOPInstance);
+					slf4jlogger.trace("affectedSOPClass = {}",affectedSOPClass);
 
 					if (affectedSOPClass == null) {
 						throw new DicomNetworkException("Can't C-STORE SOP Instance - can't determine Affected SOP Class UID");
@@ -609,9 +772,12 @@ if (debugLevel > 1) System.err.println("StorageSOPClassSCU(): affectedSOPClass =
 					// Decide which presentation context we are going to use ...
 					byte presentationContextID = association.getSuitablePresentationContextID(affectedSOPClass);
 					//int presentationContextID = association.getSuitablePresentationContextID(affectedSOPClass,TransferSyntax.Default);
-if (debugLevel > 0) System.err.println("Using context ID "+presentationContextID);
+					slf4jlogger.trace("Using context ID {}",presentationContextID);
 					String outputTransferSyntax = association.getTransferSyntaxForPresentationContextID(presentationContextID);
-if (debugLevel > 0) System.err.println("Using outputTransferSyntax "+outputTransferSyntax);
+					slf4jlogger.trace("Using outputTransferSyntax {}",outputTransferSyntax);
+					if (outputTransferSyntax == null || outputTransferSyntax.length() == 0) {
+						throw new DicomNetworkException("Can't C-STORE SOP Instance - can't determine Transfer Syntax (no Presentation Context for Affected SOP Class UID)");
+					}
 				
 					success = sendOneSOPInstance(association,affectedSOPClass,affectedSOPInstance,
 						list,
@@ -619,26 +785,27 @@ if (debugLevel > 0) System.err.println("Using outputTransferSyntax "+outputTrans
 					// State 6
 				}
 				catch (DicomNetworkException e) {
-					e.printStackTrace(System.err);
+					slf4jlogger.error("",e);
 					success=false;
 				}
 				catch (DicomException e) {
-					e.printStackTrace(System.err);
+					slf4jlogger.error("",e);
 					success=false;
 				}
 				catch (IOException e) {
-					e.printStackTrace(System.err);
+					slf4jlogger.error("",e);
 					success=false;
 				}
 				if (!success) {
 					++nFailed;
+					trappedExceptions = true;
 				}
-if (debugLevel > 0) System.err.println("Send "+affectedSOPInstance+" "+(success ? "succeeded" : "failed"));
+				slf4jlogger.debug("Send {} {} between {}",affectedSOPInstance,(success ? "succeeded" : "failed"),association.getEndpointDescription());
 				if (multipleInstanceTransferStatusHandler != null) {
 					multipleInstanceTransferStatusHandler.updateStatus(nRemaining,nCompleted,nFailed,nWarning,affectedSOPInstance);
 				}
 			}
-if (debugLevel > 0) System.err.println("StorageSOPClassSCU(): Finished sending all files nRemaining="+nRemaining+" nCompleted="+nCompleted+" nFailed="+nFailed+" nWarning="+nWarning);
+			slf4jlogger.debug("Finished sending all files nRemaining={} nCompleted={} nFailed={} nWarning={} between {}",nRemaining,nCompleted,nFailed,nWarning,association.getEndpointDescription());
 		}
 //System.err.println("StorageSOPClassSCU.sendMultipleSOPInstances() sent "+nCompleted+" instances in "+(System.currentTimeMillis()-startTime)+" ms");
 	}
@@ -646,10 +813,10 @@ if (debugLevel > 0) System.err.println("StorageSOPClassSCU(): Finished sending a
 	/**
 	 * <p>For testing, establish an association to the specified AE and send one or more DICOM instances (C-STORE requests).</p>
 	 *
-	 * @param	arg	array of seven or nine strings - their hostname, their port, their AE Title, our AE Title,
+	 * @param	arg	array of six or eight strings - their hostname, their port, their AE Title, our AE Title,
 	 *			the filename containing the instance to send (or a hyphen '-' if a list of one or more filenames is to be read from stdin)
 	 * 			optionally the SOP Class and the SOP Instance (otherwise will be read from the file(s); if multiple files use an empty string for the SOP Instance),
-	 *			the compression level (0=none,1=propose deflate,2=propose deflate and bzip2) and the debugging level
+	 *			the compression level (0=none,1=propose deflate,2=propose deflate and bzip2)
 	 */
 	public static void main(String arg[]) {
 		try {
@@ -661,9 +828,8 @@ if (debugLevel > 0) System.err.println("StorageSOPClassSCU(): Finished sending a
 			String    SOPClassUID=null;
 			String SOPInstanceUID=null;
 			int  compressionLevel=0;
-			int        debugLevel=0;
 	
-			if (arg.length == 9) {
+			if (arg.length == 8) {
 				     theirHost=arg[0];
 				     theirPort=Integer.parseInt(arg[1]);
 				  theirAETitle=arg[2];
@@ -672,9 +838,8 @@ if (debugLevel > 0) System.err.println("StorageSOPClassSCU(): Finished sending a
 				   SOPClassUID=arg[5];
 				SOPInstanceUID=arg[6];
 			      compressionLevel=Integer.parseInt(arg[7]);
-				    debugLevel=Integer.parseInt(arg[8]);
 			}
-			else if (arg.length == 7) {
+			else if (arg.length == 6) {
 				     theirHost=arg[0];
 				     theirPort=Integer.parseInt(arg[1]);
 				  theirAETitle=arg[2];
@@ -683,7 +848,6 @@ if (debugLevel > 0) System.err.println("StorageSOPClassSCU(): Finished sending a
 				   SOPClassUID=null;			// figured out by StorageSOPClassSCU() by reading the metaheader
 				SOPInstanceUID=null;			// figured out by StorageSOPClassSCU() by reading the metaheader
 			      compressionLevel=Integer.parseInt(arg[5]);
-				    debugLevel=Integer.parseInt(arg[6]);
 			}
 			else {
 				throw new Exception("Argument list must be 7 or 9 values");
@@ -702,18 +866,14 @@ if (debugLevel > 0) System.err.println("StorageSOPClassSCU(): Finished sending a
 					dicomFileName = dicomFileNameReader.readLine();
 				}
 //System.err.println(setOfDicomFiles.toString());
-				try{
-				new StorageSOPClassSCU(theirHost,theirPort,theirAETitle,ourAETitle,setOfDicomFiles,compressionLevel,null,null,0,debugLevel);
-				} catch(Throwable e){
-					e.printStackTrace();
-				}
+				new StorageSOPClassSCU(theirHost,theirPort,theirAETitle,ourAETitle,setOfDicomFiles,compressionLevel,null,null,0);
 			}
 			else {
-				new StorageSOPClassSCU(theirHost,theirPort,theirAETitle,ourAETitle,fileName,SOPClassUID,SOPInstanceUID,compressionLevel,debugLevel);
+				new StorageSOPClassSCU(theirHost,theirPort,theirAETitle,ourAETitle,fileName,SOPClassUID,SOPInstanceUID,compressionLevel);
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace(System.err);
+			e.printStackTrace(System.err);	// no need to use SLF4J since command line utility/test
 			System.exit(0);
 		}
 	}

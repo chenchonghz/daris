@@ -17,4 +17,4 @@ if [[ $JAVA_VERSION -lt 5 ]]; then
 	exit 1
 fi
 
-java -cp `dirname $0`/../lib/dcmtools.jar nig.dicom.util.StoreSCU $@
+java -cp `dirname $0`/../lib/dcmtools.jar nig.dicom.util.StoreSCU ${1+"$@"}

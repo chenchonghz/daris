@@ -2,8 +2,14 @@ package nig.dicom.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.lang.reflect.Field;
-import nig.io.FileUtils;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.pixelmed.dicom.Attribute;
 import com.pixelmed.dicom.AttributeList;
 import com.pixelmed.dicom.AttributeTag;
@@ -15,245 +21,208 @@ import com.pixelmed.dicom.TransferSyntax;
 
 public class DicomModify {
 
-	public static boolean backup = false;
-	public static String Default_AETitle = "DCMTOOLS";
+    public static final String DEFAULT_AE_TITLE = "DCMTOOLS";
 
-	public static void main(String[] args) throws Throwable {
+    public static final String APP_NAME = "DCMODIFY";
 
-		if (args.length < 2) {
-			printUsage();
-			System.exit(1);
-		}
+    public static final String ELEMENT_DELIMITER = ";";
 
-		int start = 0;
-		if (args[0].equals("-b") || args[0].equals("--backup")) {
-			if (args.length < 3) {
-				printUsage();
-				System.exit(1);
-			}
-			backup = true;
-			start++;
-		}
-		String av = args[start];
-		if ((av.startsWith("\"") || av.startsWith("'"))
-				&& !(av.endsWith("\"") || av.endsWith("'"))
-				&& args.length > start + 1) {
-			String av2 = args[start + 1];
-			if (!(av2.startsWith("\"") || av2.startsWith("'"))
-					&& (av2.endsWith("\"") || av2.endsWith("'"))) {
-				av += " " + av2;
-				start++;
-			}
-		}
-		AttributeTag aTag = parseAttributeTag(av);
-		String aValue = parseAttributeValue(av);
-		for (int i = start + 1; i < args.length; i++) {
-			File f = new File(args[i]);
-			if (!f.exists()) {
-				System.err.println("Error: " + f.getAbsolutePath()
-						+ " does not exist.");
-				continue;
-			}
-			if (!DicomFileCheck.isDicomFile(f)) {
-				System.err.println("Error: " + args[i]
-						+ " is not a valid DICOM file.");
-				continue;
-			}
+    public static void main(String[] args) throws Throwable {
 
-			if (backup) {
-				// Make a backup.
-				File bf = new File(args[i] + ".bak");
-				FileUtils.copyFile(f, bf);
-			}
+        boolean backup = false;
 
-			editFile(f, aTag, aValue);
-		}
+        if (args == null || args.length < 2) {
+            printUsage();
+            System.exit(1);
+        }
 
-	}
+        Map<AttributeTag, String> attrs = null;
+        List<File> dcmFiles = new ArrayList<File>();
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("--backup") || args[i].equals("-b")) {
+                backup = true;
+            } else {
+                if (attrs == null) {
+                    attrs = parseAttributes(args[i]);
+                } else {
+                    File f = new File(args[i]);
+                    if (!f.exists()) {
+                        System.err.println("Error: " + f.getAbsolutePath()
+                                + " does not exist.");
+                        continue;
+                    }
+                    if (!DicomFileCheck.isDicomFile(f)) {
+                        System.err.println("Error: " + args[i]
+                                + " is not a valid DICOM file.");
+                        continue;
+                    }
+                    dcmFiles.add(f);
+                }
+            }
+        }
 
-	/**
-	 * Edit all DICOM files found in the give directory.  Supply the group, element (that makes the Tag)
-	 * and new value. Group, element and value can be null, in which case a basic header
-	 * re-normalisation will take place (e.g. recomputing some standard values)
-	 * 
-	 * @param tempDir
-	 * @param group
-	 * @param element
-	 * @param val
-	 * @param dcmFiles
-	 * @throws Throwable
-	 */
-	public static void editFiles (File tempDir, String group,  String element, String val)
-			throws Throwable {
+        if (attrs == null || attrs.isEmpty()) {
+            System.err
+                    .println("Error: missing or invalid element(s) argument.");
+            printUsage();
+            System.exit(1);
+        }
 
-		// Set tag for DICOM edit
-		AttributeTag aTag = null;
-		if (group!=null && element!=null && val!=null) {
-			int iGroup = Integer.parseInt(group, 16);
-			int iElement = Integer.parseInt(element, 16);
-			aTag = new AttributeTag(iGroup, iElement);
-		}
+        if (dcmFiles.isEmpty()) {
+            System.err.println("Error: no dicom file/directory is specified.");
+            printUsage();
+            System.exit(1);
+        }
 
-		// Get list of files
-		File[] files = tempDir.listFiles();		
-		for (int i=0; i<files.length; i++) {
-			File f = files[i];
-			DicomModify.editFile(f, aTag, val);
-		}
-	}
-	
-	public static void anonymizeFiles (File tempDir, String group,  String element)
-			throws Throwable {
-		String val = "";
-		editFiles (tempDir, group, element, val);
-	}
+        for (File dcmFile : dcmFiles) {
+            editFile(dcmFile, attrs, backup);
+        }
 
+    }
 
-	/**
-	 * Edit the file with the specified tag and value. The header is also cleaned up regarding total group length 
-	 * and other attributes.
-	 * 
-	 * @param f
-	 * @param aTag  Can be null 
-	 * @param aValue
-	 * @throws Throwable
-	 */
-	public static void editFile(File f, AttributeTag aTag, String aValue) throws Throwable {
+    public static void editFile(File f, Map<AttributeTag, String> attrs,
+            boolean backup) throws Throwable {
 
-		// System.out.print("Modifying " + f.getPath() + "... ");
-		AttributeList list = new AttributeList();
-		list.read(f);
+        if (backup) {
+            // Make a backup.
+            File bf = new File(f.getAbsolutePath() + ".bak");
+            Files.copy(Paths.get(f.getAbsolutePath()),
+                    Paths.get(bf.getAbsolutePath()));
+        }
 
-		Attribute mediaStorageSOPClassUIDAttr = list
-				.get(TagFromName.MediaStorageSOPClassUID);
-		String mediaStorageSOPClassUID = null;
-		if (mediaStorageSOPClassUIDAttr != null) {
-			mediaStorageSOPClassUID = mediaStorageSOPClassUIDAttr
-					.getSingleStringValueOrNull();
-		}
-		Attribute mediaStorageSOPInstanceUIDAttr = list
-				.get(TagFromName.MediaStorageSOPInstanceUID);
-		String mediaStorageSOPInstanceUID = null;
-		if (mediaStorageSOPInstanceUIDAttr != null) {
-			mediaStorageSOPInstanceUID = mediaStorageSOPInstanceUIDAttr
-					.getSingleStringValueOrNull();
-		}
-		// String implementationClassUID =
-		// list.get(TagFromName.ImplementationClassUID).getSingleStringValueOrNull();
-		// String implementationVersionName =
-		// list.get(TagFromName.ImplementationVersionName).getSingleStringValueOrNull();
+        // System.out.print("Modifying " + f.getPath() + "... ");
+        AttributeList list = new AttributeList();
+        list.read(f);
 
-		/*
-		 * Cleanup
-		 */
-		list.removeGroupLengthAttributes();
-		list.removeMetaInformationHeaderAttributes();
-		list.remove(TagFromName.DataSetTrailingPadding);
-		list.correctDecompressedImagePixelModule();
-		list.insertLossyImageCompressionHistoryIfDecompressed();
+        Attribute mediaStorageSOPClassUIDAttr = list
+                .get(TagFromName.MediaStorageSOPClassUID);
+        String mediaStorageSOPClassUID = null;
+        if (mediaStorageSOPClassUIDAttr != null) {
+            mediaStorageSOPClassUID = mediaStorageSOPClassUIDAttr
+                    .getSingleStringValueOrNull();
+        }
+        Attribute mediaStorageSOPInstanceUIDAttr = list
+                .get(TagFromName.MediaStorageSOPInstanceUID);
+        String mediaStorageSOPInstanceUID = null;
+        if (mediaStorageSOPInstanceUIDAttr != null) {
+            mediaStorageSOPInstanceUID = mediaStorageSOPInstanceUIDAttr
+                    .getSingleStringValueOrNull();
+        }
+        // String implementationClassUID =
+        // list.get(TagFromName.ImplementationClassUID).getSingleStringValueOrNull();
+        // String implementationVersionName =
+        // list.get(TagFromName.ImplementationVersionName).getSingleStringValueOrNull();
 
-		if (mediaStorageSOPClassUID != null
-				&& mediaStorageSOPInstanceUID != null) {
-			FileMetaInformation.addFileMetaInformation(list,
-					mediaStorageSOPClassUID, mediaStorageSOPInstanceUID,
-					TransferSyntax.ExplicitVRLittleEndian, Default_AETitle);
-		} else {
-			FileMetaInformation.addFileMetaInformation(list,
-					TransferSyntax.ExplicitVRLittleEndian, Default_AETitle);
-		}
+        /*
+         * Cleanup
+         */
+        list.removeGroupLengthAttributes();
+        list.removeMetaInformationHeaderAttributes();
+        list.remove(TagFromName.DataSetTrailingPadding);
+        list.correctDecompressedImagePixelModule();
+        list.insertLossyImageCompressionHistoryIfDecompressed();
 
-		// Put the new tag in place
-		if (aTag!=null) {
-			Attribute attr = list.get(aTag);
-			if (attr != null) {
-				attr.setValue(aValue);
-			} else {
-				list.putNewAttribute(aTag).addValue(aValue);
-			}
-		}
-		list.write(new FileOutputStream(f),
-				TransferSyntax.ExplicitVRLittleEndian, true, true);
-		//System.out.println("done");
-	}
+        if (mediaStorageSOPClassUID != null
+                && mediaStorageSOPInstanceUID != null) {
+            FileMetaInformation.addFileMetaInformation(list,
+                    mediaStorageSOPClassUID, mediaStorageSOPInstanceUID,
+                    TransferSyntax.ExplicitVRLittleEndian, DEFAULT_AE_TITLE);
+        } else {
+            FileMetaInformation.addFileMetaInformation(list,
+                    TransferSyntax.ExplicitVRLittleEndian, DEFAULT_AE_TITLE);
+        }
 
-	public static void printUsage() {
+        // Put the new tag in place
+        if (attrs != null) {
+            for (AttributeTag tag : attrs.keySet()) {
+                Attribute attr = list.get(tag);
+                String value = attrs.get(tag);
+                if (attr != null) {
+                    attr.setValue(value);
+                } else {
+                    list.putNewAttribute(tag).addValue(value);
+                }
+            }
+        }
 
-		System.out.println("Usage:");
-		System.out
-		.println("\t DCMODIFY  [options]  <tag=\"value\">  <dicom-files>\n");
-		System.out.println("\t Options:");
-		System.out
-		.println("\t          -b|--backup                       create a backup file with extension .bak\n");
-		//		System.out
-		//				.println("\t          -o|--output <output-directory>    save the output into the specified directory.\n");
-		System.out.println("Examples:");
-		System.out
-		.println("\t DCMODIFY    \"(0010,0010)=Smith^John\"  test.dcm");
-		System.out.println("\t DCMODIFY    \"(0010,0010)=Smith^Tom\"  ./*.dcm");
-		System.out.println("\t DCMODIFY    \"(0010,0020)=12345\"  ./*.dcm");
-		System.out
-		.println("\t DCMODIFY -b \"(0010,0010)=Smith^John\"  test.dcm");
-		System.out.println("\t DCMODIFY -b \"(0010,0010)=Smith^Tom\"  ./*.dcm");
-		System.out
-		.println("\t DCMODIFY --backup  \"(0010,0020)=12345\"  ./*.dcm");
+        File tf = File.createTempFile(f.getName(), ".tmp", f.getParentFile());
+        list.write(new FileOutputStream(tf),
+                TransferSyntax.ExplicitVRLittleEndian, true, true);
+        Files.move(Paths.get(tf.getAbsolutePath()),
+                Paths.get(f.getAbsolutePath()),
+                StandardCopyOption.REPLACE_EXISTING);
+        // System.out.println("done");
+    }
 
-		// printTagNames();
+    public static void printUsage() {
 
-	}
+        System.out.println("Usage:");
+        System.out.println(
+                "\t DCMODIFY  [options]  <tag=\"value\">  <dicom-files>\n");
+        System.out.println("\t Options:");
+        System.out.println(
+                "\t          -b|--backup                       create a backup file with extension .bak\n");
+        // System.out
+        // .println("\t -o|--output <output-directory> save the output into the
+        // specified directory.\n");
+        System.out.println("Examples:");
+        System.out
+                .println("\t DCMODIFY    \"(0010,0010)=Smith^John\"  test.dcm");
+        System.out.println("\t DCMODIFY    \"(0010,0020)=12345\"  ./*.dcm");
+        System.out.println(
+                "\t DCMODIFY    \"(0010,0010)=Smith^Tom;(0010,0020)=12345\"  ./*.dcm");
+        System.out
+                .println("\t DCMODIFY -b \"(0010,0010)=Smith^John\"  test.dcm");
+        System.out.println("\t DCMODIFY -b \"(0010,0010)=Smith^Tom\"  ./*.dcm");
+        System.out.println(
+                "\t DCMODIFY --backup  \"(0010,0020)=12345\"  ./*.dcm");
 
-	public static void printTagNames() {
+    }
 
-		System.out.println("Tags and Tag Names:");
-		System.out.println("\t [Tag] \t\t [Tag Name]");
+    private static Map<AttributeTag, String> parseAttributes(String arg) {
+        arg = trimQuotes(arg).trim();
 
-		Field[] fields = AttributeTag.class.getDeclaredFields();
-		for (int i = 0; i < fields.length; i++) {
-			try {
-				AttributeTag tag = (AttributeTag) fields[i].get(null);
-				String tagName = fields[i].getName();
-				System.out.println("\t" + tag.toString() + "\t\t" + tagName);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+        String[] as = arg.split(ELEMENT_DELIMITER);
+        Map<AttributeTag, String> attrs = new LinkedHashMap<AttributeTag, String>();
+        for (String a : as) {
+            parseAttribute(attrs, a);
+        }
+        return attrs;
+    }
 
-	}
+    private static void parseAttribute(Map<AttributeTag, String> attrs,
+            String attr) {
 
-	private static String parseAttributeValue(String arg) throws Throwable {
+        attr = trimQuotes(attr).trim();
+        String[] parts = attr.split("=");
 
-		String aValue = null;
-		String[] parts = arg.split("=");
-		aValue = parts[1];
-		while (aValue.startsWith("\"") || aValue.startsWith("'")) {
-			aValue = aValue.substring(1, aValue.length());
-		}
-		while (aValue.endsWith("\"") || aValue.endsWith("'")) {
-			aValue = aValue.substring(0, aValue.length() - 1);
-		}
-		return aValue;
+        String tag = parts[0].trim();
+        String aValue = parts[1].trim();
 
-	}
+        tag = stripParenthesis(tag);
+        String[] tagParts = tag.split(",");
+        String hGroup = tagParts[0].trim();
+        int group = Integer.parseInt(hGroup, 16);
+        String hElement = tagParts[1].trim();
+        int element = Integer.parseInt(hElement, 16);
+        AttributeTag aTag = new AttributeTag(group, element);
 
-	private static AttributeTag parseAttributeTag(String arg) throws Throwable {
+        attrs.put(aTag, aValue);
+    }
 
-		AttributeTag aTag = null;
-		String[] parts = arg.split("=");
-		String tag = parts[0];
-		while (tag.startsWith("\"") || tag.startsWith("'")
-				|| tag.startsWith("(")) {
-			tag = tag.substring(1);
-		}
-		while (tag.endsWith("\"") || tag.endsWith("'") || tag.endsWith(")")) {
-			tag = tag.substring(0, tag.length() - 1);
-		}
-		String[] parts2 = tag.split(",");
-		String hGroup = parts2[0];
-		int group = Integer.parseInt(hGroup, 16);
-		String hElement = parts2[1];
-		int element = Integer.parseInt(hElement, 16);
-		aTag = new AttributeTag(group, element);
-		return aTag;
+    private static String trimQuotes(String s) {
+        while ((s.startsWith("\"") && s.endsWith("\""))
+                || (s.startsWith("'") && s.endsWith("'"))) {
+            s = s.substring(1, s.length() - 1);
+        }
+        return s;
+    }
 
-	}
+    private static String stripParenthesis(String s) {
+        while (s.startsWith("(") && s.endsWith(")")) {
+            s = s.substring(1, s.length() - 1);
+        }
+        return s;
+    }
 
 }
