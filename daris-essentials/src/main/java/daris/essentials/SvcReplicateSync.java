@@ -75,12 +75,12 @@ public class SvcReplicateSync extends PluginService {
 
 		// Find route to peer. Exception if can't reach and build in extra checks to make sure we are 
 		// being very safe
-		ServerRoute sr = DistributedAssetUtil.findPeerRoute(executor(), peer);
-		if (sr==null) {
+		ServerRoute srPeer = DistributedAssetUtil.findPeerRoute(executor(), peer);
+		if (srPeer==null) {
 			throw new Exception("Failed to generated the ServerRoute for the remote host");
 		}
 		String uuidLocal = serverUUID(executor(), null);
-		if (sr.target().equals(uuidLocal)) {
+		if (srPeer.target().equals(uuidLocal)) {
 			throw new Exception ("Remote peer UUID appears to be the same as the local host (" + uuidLocal + ") - cannot proceed");
 		}
 
@@ -100,10 +100,10 @@ public class SvcReplicateSync extends PluginService {
 		while (more) {
 			if (useNew) {
 				more = findNew (executor(), useIndexes, destroyOther, destroyDICOMPatient, destroyDICOMStudy,
-						destroyDICOMSeries, where, peer, sr, uuidLocal, size, dbg, w);
+						destroyDICOMSeries, where, peer, srPeer, uuidLocal, size, dbg, w);
 			} else {
 				more = find (executor(), useIndexes, destroyOther, destroyDICOMPatient, destroyDICOMStudy,
-						destroyDICOMSeries, where, peer, sr, uuidLocal, size, dbg, w);
+						destroyDICOMSeries, where, peer, srPeer, uuidLocal, size, dbg, w);
 			}
 			PluginTask.checkIfThreadTaskAborted();
 		}
@@ -114,10 +114,10 @@ public class SvcReplicateSync extends PluginService {
 
 		// Destroy assets on remote peer bottom up in DICOM data model
 		// FOr PSSD, 'members=false' so it does not destroy children
-		int n = destroyOrListAssets(executor(), sr, destroyDICOMSeries, "DICOM Series", destroy, w);
-		n += destroyOrListAssets(executor(), sr, destroyDICOMStudy, "DICOM Study", destroy, w);
-		n += destroyOrListAssets(executor(), sr, destroyDICOMPatient, "DICOM Patient", destroy, w);
-		n += destroyOrListAssets(executor(), sr, destroyOther, "Other", destroy, w);
+		int n = destroyOrListAssets(executor(), srPeer, destroyDICOMSeries, "DICOM Series", destroy, w);
+		n += destroyOrListAssets(executor(), srPeer, destroyDICOMStudy, "DICOM Study", destroy, w);
+		n += destroyOrListAssets(executor(), srPeer, destroyDICOMPatient, "DICOM Patient", destroy, w);
+		n += destroyOrListAssets(executor(), srPeer, destroyOther, "Other", destroy, w);
 
 		if (dbg) {
 			System.out.println("");
