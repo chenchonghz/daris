@@ -141,6 +141,7 @@ public class SvcReplicateCheck extends PluginService {
 				dm.add("related", "0");
 				dm.add("update-doc-types", false);
 				dm.add("update-models", false);
+				dm.add("allow-move", true);
 				if (includeDestroyed) dm.add("include-destroyed", true);
 
 				try {
