@@ -159,7 +159,7 @@ public class SvcReplicateSync extends PluginService {
 					dm.add("members", false);
 					dm.add("atomic", true);
 					dm.add("id", id);
-					executor.execute(sr, "asset.destroy", dm.root());
+//					executor.execute(sr, "asset.destroy", dm.root());
 					PluginTask.checkIfThreadTaskAborted();
 					w.add("id", new String[]{"destroyed", "true"}, id);
 				}
@@ -254,7 +254,9 @@ public class SvcReplicateSync extends PluginService {
 		dm = new XmlDocMaker("args");
 		for (XmlDoc.Element rAsset : rAssets) {
 			String rid = rAsset.value("rid");       // This will be, e.g. <primary>.<id> which on the local host is treated as just <id>
-			dm.add("id", rid);          
+			String[] p = rid.split("\\.");
+			String id = p[1];
+			dm.add("id", id);          
 		}
 		XmlDoc.Element r2 = executor.execute("asset.exists", dm.root());       // Local execution only
 		Collection<XmlDoc.Element> lAssets = r2.elements("exists");
@@ -306,7 +308,7 @@ public class SvcReplicateSync extends PluginService {
 
 
 	private boolean findNew (ServiceExecutor executor,  Boolean useIndexes,  XmlDocMaker destroyOther, XmlDocMaker destroyDICOMPatient, XmlDocMaker destroyDICOMStudy,
-			XmlDocMaker destroyDICOMSeries, String where, String peer, ServerRoute sr, String uuidLocal, String size, 
+			XmlDocMaker destroyDICOMSeries, String where, String peer, ServerRoute srPeer, String uuidLocal, String size, 
 			Boolean dbg, XmlWriter w)
 					throws Throwable {
 
@@ -330,7 +332,7 @@ public class SvcReplicateSync extends PluginService {
 		dm.add("xpath", "rid");
 		dm.add("xpath", "cid");
 		dm.add("xpath", "type");
-		XmlDoc.Element r = executor.execute(sr, "asset.query", dm.root());
+		XmlDoc.Element r = executor.execute(srPeer, "asset.query", dm.root());
 		if (r==null) return false;  
 		Collection<XmlDoc.Element> rAssets = r.elements("asset");
 		if (rAssets==null) return false;
