@@ -29,7 +29,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		_defn.add(new Interface.Element("where",StringType.DEFAULT, "Query predicate to restrict the selected assets on the local host. If unset, all assets are considered.", 0, 1));
 		_defn.add(new Interface.Element("size",IntegerType.DEFAULT, "Limit the accumulation loop to this number of assets per iteration (if too large, the host may run out of virtual memory).  Defaults to 10000.", 0, 1));
 		_defn.add(new Interface.Element("dst", StringType.DEFAULT, "The destination parent namespace (include leading '/') that assets will be replicated to (use '/' for root namespace). Our convention is to use the UUID of the primary server.", 1, 1));
-		_defn.add(new Interface.Element("move", BooleanType.DEFAULT, "The destination parent namespace. If true, (default false) assets will actually be moved to the correct namespace (one at a time; not efficient) rather than just listed.", 0, 1));
+		_defn.add(new Interface.Element("move", BooleanType.DEFAULT, "If true, (default false) assets will actually be moved to the correct namespace (one at a time; not efficient) rather than just listed.", 0, 1));
 		_defn.add(new Interface.Element("exclude-daris-proc", BooleanType.DEFAULT, "By default, processed DaRIS DataSets (ones for which (pssd-derivation/processed)='true' AND mf-dicom-series is absent) are included. Set to true to exclude these.", 0, 1));
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
@@ -109,14 +109,10 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 
 		// Correct asset namespaces, one at a time
 		w.add("total-to-move", assets.size());
-		if (dbg) {
-			log(dateTime, "   nig.replicate.namespace.check : total checked = " + count_);
-			log(dateTime, "   nig.replicate.namespace.check : total to move = " + assets.size());
-		}
+		log(dateTime, "   nig.replicate.namespace.check : total checked = " + count_);
+		log(dateTime, "   nig.replicate.namespace.check : total to move = " + assets.size());
 		if (move) {
-			if (dbg) {
-				log(dateTime,"Starting replication of " + assets.size() + " assets");
-			}
+			log(dateTime,"Starting move of " + assets.size() + " assets");
 			int c = 1;
 			int nRep = 0;
 			for (XmlDoc.Element asset : assets) {
@@ -127,7 +123,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 				if (dbg) {
 					int rem = c % repInc; 
 					if (c==1 || rem==1) {
-						log(dateTime, "nig.replicatenamespace.check: replicating asset # " + c);
+						log(dateTime, "nig.replicatenamespace.check: move asset # " + c);
 					}
 				}
 
@@ -148,9 +144,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 				c++;
 			}
 			w.add("total-moved", nRep);
-			if (dbg) {
-				log(dateTime, "   nig.replicate.namespace.check : total moved = " + nRep);
-			}
+			log(dateTime, "   nig.replicate.namespace.check : total moved = " + nRep);
 		}
 	}
 
@@ -172,7 +166,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 
 		// Find local  assets  with the given query. We work through the cursor else
 		// we may run out of memory
-		if (dbg) log(dateTime, "nig.replicate.check : find assets on primary in chunk starting with idx = " + idx_);
+		if (dbg) log(dateTime, "nig.replicate.namespace.check : find assets on primary in chunk starting with idx = " + idx_);
 		XmlDocMaker dm = new XmlDocMaker("args");
 		if (exclDaRISProc) {
 			// Drop processed DataSets from query
@@ -229,7 +223,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 
 		// Now check if they exist
 		if (dbg) {
-			log(dateTime, "   nig.replicate.check : checking if " + assets.size() + " assets exist on DR");
+			log(dateTime, "   nig.replicate.namespace.check : checking if " + assets.size() + " assets exist on DR");
 		}
 		XmlDoc.Element r2 = executor.execute(sr, "asset.exists", dm.root());
 		if (r2==null) return more;
@@ -238,7 +232,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 
 		// Create a list of assets to replicate
 		if (dbg) {
-			log(dateTime, "   nig.replicate.check : iterate through " + results.size() + " results and build list for replication.");
+			log(dateTime, "   nig.replicate.namespace.check : iterate through " + results.size() + " results and build list for replication.");
 		}
 		for (XmlDoc.Element result : results) {
 
@@ -268,7 +262,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 				XmlDoc.Element remoteAsset = executor.execute(sr, "asset.query", dm.root());
 				String remoteAssetNameSpace = remoteAsset.value("asset/namespace");
 				if (dbg) {
-					log(dateTime, "      nig.replicate.check :namespaces=" + assetNameSpace + ", " +remoteAssetNameSpace);
+					log(dateTime, "      nig.replicate.namespace.check :namespaces=" + assetNameSpace + ", " +remoteAssetNameSpace);
 				}
 				String expectedRemoteAssetNameSpace = dst + assetNameSpace;
 				if (!expectedRemoteAssetNameSpace.equals(remoteAssetNameSpace)) {
