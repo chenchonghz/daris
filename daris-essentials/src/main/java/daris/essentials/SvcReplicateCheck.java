@@ -107,6 +107,7 @@ public class SvcReplicateCheck extends PluginService {
 		}
 
 		// Replicate one at a time
+		w.add("total-checked", count_);
 		w.add("total-to-replicate", assetIDs.size());
 		if (dbg) {
 			log(dateTime, "   nig.replicate.check : total checked = " + count_);
