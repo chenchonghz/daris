@@ -108,6 +108,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		}
 
 		// Correct asset namespaces, one at a time
+		w.add("total-checked", count_);
 		w.add("total-to-move", assets.size());
 		log(dateTime, "   nig.replicate.namespace.check : total checked = " + count_);
 		log(dateTime, "   nig.replicate.namespace.check : total to move = " + assets.size());
