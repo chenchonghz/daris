@@ -103,7 +103,6 @@ public class SvcReplicateSync extends PluginService {
 		}
 
 		// See if user wants to abandon
-		System.out.println("Abort check before destroy");
 		PluginTask.checkIfThreadTaskAborted();
 
 		// Destroy assets on remote peer bottom up in DICOM data model
