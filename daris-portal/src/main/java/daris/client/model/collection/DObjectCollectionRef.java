@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import arc.mf.client.util.ObjectUtil;
 import arc.mf.client.xml.XmlElement;
 import arc.mf.client.xml.XmlStringWriter;
 import arc.mf.object.CollectionResolveHandler;
@@ -17,13 +18,15 @@ public class DObjectCollectionRef extends OrderedCollectionRef<DObjectRef> {
     private Comparator<DObjectRef> _comparator;
     private boolean _sort;
 
-    protected DObjectCollectionRef(DObjectRef parent, boolean sort, Comparator<DObjectRef> comparator) {
+    protected DObjectCollectionRef(DObjectRef parent, boolean sort,
+            Comparator<DObjectRef> comparator) {
         _parent = parent;
         _sort = sort;
         _comparator = comparator;
     }
 
-    public DObjectCollectionRef(DObjectRef parent, Comparator<DObjectRef> comparator) {
+    public DObjectCollectionRef(DObjectRef parent,
+            Comparator<DObjectRef> comparator) {
         this(parent, true, comparator);
     }
 
@@ -49,7 +52,8 @@ public class DObjectCollectionRef extends OrderedCollectionRef<DObjectRef> {
     }
 
     @Override
-    protected void resolveServiceArgs(XmlStringWriter w, long start, int size, boolean count) {
+    protected void resolveServiceArgs(XmlStringWriter w, long start, int size,
+            boolean count) {
         if (_parent != null && _parent.id() != null) {
             w.add("id", _parent.id());
         }
@@ -77,25 +81,39 @@ public class DObjectCollectionRef extends OrderedCollectionRef<DObjectRef> {
     }
 
     @Override
-    public void resolve(long start, long end, final CollectionResolveHandler<DObjectRef> rh) {
+    public void resolve(long start, long end,
+            final CollectionResolveHandler<DObjectRef> rh) {
         if (_sort) {
-            super.resolve(start, end, new CollectionResolveHandler<DObjectRef>() {
-                @Override
-                public void resolved(List<DObjectRef> os) throws Throwable {
-                    if (os != null && !os.isEmpty()) {
-                        if (_comparator != null) {
-                            Collections.sort(os, _comparator);
-                        } else {
-                            Collections.sort(os);
+            super.resolve(start, end,
+                    new CollectionResolveHandler<DObjectRef>() {
+                        @Override
+                        public void resolved(List<DObjectRef> os)
+                                throws Throwable {
+                            if (os != null && !os.isEmpty()) {
+                                if (_comparator != null) {
+                                    Collections.sort(os, _comparator);
+                                } else {
+                                    Collections.sort(os);
+                                }
+                            }
+                            if (rh != null) {
+                                rh.resolved(os);
+                            }
                         }
-                    }
-                    if (rh != null) {
-                        rh.resolved(os);
-                    }
-                }
-            });
+                    });
         } else {
             super.resolve(start, end, rh);
+        }
+    }
+
+    public DObjectRef parent() {
+        return _parent;
+    }
+
+    public void setParent(DObjectRef parent) {
+        if (!ObjectUtil.equals(parent, _parent)) {
+            _parent = parent;
+            reset();
         }
     }
 
