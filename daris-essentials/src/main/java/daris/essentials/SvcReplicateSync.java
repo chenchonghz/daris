@@ -28,7 +28,6 @@ public class SvcReplicateSync extends PluginService {
 		_defn.add(new Interface.Element("destroy",BooleanType.DEFAULT, "Actually destroy the assets, rather than just listing them. Defaults to false.", 0, 1));
 		_defn.add(new Interface.Element("size",IntegerType.DEFAULT, "Limit loop that looks for replica assets to delete to this number of assets per iteration (if too large, the VM may run out of virtual memory).  Defaults to 500.", 0, 1));
 		_defn.add(new Interface.Element("idx",IntegerType.DEFAULT, "Start index in the cursor. Defaults to 1.", 0, 1));
-		_defn.add(new Interface.Element("use-new",BooleanType.DEFAULT, "Use new (faster?) algorithm. Defaults to false.", 0, 1));
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
 	}
@@ -69,18 +68,18 @@ public class SvcReplicateSync extends PluginService {
 		Boolean destroy = args.booleanValue("destroy", false);
 		String size = args.stringValue("size", "500");
 		Integer idx = args.intValue("idx", 1);
-		Boolean useNew = args.booleanValue("use-new", false);
+		//		Boolean useNew = args.booleanValue("use-new", false);
 		Boolean useIndexes = args.booleanValue("use-indexes", true);
 		Boolean dbg = args.booleanValue("debug", false);
 
 		// Find route to peer. Exception if can't reach and build in extra checks to make sure we are 
 		// being very safe
-		ServerRoute sr = DistributedAssetUtil.findPeerRoute(executor(), peer);
-		if (sr==null) {
+		ServerRoute srPeer = DistributedAssetUtil.findPeerRoute(executor(), peer);
+		if (srPeer==null) {
 			throw new Exception("Failed to generated the ServerRoute for the remote host");
 		}
 		String uuidLocal = serverUUID(executor(), null);
-		if (sr.target().equals(uuidLocal)) {
+		if (srPeer.target().equals(uuidLocal)) {
 			throw new Exception ("Remote peer UUID appears to be the same as the local host (" + uuidLocal + ") - cannot proceed");
 		}
 
@@ -98,26 +97,20 @@ public class SvcReplicateSync extends PluginService {
 		// FInd assets
 		idx_ = idx;
 		while (more) {
-			if (useNew) {
-				more = findNew (executor(), useIndexes, destroyOther, destroyDICOMPatient, destroyDICOMStudy,
-						destroyDICOMSeries, where, peer, sr, uuidLocal, size, dbg, w);
-			} else {
-				more = find (executor(), useIndexes, destroyOther, destroyDICOMPatient, destroyDICOMStudy,
-						destroyDICOMSeries, where, peer, sr, uuidLocal, size, dbg, w);
-			}
+			more = findNew (executor(), useIndexes, destroyOther, destroyDICOMPatient, destroyDICOMStudy,
+					destroyDICOMSeries, where, peer, srPeer, uuidLocal, size, dbg, w);
 			PluginTask.checkIfThreadTaskAborted();
 		}
 
 		// See if user wants to abandon
-		System.out.println("Abort check before destroy");
 		PluginTask.checkIfThreadTaskAborted();
 
 		// Destroy assets on remote peer bottom up in DICOM data model
 		// FOr PSSD, 'members=false' so it does not destroy children
-		int n = destroyOrListAssets(executor(), sr, destroyDICOMSeries, "DICOM Series", destroy, w);
-		n += destroyOrListAssets(executor(), sr, destroyDICOMStudy, "DICOM Study", destroy, w);
-		n += destroyOrListAssets(executor(), sr, destroyDICOMPatient, "DICOM Patient", destroy, w);
-		n += destroyOrListAssets(executor(), sr, destroyOther, "Other", destroy, w);
+		int n = destroyOrListAssets(executor(), srPeer, destroyDICOMSeries, "DICOM Series", destroy, w);
+		n += destroyOrListAssets(executor(), srPeer, destroyDICOMStudy, "DICOM Study", destroy, w);
+		n += destroyOrListAssets(executor(), srPeer, destroyDICOMPatient, "DICOM Patient", destroy, w);
+		n += destroyOrListAssets(executor(), srPeer, destroyOther, "Other", destroy, w);
 
 		if (dbg) {
 			System.out.println("");
@@ -133,15 +126,15 @@ public class SvcReplicateSync extends PluginService {
 
 	private static int destroyOrListAssets (ServiceExecutor executor, ServerRoute sr, XmlDocMaker list, String type, 
 			Boolean destroy, XmlWriter w) throws Throwable {
-		Collection<String> t = list.root().values("id");
-		if (t==null) return 0;
+		Collection<XmlDoc.Element> elements = list.root().elements("id");
+		if (elements==null) return 0;
 		//
 		if (destroy) {
-			System.out.println("Found " + t.size() + " remote " + type + " assets for destruction without primaries on the local host");
+			System.out.println("Found " + elements.size() + " remote " + type + " assets for destruction without primaries on the local host");
 		} else {
-			System.out.println("Found " + t.size() + " remote " + type + " assets without primaries on local host");
+			System.out.println("Found " + elements.size() + " remote " + type + " assets without primaries on local host");
 		}
-		if (t.size() > 0) {
+		if (elements.size() > 0) {
 			if (destroy) {
 
 				// TBD: we really should make this check for all PSSD objects as well
@@ -154,23 +147,26 @@ public class SvcReplicateSync extends PluginService {
 
 				// Destroy one by one so can abort if in panic
 				// (originally did in one go)
-				for (String id : t) {
+				for (XmlDoc.Element el : elements) {
+					String id = el.value();
+					String rid = el.value("@rid");
 					XmlDocMaker dm = new XmlDocMaker("args");
 					dm.add("members", false);
 					dm.add("atomic", true);
 					dm.add("id", id);
 					executor.execute(sr, "asset.destroy", dm.root());
 					PluginTask.checkIfThreadTaskAborted();
-					w.add("id", new String[]{"destroyed", "true"}, id);
+					w.add("id", new String[]{"rid", rid, "destroyed", "true"}, id);
 				}
 			} else {
-				for (String id : t) {
-					System.out.println("   Replica id = " + id);
-					w.add("id", new String[]{"destroyed", "false"}, id);
+				for (XmlDoc.Element el : elements) {
+					String id = el.value();
+					String rid = el.value("@rid");
+					w.add("id", new String[]{"rid", rid, "destroyed", "false"}, id);
 				}
 			}
 		}
-		return t.size();
+		return elements.size();
 	}
 
 
@@ -213,100 +209,8 @@ public class SvcReplicateSync extends PluginService {
 	// 4. On the local peer, if the asset was replicated from us check existence
 	//     by id. If the asset was replicated from somewhere else check existence by rid
 	// 
-	private boolean find (ServiceExecutor executor,  Boolean useIndexes, XmlDocMaker destroyOther, XmlDocMaker destroyDICOMPatient, XmlDocMaker destroyDICOMStudy,
-			XmlDocMaker destroyDICOMSeries, String where, String peer, ServerRoute sr, String uuidLocal, String size,
-			Boolean dbg, XmlWriter w)
-					throws Throwable {
-
-		// Find replica assets on  the remote peer.  We work through the cursor else
-		// we may run out of memory
-		if (dbg) {
-			System.out.println("CHunk starting with idx = " + idx_);
-			System.out.println("  Find replicas");
-		}
-
-		XmlDocMaker dm = new XmlDocMaker("args");
-		String query = "(rid in '" + uuidLocal + "')";
-		if (where!=null) query += " and " + where;
-		dm.add("where", query);
-		dm.add("action", "get-meta");
-		dm.add("idx", idx_);
-		dm.add("size", size);
-		dm.add("pdist", 0);
-		dm.add("use-indexes", useIndexes);
-		XmlDoc.Element r = executor.execute(sr, "asset.query", dm.root());
-		if (r==null) return false;  
-		Collection<XmlDoc.Element> rAssets = r.elements("asset");
-		if (rAssets==null) return false;
-
-		// Get the cursor and increment for next time
-		XmlDoc.Element cursor = r.element("cursor");
-		boolean more = false;
-		if (cursor !=null) more = !(cursor.booleanValue("total/@complete"));
-		if (more) {
-			Integer next = cursor.intValue("next");
-			idx_ = next;
-		}
-
-		// See if the primaries for the found replicas exist on the local server
-		if (dbg) System.out.println("  Look for primaries matching replicas.");
-
-		dm = new XmlDocMaker("args");
-		for (XmlDoc.Element rAsset : rAssets) {
-			String rid = rAsset.value("rid");       // This will be, e.g. <primary>.<id> which on the local host is treated as just <id>
-			dm.add("id", rid);          
-		}
-		XmlDoc.Element r2 = executor.execute("asset.exists", dm.root());       // Local execution only
-		Collection<XmlDoc.Element> lAssets = r2.elements("exists");
-
-		// Build a list of  assets to destroy on the remote peer.   I.e. the ones that don't exist
-		// on the local server but do exist on the peer
-		if (dbg) System.out.println("  Check list for missing primaries.");
-		Iterator<XmlDoc.Element> rIt = rAssets.iterator();
-		int nExtra = 0;
-		for (XmlDoc.Element lAsset : lAssets) {
-			XmlDoc.Element rAsset = rIt.next();      // rAssets and lAssets have the same order
-			if (!lAsset.booleanValue()) {
-				// This asset does not exist on the local host
-				// FInd the id of the replica of this asset on the remote peer
-				String idOnPeer = rAsset.value("@id");
-				String rid = rAsset.value("rid");
-				String cid = rAsset.value("cid");
-				String type = rAsset.value("type");
-				nExtra ++;
-
-				// Put in correct list
-				if (type==null) {
-					destroyOther.add("id", idOnPeer);
-				} else {
-					if (type.equals("dicom/patient")) {
-						destroyDICOMPatient.add("id", idOnPeer);
-					} else if (type.equals("dicom/study") ||
-							type.equals("siemens-raw-petct/study")) {         // Type, not as document type (so no daris:)
-						destroyDICOMStudy.add("id", idOnPeer);
-					} else if (type.equals("dicom/series") ||
-							type.equals("siemens-raw-petct/series")) {
-						destroyDICOMSeries.add("id", idOnPeer);
-					} else {
-						destroyOther.add("id", idOnPeer);
-					}
-				}
-				if (dbg) {
-					System.out.println("Replicated asset with id '" + idOnPeer + "' is not on the primary");
-				}
-				w.add("id", new String[]{"cid", cid, "peer", peer, "rid", rid}, idOnPeer);
-			}
-		}
-		if (dbg) {
-			System.out.println("Checked " + rAssets.size() + " remote assets of which " + nExtra + " were not found on the primary");
-		}
-		//
-		return more;
-	}
-
-
 	private boolean findNew (ServiceExecutor executor,  Boolean useIndexes,  XmlDocMaker destroyOther, XmlDocMaker destroyDICOMPatient, XmlDocMaker destroyDICOMStudy,
-			XmlDocMaker destroyDICOMSeries, String where, String peer, ServerRoute sr, String uuidLocal, String size, 
+			XmlDocMaker destroyDICOMSeries, String where, String peer, ServerRoute srPeer, String uuidLocal, String size, 
 			Boolean dbg, XmlWriter w)
 					throws Throwable {
 
@@ -330,7 +234,7 @@ public class SvcReplicateSync extends PluginService {
 		dm.add("xpath", "rid");
 		dm.add("xpath", "cid");
 		dm.add("xpath", "type");
-		XmlDoc.Element r = executor.execute(sr, "asset.query", dm.root());
+		XmlDoc.Element r = executor.execute(srPeer, "asset.query", dm.root());
 		if (r==null) return false;  
 		Collection<XmlDoc.Element> rAssets = r.elements("asset");
 		if (rAssets==null) return false;
@@ -376,21 +280,20 @@ public class SvcReplicateSync extends PluginService {
 
 				// Put in correct list
 				if (type==null) {
-					destroyOther.add("id", idOnPeer);
+					destroyOther.add("id",  new String[]{"rid", rid}, idOnPeer);
 				} else {
 					if (type.equals("dicom/patient")) {
-						destroyDICOMPatient.add("id", idOnPeer);
+						destroyDICOMPatient.add("id", new String[]{"rid", rid}, idOnPeer);
 					} else if (type.equals("dicom/study") ||
 							type.equals("siemens-raw-petct/study")) {         // Type, not as document type (so no daris:)
-						destroyDICOMStudy.add("id", idOnPeer);
+						destroyDICOMStudy.add("id", new String[]{"rid", rid}, idOnPeer);
 					} else if (type.equals("dicom/series") ||
 							type.equals("siemens-raw-petct/series")) {
-						destroyDICOMSeries.add("id", idOnPeer);
+						destroyDICOMSeries.add("id", new String[]{"rid", rid}, idOnPeer);
 					} else {
-						destroyOther.add("id", idOnPeer);
+						destroyOther.add("id", new String[]{"rid", rid}, idOnPeer);
 					}
 				}
-				w.add("id", new String[]{"cid", cid, "peer", peer, "rid", rid}, idOnPeer);
 				if (dbg) {
 					System.out.println("Replicated asset with id '" + idOnPeer + "' is not on the primary");
 				}
