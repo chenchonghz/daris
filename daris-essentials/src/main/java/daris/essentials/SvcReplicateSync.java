@@ -26,7 +26,7 @@ public class SvcReplicateSync extends PluginService {
 		_defn.add(new Interface.Element("peer",StringType.DEFAULT, "Name of peer that objects have been replicated to.", 1, 1));
 		_defn.add(new Interface.Element("where",StringType.DEFAULT, "Query predicate to restrict the selected assets on the peer (replica). If the peer holds replicas not from your primary, exclude them in this predicate query string. If unset, all assets are considered.", 0, 1));
 		_defn.add(new Interface.Element("destroy",BooleanType.DEFAULT, "Actually destroy the assets, rather than just listing them. Defaults to false.", 0, 1));
-		_defn.add(new Interface.Element("size",IntegerType.DEFAULT, "Limit loop that looks for replica assets to delete to this number of assets per iteration (if too large, the VM may run out of virtual memory).  Defaults to 500.", 0, 1));
+		_defn.add(new Interface.Element("size",IntegerType.DEFAULT, "Limit loop that looks for replica assets to delete to this number of assets per iteration (if too large, the VM may run out of virtual memory).  Defaults to 10000.", 0, 1));
 		_defn.add(new Interface.Element("idx",IntegerType.DEFAULT, "Start index in the cursor. Defaults to 1.", 0, 1));
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
@@ -66,7 +66,7 @@ public class SvcReplicateSync extends PluginService {
 		String where = args.value("where");
 		String peer = args.value("peer");
 		Boolean destroy = args.booleanValue("destroy", false);
-		String size = args.stringValue("size", "500");
+		String size = args.stringValue("size", "10000");
 		Integer idx = args.intValue("idx", 1);
 		//		Boolean useNew = args.booleanValue("use-new", false);
 		Boolean useIndexes = args.booleanValue("use-indexes", true);
