@@ -172,7 +172,8 @@ public class SvcProjectMailSend extends PluginService {
 	}
 	
 	private void sendToNotifications (ServiceExecutor executor, MailHandler mh, XmlDoc.Element args) throws Throwable {
-		Boolean useNotification = args.booleanValue("use-notification", false);
+		
+	    Boolean useNotification = args.booleanValue("use-notification", false);
 		
 		if (useNotification) {
 			String category = args.stringValue("use-notification/@category", "data-upload");   

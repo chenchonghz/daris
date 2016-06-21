@@ -759,12 +759,15 @@ public class Project {
         dm.add("role", new String[] { "type", "role" }, specificProjectRole);
         dm.add("permissions", "true");
         XmlDoc.Element r = executor.execute(route, "user.describe", dm.root());
-        if (r == null)
+        if (r == null) {
             return null;
-        //
+        }
+        // TODO: Problem here is, user.describe service returns user without all
+        // roles.
         Collection<XmlDoc.Element> users = r.elements("user");
-        if (users == null)
+        if (users == null) {
             return null;
+        }
 
         for (XmlDoc.Element user : users) {
 
