@@ -329,6 +329,12 @@ grantRoleRole daris:pssd.dicom-ingest daris:pssd.object.admin
 grantRoleRole daris:pssd.dicom-ingest dicom-ingest
 
 # ============================================================================
+# Grant daris:pssd.dicom-ingest role ADMINISTER access to role namespace daris:
+# This must be done. Otherwise user.describe called by dicom proxy user holding 
+# daris:pssd.dicom-ingest role will not return the roles in namespace daris.
+actor.grant :type role :name daris:pssd.dicom-ingest :perm < :resource -type role:namespace daris: :access ADMINISTER > 
+
+# ============================================================================
 # Detect if "Transform framework" is installed. If it is, set the roles...
 # ============================================================================
 source role-permissions-transform.tcl
