@@ -8,6 +8,11 @@
 #       Otherwise, pssd is the default asset namespace in which assets are created.
 #
 #
+# arg:           host
+#   type:        string
+#   description: specifies the schema member host. It is required when installing the package
+#                within non-default schema.
+
 # arg:           domain
 #   type:        boolean
 #   default:     false
@@ -239,16 +244,16 @@ if { [xvalue exists [asset.namespace.exists :namespace ${namespace}]] == "false"
     asset.namespace.create :namespace -all true ${namespace} :description "the namespace for daris web application"
 }
 
-if { [xvalue exists [http.processor.exists :url ${url}]] == "true" } {
-    http.processor.destroy :url ${url}
+if { [info exists host] == 0 } {
+    # host is required if installing into non-default schema
+    set host ""
 }
-http.processor.create :url ${url} \
-                      :app daris \
-                      :type asset \
-                      :translate ${namespace} \
-                      :authentication < :domain $domain :user $user > \
-                      :entry-point ${entry_point}
-
+if { [xexists schema/name [schema.self.describe]] == 0 } {
+    # in default schema. Ignore host arg.
+    set host ""
+}
+source generic-utils.tcl
+create_or_replace_http_processor $host $url "daris" $namespace $entry_point $domain $user
 
 # grant perms for the servlet user
 actor.grant :type user :name ${domain}:${user} :perm < :resource -type service transcode.describe :access ACCESS >
@@ -256,13 +261,12 @@ actor.grant :type user :name ${domain}:${user} :perm < :resource -type service t
 #=============================================================================
 # Install servlets
 #=============================================================================
-http.servlets.set :url ${url} \
-                  :servlet -path main.mfjp -default false daris.main \
-                  :servlet -path object.mfjp -default false daris.object \
-                  :servlet -path shoppingcart.mfjp -default false daris.shoppingcart \
-                  :servlet -path dicom.mfjp -default false daris.dicom \
-                  :servlet -path nifti.mfjp -default false daris.nifti \
-                  :servlet -path archive.mfjp -default false daris.archive
+set_http_servlets $host $url { { "main.mfjp"         "false" "daris.main" } \
+                               { "object.mfjp"       "false" "daris.object" } \
+                               { "shoppingcart.mfjp" "false" "daris.shoppingcart" } \
+                               { "dicom.mfjp"        "false" "daris.dicom" } \
+                               { "nifti.mfjp"        "false" "daris.nifti" } \
+                               { "archive.mfjp"      "false" "daris.archive" } }
 
 #=============================================================================
 # Install papaya.js (DICOM/NIFTI viewer). Required by dicom.mfjp and nifti.mfjp
