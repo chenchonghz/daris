@@ -2,9 +2,15 @@
 #                                                                            #
 #                               Installer Script                             #
 #                                      for                                   #
-#                           Mediaflux Package: daris                         #
+#                           Mediaflux Package: daris-portal                  #
 #                                                                            #
 ##############################################################################
+
+# arg:           host
+#   type:        string
+#   description: specifies the schema member host. It is required when installing the package
+#                within non-default schema.
+
 proc checkAppProperty { app prop msg } {
    set ok "false"
    set exists [xvalue exists [application.property.exists :property -app $app $prop]]
@@ -79,14 +85,27 @@ asset.import :url archive:///www.zip :namespace ${namespace} :label -create yes 
 #
 set url /daris
 set entry_point DaRIS.html
-if { [xvalue exists [http.processor.exists :url ${url}]] == "false" } {
+
+# host is required if installing into non-default schema
+if { [info exists host] == 0 } {
+    set host ""
+}
+if { [xexists schema/name [schema.self.describe]] == 0 } {
+    # in default schema. Ignore host arg.
+    set host ""
+}
+set args ":url ${url}"
+if { ${host} != "" } {
+    set args "${args} :host ${host}"
+}
+if { [xvalue exists [eval "http.processor.exists $args"]] == "false" } {
 	puts "Installing package ${package} -- Creating http processor: url=${url}"
-	http.processor.create :url ${url} \
+	eval "http.processor.create ${args} \
 		              :app daris \
 		              :type asset \
 		              :translate ${namespace} \
 		              :authentication < :domain $domain :user $user > \
-		              :entry-point ${entry_point}
+		              :entry-point ${entry_point}"
 }
 
 #
