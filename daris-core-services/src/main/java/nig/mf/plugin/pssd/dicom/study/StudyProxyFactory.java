@@ -22,6 +22,7 @@ import nig.mf.plugin.pssd.dicom.DicomAssetEngineConstants;
 import nig.mf.plugin.pssd.dicom.subject.SubjectHandler;
 import nig.mf.plugin.pssd.util.MailHandler;
 import nig.mf.pssd.CiteableIdUtil;
+import nig.util.DateUtil;
 
 public class StudyProxyFactory {
 
@@ -85,7 +86,9 @@ public class StudyProxyFactory {
         // - If looks for first modality compliant step or if modality is
         // configured to be
         // ignored looks for the first step in the Method that has no Studies.
-        DicomLog.info("creating study proxy...");
+    	String dateTime = DateUtil.todaysTime();
+        DicomLog.info("Creating PSSD Study proxy at " + dateTime);
+        System.out.println("Creating PSSD Study Proxy at " + dateTime);
         CIDAndMethodStep cms = extractCiteableID(executor, dem, ic);
 
         // Create the metadata to be stored with the study from the given
