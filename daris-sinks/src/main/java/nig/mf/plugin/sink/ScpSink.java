@@ -124,10 +124,12 @@ public class ScpSink implements DataSinkImpl {
         }
 
         public UserDetails userDetails() {
-            return new UserDetails(user, password, privateKey, passphrase, null);
+            return new UserDetails(user, password, privateKey, passphrase,
+                    null);
         }
 
-        public static Params parse(Map<String, String> params) throws Throwable {
+        public static Params parse(Map<String, String> params)
+                throws Throwable {
             if (params == null || params.isEmpty()) {
                 throw new IllegalArgumentException(
                         "Sink parameters cannot be null or empty.");
@@ -213,8 +215,8 @@ public class ScpSink implements DataSinkImpl {
     private Set<MultiTransferContext> _mctxs;
 
     public ScpSink() {
-        _mctxs = Collections
-                .newSetFromMap(new ConcurrentHashMap<MultiTransferContext, Boolean>());
+        _mctxs = Collections.newSetFromMap(
+                new ConcurrentHashMap<MultiTransferContext, Boolean>());
     }
 
     @Override
@@ -249,7 +251,11 @@ public class ScpSink implements DataSinkImpl {
             XmlDoc.Element userMeta, XmlDoc.Element meta, LongInputStream in,
             java.lang.String appMimeType, java.lang.String streamMimeType,
             long length) throws Throwable {
-
+        // System.out.println("path: " + path);
+        // System.out.println("userMeta: " + userMeta);
+        // System.out.println("meta: " + meta);
+        // System.out.println("appMimeType: " + appMimeType);
+        // System.out.println("streamMimeType: " + streamMimeType);
         Connection conn = multiCtx == null ? null
                 : ((MultiTransferContext) multiCtx).connection;
         Session session = multiCtx == null ? null
@@ -264,9 +270,8 @@ public class ScpSink implements DataSinkImpl {
         String ext = meta != null ? meta.value("content/type/@ext") : null;
 
         try {
-
-            String baseDir = params.directory != null ? params.directory : session
-                    .getHome();
+            String home = session.getHome();
+            String baseDir = params.directory != null ? params.directory : home;
             StringBuilder sb = new StringBuilder(baseDir);
             if (!baseDir.endsWith("/")) {
                 sb.append("/");
@@ -279,8 +284,9 @@ public class ScpSink implements DataSinkImpl {
                 sb.append(path);
             }
 
-            Set<String> existingDirs = multiCtx == null ? Collections
-                    .newSetFromMap(new ConcurrentHashMap<String, Boolean>())
+            Set<String> existingDirs = multiCtx == null
+                    ? Collections.newSetFromMap(
+                            new ConcurrentHashMap<String, Boolean>())
                     : ((MultiTransferContext) multiCtx).existingDirectories;
             if (params.decompress && streamMimeType != null
                     && ArchiveRegistry.isAnArchive(streamMimeType)) {
@@ -290,7 +296,8 @@ public class ScpSink implements DataSinkImpl {
                     sb.append("asset_");
                     sb.append(assetId);
                 }
-                if (RemoteArchiveExtractor.canExtract(session, streamMimeType)) {
+                if (RemoteArchiveExtractor.canExtract(session,
+                        streamMimeType)) {
                     sb.append("/");
                     sb.append(PathUtil.getRandomFileName(8));
                     sb.append(".tmp");
@@ -300,9 +307,9 @@ public class ScpSink implements DataSinkImpl {
                     RemoteArchiveExtractor.extract(session, remotePath);
                 } else {
                     extractAndTransfer(session, sb.toString(),
-                            ArchiveRegistry.createInput(in, new NamedMimeType(
-                                    streamMimeType)), params.fileMode,
-                            existingDirs);
+                            ArchiveRegistry.createInput(in,
+                                    new NamedMimeType(streamMimeType)),
+                            params.fileMode, existingDirs);
                 }
             } else {
                 // single file
@@ -310,6 +317,9 @@ public class ScpSink implements DataSinkImpl {
                     sb.append("/");
                     sb.append("asset_");
                     sb.append(assetId);
+                } else {
+                    // meta==null
+                    sb.append(System.currentTimeMillis());
                 }
                 if (ext != null) {
                     sb.append(".");
@@ -332,7 +342,7 @@ public class ScpSink implements DataSinkImpl {
 
     private static void extractAndTransfer(Session session, String baseDir,
             ArchiveInput ai, String fileMode, Set<String> existingDirs)
-            throws Throwable {
+                    throws Throwable {
 
         ArchiveInput.Entry entry = null;
         try {
@@ -368,8 +378,8 @@ public class ScpSink implements DataSinkImpl {
         }
         if (length < 0) {
             File tf = PluginTask.createTemporaryFile();
-            OutputStream tfos = new BufferedOutputStream(new FileOutputStream(
-                    tf));
+            OutputStream tfos = new BufferedOutputStream(
+                    new FileOutputStream(tf));
             try {
                 StreamCopy.copy(in, tfos);
             } finally {
