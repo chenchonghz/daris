@@ -41,11 +41,14 @@ public class SinkPluginModule implements PluginModule {
         }
 
         try {
+            
             DataSinkRegistry.add(this, new ScpSink());
             DataSinkRegistry.add(this, new WebDAVSink());
             DataSinkRegistry.add(this, new OwnCloudSink());
         } catch (Throwable e) {
-
+            /*
+             * Have to restart MF server to update the sinks :(
+             */
         }
     }
 
