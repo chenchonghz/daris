@@ -25,17 +25,31 @@ public class SinkPluginModule implements PluginModule {
 
     @Override
     public void initialize(ConfigurationResolver arg0) throws Throwable {
-        _services = new Vector<PluginService>();
-
+        if (_services == null) {
+            _services = new Vector<PluginService>();
+        }
         _services.add(new SvcSshHostKeyScan());
         _services.add(new SvcUserSelfSinkSettingsGet());
         _services.add(new SvcUserSelfSinkSettingsSet());
         _services.add(new SvcSinkDescribe());
         _services.add(new SvcSshPublicKeyPush());
 
-        DataSinkRegistry.add(this, new ScpSink());
-        DataSinkRegistry.add(this, new WebDAVSink());
-        DataSinkRegistry.add(this, new OwnCloudSink());
+        try {
+            DataSinkRegistry.removeAll(this);
+        } catch (Throwable e) {
+
+        }
+
+        try {
+            
+            DataSinkRegistry.add(this, new ScpSink());
+            DataSinkRegistry.add(this, new WebDAVSink());
+            DataSinkRegistry.add(this, new OwnCloudSink());
+        } catch (Throwable e) {
+            /*
+             * Have to restart MF server to update the sinks :(
+             */
+        }
     }
 
     @Override
