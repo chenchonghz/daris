@@ -233,7 +233,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 
 		// Create a list of assets to replicate
 		if (dbg) {
-			log(dateTime, "   nig.replicate.namespace.check : iterate through " + results.size() + " results and build list for replication.");
+			log(dateTime, "   nig.replicate.namespace.check : iterate through " + results.size() + " results and build list for move.");
 		}
 		for (XmlDoc.Element result : results) {
 
@@ -263,7 +263,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 				XmlDoc.Element remoteAsset = executor.execute(sr, "asset.query", dm.root());
 				String remoteAssetNameSpace = remoteAsset.value("asset/namespace");
 				if (dbg) {
-					log(dateTime, "      nig.replicate.namespace.check :namespaces=" + assetNameSpace + ", " +remoteAssetNameSpace);
+//					log(dateTime, "      nig.replicate.namespace.check :namespaces=" + assetNameSpace + ", " +remoteAssetNameSpace);
 				}
 				String expectedRemoteAssetNameSpace = dst + assetNameSpace;
 				if (!expectedRemoteAssetNameSpace.equals(remoteAssetNameSpace)) {
