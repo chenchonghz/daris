@@ -19,9 +19,9 @@
 		<maven.build.timestamp.format>dd-MMM-yyyy HH:mm:ss z</maven.build.timestamp.format>
 		<require.mflux.version>4.3.073</require.mflux.version>
 		<daris-commons.version>1.0.4</daris-commons.version>
-		<daris-dcmtools.version>1.0.2</daris-dcmtools.version>
+		<daris-dcmtools.version>1.0.3</daris-dcmtools.version>
 		<daris-essentials.version>1.0.5</daris-essentials.version>
-		<daris-core-services.version>3.2.8</daris-core-services.version>
+		<daris-core-services.version>3.2.9</daris-core-services.version>
 		<daris-portal.version>1.2.1</daris-portal.version>
 		<daris-sinks.version>1.0.1</daris-sinks.version>
 		<daris-transcoders.version>2.0.2</daris-transcoders.version>
