@@ -47,7 +47,7 @@ public class SvcXnatScanDicomIngest extends AbstractXnatPluginService {
 			}
 			sb.append(xnatScanId);
 		}
-		sb.append("/resources/DICOM/files?format=zip");
+		sb.append("/resources/DICOM,secondary/files?format=zip");
 		InputStream in = XnatRestClient.getDownloadStream(siteUrl, sb.toString(), session, true);
 
 		XmlDocMaker dm = new XmlDocMaker("args");

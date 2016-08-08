@@ -36,7 +36,7 @@ public class SvcXnatExperimentDicomIngest extends AbstractXnatPluginService {
 		sb.append(xnatSubject);
 		sb.append("/experiments/");
 		sb.append(xnatExperiment);
-		sb.append("/scans/ALL/resources/DICOM/files?format=zip");
+		sb.append("/scans/ALL/resources/DICOM,secondary/files?format=zip");
 		InputStream in = XnatRestClient.getDownloadStream(siteUrl, sb.toString(), session, true);
 
 		XmlDocMaker dm = new XmlDocMaker("args");
