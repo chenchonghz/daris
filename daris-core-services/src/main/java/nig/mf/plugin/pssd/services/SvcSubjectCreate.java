@@ -65,6 +65,11 @@ public class SvcSubjectCreate extends PluginService {
 				BooleanType.DEFAULT,
 				"If the subject-number is not given, fill in the Subject allocator space (re-use allocated CIDs with no assets), otherwise create the next available CID at the end of the CID pool. Defaults to false; use with extreme care in a federated envionment.Concurrency issues mean that this argument may be ignored if many Subjects are being created simultaneously.",
 				0, 1));
+		_defn.add(new Element(
+				"method",
+				BooleanType.DEFAULT,
+				"By default, this service creates the child ExMethod as well. Set to false to disable this.",
+				0, 1));
 
 		_defn.add(new Interface.Element(
 				"virtual",
@@ -125,8 +130,8 @@ public class SvcSubjectCreate extends PluginService {
 				new EnumType(new String[] { Project.CONSENT_SPECIFIC_ROLE_NAME,
 						Project.CONSENT_EXTENDED_ROLE_NAME,
 						Project.CONSENT_UNSPECIFIED_ROLE_NAME }),
-				"Data (re)use specification for this Subject. Defaults to none",
-				0, 1));
+						"Data (re)use specification for this Subject. Defaults to none",
+						0, 1));
 
 	}
 
@@ -183,14 +188,9 @@ public class SvcSubjectCreate extends PluginService {
 		long subjectNumber = args.longValue("subject-number", -1);
 		boolean projectFillIn = getProjectFillIn(executor(),
 				dPID.getCiteableID(), dPID.getServerRoute());
-		boolean fillIn = false;
-		if (args.value("fillin") == null) {
-			if (projectFillIn) {
-				fillIn = projectFillIn;
-			}
-		} else {
-			fillIn = args.booleanValue("fillin");
-		}
+		boolean fillIn = args.booleanValue("fillin", false);
+		boolean createExMethod = args.booleanValue("method", true);
+
 
 		// We are going to create the Subject locally. The owner of the Project
 		// must authorise the user to be able to create Subjects because s/he is
@@ -207,9 +207,9 @@ public class SvcSubjectCreate extends PluginService {
 				throw new Exception("User not authorised: requires '"
 						+ Project.subjectAdministratorRoleName(dPID
 								.getCiteableID()) + "' or '"
-						+ Role.objectAdminRoleName()
-						+ " role on server managing Project : "
-						+ dPID.getManagingServerUUID());
+								+ Role.objectAdminRoleName()
+								+ " role on server managing Project : "
+								+ dPID.getManagingServerUUID());
 			}
 		}
 
@@ -224,8 +224,8 @@ public class SvcSubjectCreate extends PluginService {
 					"User not authorised: requires '"
 							+ Project.subjectAdministratorRoleName(dPID
 									.getCiteableID()) + "' or '"
-							+ Role.objectAdminRoleName()
-							+ " role on local server");
+									+ Role.objectAdminRoleName()
+									+ " role on local server");
 		}
 
 		// Create the Subject on the local server. The Method will be checked in
@@ -252,23 +252,25 @@ public class SvcSubjectCreate extends PluginService {
 			DistributedAsset dCID = new DistributedAsset(null, cid);
 
 			// Create the ExMethod on the local server
-			String emid = null;
-			try {
-				long exMethodNumber = -1;
-				DistributedAsset dMID = new DistributedAsset(
-						dPID.getServerRoute(), args.value("method"));
-				emid = ExMethod.create(executor(), dCID, exMethodNumber, dMID,
-						fillIn, null);
-			} catch (Throwable t) {
-				cleanUp(executor(), cid);
-				throw t;
+			if (createExMethod) {
+				String emid = null;
+				try {
+					long exMethodNumber = -1;
+					DistributedAsset dMID = new DistributedAsset(
+							dPID.getServerRoute(), args.value("method"));
+					emid = ExMethod.create(executor(), dCID, exMethodNumber, dMID,
+							fillIn, null);
+				} catch (Throwable t) {
+					cleanUp(executor(), cid);
+					throw t;
+				}
+
+				w.add("id", new String[] { "mid", emid }, cid);
+
+				// Generate system event
+				SystemEventChannel.generate(new PSSDObjectEvent(Action.CREATE, cid,
+						1));
 			}
-
-			w.add("id", new String[] { "mid", emid }, cid);
-
-			// Generate system event
-			SystemEventChannel.generate(new PSSDObjectEvent(Action.CREATE, cid,
-					1));
 		} finally {
 			if (fillIn) {
 				lock_.unlock();
@@ -296,7 +298,7 @@ public class SvcSubjectCreate extends PluginService {
 	public static String createOrUpdateSubjectAsset(ServiceExecutor executor,
 			XmlDoc.Element args, String id, DistributedAsset dPID,
 			long subjectNumber, boolean fillIn, String actionOnUpdate)
-			throws Throwable {
+					throws Throwable {
 
 		if (!actionOnUpdate.equals("merge")
 				&& !actionOnUpdate.equals("replace")
@@ -362,14 +364,14 @@ public class SvcSubjectCreate extends PluginService {
 				args.booleanValue("allow-incomplete-meta", false));
 		dm.add("allow-invalid-meta",
 				args.booleanValue("allow-invalid-meta", false)); // Only
-																	// available
-																	// for
-																	// updates
+		// available
+		// for
+		// updates
 
 		// If ID is null we will make a new Subject, else update the existing
 		// one. Any existing Subject must be on the local server.
 		String cid = null;
-		
+
 		if (id == null) {
 			if (dPID == null) {
 				throw new Exception(
@@ -387,7 +389,7 @@ public class SvcSubjectCreate extends PluginService {
 			cid = nig.mf.pssd.plugin.util.CiteableIdUtil.generateCiteableID(
 					executor, dPID.getCiteableID(), pdist, subjectNumber,
 					fillIn);
-			
+
 			dm.add("cid", cid);
 			dm.add("name", "subject " + cid);
 			String subjectNS = PSSDUtils.namespace(executor, dPID) + "/" + cid;
@@ -578,7 +580,7 @@ public class SvcSubjectCreate extends PluginService {
 	 */
 	private static TemplateDefinitions subjectTemplate(
 			ServiceExecutor executor, String proute, String mid)
-			throws Throwable {
+					throws Throwable {
 		XmlDocMaker dm = new XmlDocMaker("args");
 		dm.add("cid", mid);
 		dm.add("pdist", 0); // Force local on whatever server it's executed
@@ -612,6 +614,6 @@ public class SvcSubjectCreate extends PluginService {
 		return executor.execute(route == null ? null : new ServerRoute(route),
 				"asset.get", "<args><cid>" + projectCid + "</cid></args>",
 				null, null).booleanValue(
-				"asset/meta/daris:pssd-project/fill-in-cid", false);
+						"asset/meta/daris:pssd-project/fill-in-cid", false);
 	}
 }
