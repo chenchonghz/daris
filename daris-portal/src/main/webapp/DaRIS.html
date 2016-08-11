@@ -6,12 +6,12 @@
 <!-- differences in layout.                        -->
 
 <html>
-  <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
-    
-    <!-- Chrome Frame for IE -->
-    <!--[if IE]>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+
+<!-- Chrome Frame for IE -->
+<!--[if IE]>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
     <style>
         .chromeFrameInstallDefaultStyle {
@@ -31,60 +31,68 @@
     </script>
     <![endif]-->
 
-    <!--                                                               -->
-    <!-- Consider inlining CSS to reduce the number of requested files -->
-    <!--                                                               -->
-    <link type="text/css" rel="stylesheet" href="DaRIS.css">
+<!--                                                               -->
+<!-- Consider inlining CSS to reduce the number of requested files -->
+<!--                                                               -->
+<link type="text/css" rel="stylesheet" href="DaRIS.css">
 
-    <!--                                           -->
-    <!-- Any title is fine                         -->
-    <!--                                           -->
-    <title>Distributed and Reflective Informatics System</title>
-    
-    
-    <!-- IMPORTANT : You must set the variable isomorphicDir to [MODULE_NAME]/sc/ -->
-    <!-- so that the SmartGWT resource are correctly resolved                     -->	
-	<script> var isomorphicDir = "daris/sc/"; </script> 
-    
-    <!--                                           -->
-    <!-- This script loads your compiled module.   -->
-    <!-- If you add any GWT meta tags, they must   -->
-    <!-- be added before this line.                -->
-    <!--                                           -->
-    <script type="text/javascript" language="javascript" src="daris/daris.nocache.js"></script>
-  </head>
+<!--                                           -->
+<!-- Any title is fine                         -->
+<!--                                           -->
+<title>Distributed and Reflective Informatics System</title>
 
-  <!--                                           -->
-  <!-- The body can have arbitrary html, or      -->
-  <!-- you can leave the body empty if you want  -->
-  <!-- to create a completely dynamic UI.        -->
-  <!--                                           -->
-  <body style="font-family : Verdana, Geneva, Arial, Helvetica, sans-serif; font-size: 11pt">
 
-    <!--[if IE]>
+<!-- IMPORTANT : You must set the variable isomorphicDir to [MODULE_NAME]/sc/ -->
+<!-- so that the SmartGWT resource are correctly resolved                     -->
+<script>
+	var isomorphicDir = "daris/sc/";
+</script>
+
+<!--                                           -->
+<!-- This script loads your compiled module.   -->
+<!-- If you add any GWT meta tags, they must   -->
+<!-- be added before this line.                -->
+<!--                                           -->
+<script type="text/javascript" language="javascript"
+	src="daris/daris.nocache.js"></script>
+</head>
+
+<!--                                           -->
+<!-- The body can have arbitrary html, or      -->
+<!-- you can leave the body empty if you want  -->
+<!-- to create a completely dynamic UI.        -->
+<!--                                           -->
+<body
+	style="font-family: Verdana, Geneva, Arial, Helvetica, sans-serif; font-size: 11pt">
+
+	<!--[if IE]>
     <div id="prompt">
      <!-- if IE without GCF, prompt goes here -->
-    </div>
-    <![endif]-->
-    
-    <!-- We can use dynamic injection, or better we can pre-inject the applet. By adding here, then  -->
-    <!-- Javascript will be able to call methods on the applet - which do not seem to work in the    -->
-    <!-- contemporary versions of Firefox.                                                           -->
-    <script type="text/javascript" language="javascript" src="mediafluxdesktopgwt/dti/InjectDTI.js"></script>
-    
-    <!-- OPTIONAL: include this if you want history support -->
-    <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
-    
-    <!-- For downloading -->
-    <iframe src="javascript:''" id="__gwt_downloadFrame" tabIndex='-1' style="position: absolute; width: 0; height: 0; border: 0; display: none;"></iframe>
-    
-    <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
-    <noscript>
-      <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
-        Your web browser must have JavaScript enabled
-        in order for this application to display correctly.
-      </div>
-    </noscript>
+	</div>
+	<![endif]-->
 
-  </body>
+	<!-- We can use dynamic injection, or better we can pre-inject the applet. By adding here, then  -->
+	<!-- Javascript will be able to call methods on the applet - which do not seem to work in the    -->
+	<!-- contemporary versions of Firefox.  Enabling below causes DTI fails to load.                                                          -->
+	<!-- 
+    <script type="text/javascript" language="javascript" src="daris/dti/InjectDTI.js"></script>
+    -->
+
+	<!-- OPTIONAL: include this if you want history support -->
+	<iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1'
+		style="position: absolute; width: 0; height: 0; border: 0"></iframe>
+
+	<!-- For downloading -->
+	<iframe src="javascript:''" id="__gwt_downloadFrame" tabIndex='-1'
+		style="position: absolute; width: 0; height: 0; border: 0; display: none;"></iframe>
+
+	<!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
+	<noscript>
+		<div
+			style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
+			Your web browser must have JavaScript enabled in order for this
+			application to display correctly.</div>
+	</noscript>
+
+</body>
 </html>
