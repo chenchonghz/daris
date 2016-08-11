@@ -7,7 +7,6 @@ import java.util.Vector;
 import nig.mf.plugin.util.AssetUtil;
 import nig.mf.pssd.plugin.util.DistributedAssetUtil;
 import arc.mf.plugin.*;
-import arc.mf.plugin.PluginService.Interface;
 import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.IntegerType;
 import arc.mf.plugin.dtype.StringType;
@@ -149,11 +148,11 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		}
 	}
 
-	private static void log (String dateTime, String message) {
+	private void log (String dateTime, String message) {
 		System.out.println(dateTime + " : " + message);
 	}
 
-	private static String serverUUID(ServiceExecutor executor, String proute) throws Throwable {
+	private String serverUUID(ServiceExecutor executor, String proute) throws Throwable {
 
 		XmlDoc.Element r = executor.execute(new ServerRoute(proute), "server.uuid");
 		return r.value("uuid");

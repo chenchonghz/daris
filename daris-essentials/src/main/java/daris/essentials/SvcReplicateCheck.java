@@ -160,11 +160,11 @@ public class SvcReplicateCheck extends PluginService {
 		}
 	}
 
-	private static void log (String dateTime, String message) {
+	private void log (String dateTime, String message) {
 		System.out.println(dateTime + " : " + message);
 	}
 
-	private static String serverUUID(ServiceExecutor executor, String proute) throws Throwable {
+	private String serverUUID(ServiceExecutor executor, String proute) throws Throwable {
 
 		XmlDoc.Element r = executor.execute(new ServerRoute(proute), "server.uuid");
 		return r.value("uuid");

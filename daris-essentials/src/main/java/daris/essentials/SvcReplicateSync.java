@@ -124,7 +124,7 @@ public class SvcReplicateSync extends PluginService {
 
 
 
-	private static int destroyOrListAssets (ServiceExecutor executor, ServerRoute sr, XmlDocMaker list, String type, 
+	private int destroyOrListAssets (ServiceExecutor executor, ServerRoute sr, XmlDocMaker list, String type, 
 			Boolean destroy, XmlWriter w) throws Throwable {
 		Collection<XmlDoc.Element> elements = list.root().elements("id");
 		if (elements==null) return 0;
@@ -170,7 +170,7 @@ public class SvcReplicateSync extends PluginService {
 	}
 
 
-	private static void checkHasNoChildren (ServiceExecutor executor, ServerRoute sr,
+	private void checkHasNoChildren (ServiceExecutor executor, ServerRoute sr,
 			XmlDocMaker list) throws Throwable {
 		Collection<String> studyIDs = list.root().values("id");
 		if (studyIDs!=null) {
@@ -195,7 +195,7 @@ public class SvcReplicateSync extends PluginService {
 			}
 		}
 	}
-	private static String serverUUID(ServiceExecutor executor, String proute) throws Throwable {
+	private String serverUUID(ServiceExecutor executor, String proute) throws Throwable {
 
 		XmlDoc.Element r = executor.execute(new ServerRoute(proute), "server.uuid");
 		return r.value("uuid");
