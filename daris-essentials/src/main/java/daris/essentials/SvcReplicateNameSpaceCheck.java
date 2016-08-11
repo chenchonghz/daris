@@ -165,6 +165,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 			Boolean useIndexes, Boolean dbg,
 			Boolean includeDestroyed, XmlWriter w)	throws Throwable {
 
+		int n0 = assetList.size();
 		// Find local  assets  with the given query. We work through the cursor else
 		// we may run out of memory
 		if (dbg) log(dateTime, "nig.replicate.namespace.check : find assets on primary in chunk starting with idx = " + idx_);
@@ -206,7 +207,6 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		}
 
 		// See if the replicas exist on the peer. 
-		// One query per asset
 		// Make a list of rids to find
 		dm = new XmlDocMaker("args");	
 		for (XmlDoc.Element asset : assets) {
@@ -284,6 +284,9 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 					assetList.add(dm.root().element("asset"));	
 				}
 			}
+		}
+		if (dbg) {
+			log(dateTime, "   nig.replicate.namespace.check : found " + (assetList.size()-n0) + " assets to move.");
 		}
 		//
 		return more;
