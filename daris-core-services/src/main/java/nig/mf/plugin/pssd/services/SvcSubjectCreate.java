@@ -66,7 +66,7 @@ public class SvcSubjectCreate extends PluginService {
 				"If the subject-number is not given, fill in the Subject allocator space (re-use allocated CIDs with no assets), otherwise create the next available CID at the end of the CID pool. Defaults to false; use with extreme care in a federated envionment.Concurrency issues mean that this argument may be ignored if many Subjects are being created simultaneously.",
 				0, 1));
 		_defn.add(new Element(
-				"exmethod",
+				"ex-method",
 				BooleanType.DEFAULT,
 				"By default, this service creates the child ExMethod as well. Set to false to disable this.",
 				0, 1));
@@ -189,7 +189,7 @@ public class SvcSubjectCreate extends PluginService {
 		boolean projectFillIn = getProjectFillIn(executor(),
 				dPID.getCiteableID(), dPID.getServerRoute());
 		boolean fillIn = args.booleanValue("fillin", false);
-		boolean createExMethod = args.booleanValue("exmethod", true);
+		boolean createExMethod = args.booleanValue("ex-method", true);
 
 
 		// We are going to create the Subject locally. The owner of the Project
