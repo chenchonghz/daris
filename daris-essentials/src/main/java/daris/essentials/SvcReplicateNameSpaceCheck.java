@@ -18,9 +18,6 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 
 
 	private Interface _defn;
-	private Integer idx_ = 1;
-	private Integer count_ = 0;
-
 
 	public SvcReplicateNameSpaceCheck() {
 		_defn = new Interface();
@@ -64,8 +61,8 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 
 
 		// Init
-		idx_ = 1;
-		count_ = 0;
+		Integer idx = 1;
+		Integer count = 0;
 		Date date = new Date();
 		String dateTime = date.toString();     // Just used to tag message in log file
 
@@ -99,7 +96,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		while (more) {
 			more = find (executor(),  dateTime, where, peer, remoteSR, dst, uuidLocal, size, 
 					assets, exclDaRISProc, useIndexes, 
-					dbg, includeDestroyed, w);
+					dbg, includeDestroyed, idx, count, w);
 			if (dbg) {
 				log(dateTime, "nig.replicate.namespace.check : checking for abort \n");
 			}
@@ -107,9 +104,9 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		}
 
 		// Correct asset namespaces, one at a time
-		w.add("total-checked", count_);
+		w.add("total-checked", count);
 		w.add("total-to-move", assets.size());
-		log(dateTime, "   nig.replicate.namespace.check : total checked = " + count_);
+		log(dateTime, "   nig.replicate.namespace.check : total checked = " + count);
 		log(dateTime, "   nig.replicate.namespace.check : total to move = " + assets.size());
 		if (move) {
 			log(dateTime,"Starting move of " + assets.size() + " assets");
@@ -162,12 +159,12 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 			ServerRoute sr, String dst, String uuidLocal, String size, 
 			Vector<XmlDoc.Element> assetList, Boolean exclDaRISProc, 
 			Boolean useIndexes, Boolean dbg,
-			Boolean includeDestroyed, XmlWriter w)	throws Throwable {
+			Boolean includeDestroyed, Integer idx, Integer count, XmlWriter w)	throws Throwable {
 
 		int n0 = assetList.size();
 		// Find local  assets  with the given query. We work through the cursor else
 		// we may run out of memory
-		if (dbg) log(dateTime, "nig.replicate.namespace.check : find assets on primary in chunk starting with idx = " + idx_);
+		if (dbg) log(dateTime, "nig.replicate.namespace.check : find assets on primary in chunk starting with idx = " + idx);
 		XmlDocMaker dm = new XmlDocMaker("args");
 		if (exclDaRISProc) {
 			// Drop processed DataSets from query
@@ -186,7 +183,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		}
 		if (where!=null) dm.add("where", where);
 
-		dm.add("idx", idx_);
+		dm.add("idx", idx);
 		dm.add("size", size);
 		dm.add("pdist", 0);
 		dm.add("action", "get-meta");
@@ -195,14 +192,14 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		if (r==null) return false;  
 		Collection<XmlDoc.Element> assets = r.elements("asset");
 		if (assets==null) return false;
-		count_ += assets.size();
+		count += assets.size();
 
 		// Get the cursor and increment for next time
 		XmlDoc.Element cursor = r.element("cursor");
 		boolean more = !(cursor.booleanValue("total/@complete"));
 		if (more) {
 			Integer next = cursor.intValue("next");
-			idx_ = next;
+			idx = next;
 		}
 
 		// See if the replicas exist on the peer. 
