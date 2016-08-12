@@ -1,6 +1,7 @@
 package daris.essentials;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -64,6 +65,10 @@ public class SvcReplicateSync extends PluginService {
 		String size = args.stringValue("size", "10000");
 		Integer t = args.intValue("idx", 1);
 		int[] idx = new int[]{t};
+		
+		Date date = new Date();
+		String dateTime = date.toString();     // Just used to tag message in log file
+
 
 		//		Boolean useNew = args.booleanValue("use-new", false);
 		Boolean useIndexes = args.booleanValue("use-indexes", true);
@@ -93,7 +98,7 @@ public class SvcReplicateSync extends PluginService {
 
 		// FInd assets
 		while (more) {
-			more = findNew (executor(), useIndexes, destroyOther, destroyDICOMPatient, destroyDICOMStudy,
+			more = findNew (executor(), dateTime, useIndexes, destroyOther, destroyDICOMPatient, destroyDICOMStudy,
 					destroyDICOMSeries, where, peer, srPeer, uuidLocal, size, dbg, idx, w);
 			PluginTask.checkIfThreadTaskAborted();
 		}
@@ -103,32 +108,32 @@ public class SvcReplicateSync extends PluginService {
 
 		// Destroy assets on remote peer bottom up in DICOM data model
 		// FOr PSSD, 'members=false' so it does not destroy children
-		int n = destroyOrListAssets(executor(), srPeer, destroyDICOMSeries, "DICOM Series", destroy, w);
-		n += destroyOrListAssets(executor(), srPeer, destroyDICOMStudy, "DICOM Study", destroy, w);
-		n += destroyOrListAssets(executor(), srPeer, destroyDICOMPatient, "DICOM Patient", destroy, w);
-		n += destroyOrListAssets(executor(), srPeer, destroyOther, "Other", destroy, w);
+		int n = destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMSeries, "DICOM Series", destroy, w);
+		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMStudy, "DICOM Study", destroy, w);
+		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMPatient, "DICOM Patient", destroy, w);
+		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyOther, "Other", destroy, w);
 
 		if (dbg) {
 			System.out.println("");
 			if (destroy) {
-				System.out.println("Destroyed in total " + n + " remote assets without primaries on the local host");
+				log(dateTime, "nig.replicate.synchronize: Destroyed in total " + n + " remote assets without primaries on the local host");
 			} else {
-				System.out.println("Found in total " + n + " remote assets without primaries on the local host");
+				log(dateTime, "nig.replicate.synchronize: Found in total " + n + " remote assets without primaries on the local host");
 			}
 		}
 	}
 
 
 
-	private int destroyOrListAssets (ServiceExecutor executor, ServerRoute sr, XmlDocMaker list, String type, 
+	private int destroyOrListAssets (ServiceExecutor executor, String dateTime, ServerRoute sr, XmlDocMaker list, String type, 
 			Boolean destroy, XmlWriter w) throws Throwable {
 		Collection<XmlDoc.Element> elements = list.root().elements("id");
 		if (elements==null) return 0;
 		//
 		if (destroy) {
-			System.out.println("Found " + elements.size() + " remote " + type + " assets for destruction without primaries on the local host");
+			log(dateTime, "nig.replicate.synchronize: Found " + elements.size() + " remote " + type + " assets for destruction without primaries on the local host");
 		} else {
-			System.out.println("Found " + elements.size() + " remote " + type + " assets without primaries on local host");
+			log(dateTime, "nig.replicate.synchronize: Found " + elements.size() + " remote " + type + " assets without primaries on local host");
 		}
 		if (elements.size() > 0) {
 			if (destroy) {
@@ -205,7 +210,7 @@ public class SvcReplicateSync extends PluginService {
 	// 4. On the local peer, if the asset was replicated from us check existence
 	//     by id. If the asset was replicated from somewhere else check existence by rid
 	// 
-	private boolean findNew (ServiceExecutor executor,  Boolean useIndexes,  XmlDocMaker destroyOther, XmlDocMaker destroyDICOMPatient, XmlDocMaker destroyDICOMStudy,
+	private boolean findNew (ServiceExecutor executor,  String dateTime, Boolean useIndexes,  XmlDocMaker destroyOther, XmlDocMaker destroyDICOMPatient, XmlDocMaker destroyDICOMStudy,
 			XmlDocMaker destroyDICOMSeries, String where, String peer, ServerRoute srPeer, String uuidLocal, String size, 
 			Boolean dbg, int[] idx, XmlWriter w)
 					throws Throwable {
@@ -213,8 +218,8 @@ public class SvcReplicateSync extends PluginService {
 		// Find replica assets on  the remote peer.  We work through the cursor else
 		// we may run out of memory
 		if (dbg) {
-			System.out.println("CHunk starting with idx = " + idx[0]);
-			System.out.println("  Find replicas");
+			log(dateTime, "nig.replicate.synchronize: CHunk starting with idx = " + idx[0]);
+			log(dateTime,"   nig.replicate.synchronize:  Find replicas");
 		}
 
 		XmlDocMaker dm = new XmlDocMaker("args");
@@ -245,7 +250,7 @@ public class SvcReplicateSync extends PluginService {
 		}
 
 		// See if the primaries for the found replicas exist on the local server
-		if (dbg) System.out.println("  Look for primaries matching replicas.");
+		if (dbg) log(dateTime, "  Look for primaries matching replicas.");
 
 		dm = new XmlDocMaker("args");
 		for (XmlDoc.Element rAsset : rAssets) {
@@ -258,7 +263,7 @@ public class SvcReplicateSync extends PluginService {
 
 		// Build a list of  assets to destroy on the remote peer.   I.e. the ones that don't exist
 		// on the local server but do exist on the peer
-		if (dbg) System.out.println("  Check list for missing primaries.");
+		if (dbg) log(dateTime,"   nig.replicate.synchronize: Check list for missing primaries.");
 		Iterator<XmlDoc.Element> rIt = rAssets.iterator();
 		int nExtra = 0;
 		for (XmlDoc.Element lAsset : lAssets) {
@@ -291,14 +296,18 @@ public class SvcReplicateSync extends PluginService {
 					}
 				}
 				if (dbg) {
-					System.out.println("Replicated asset with id '" + idOnPeer + "' is not on the primary");
+					log(dateTime,"   nig.replicate.synchronize: Replicated asset with id '" + idOnPeer + "' is not on the primary");
 				}
 			}
 		}
 		if (dbg) {
-			System.out.println("Checked " + rAssets.size() + " remote assets of which " + nExtra + " were not found on the primary");
+			log(dateTime,"   nig.replicate.synchronize: Checked " + rAssets.size() + " remote assets of which " + nExtra + " were not found on the primary");
 		}
 		//
 		return more;
+	}
+	
+	private void log (String dateTime, String message) {
+		System.out.println(dateTime + " : " + message);
 	}
 }
