@@ -18,8 +18,6 @@ public class SvcReplicateSync extends PluginService {
 
 
 	private Interface _defn;
-	private Integer idx_ = 1;
-
 
 	public SvcReplicateSync() {
 		_defn = new Interface();
@@ -60,8 +58,6 @@ public class SvcReplicateSync extends PluginService {
 	public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w) throws Throwable {
 
 		// Init
-		idx_ = 1;
-
 		// Get inputs
 		String where = args.value("where");
 		String peer = args.value("peer");
@@ -95,10 +91,9 @@ public class SvcReplicateSync extends PluginService {
 		XmlDocMaker destroyOther = new XmlDocMaker("args");          // PSSD
 
 		// FInd assets
-		idx_ = idx;
 		while (more) {
 			more = findNew (executor(), useIndexes, destroyOther, destroyDICOMPatient, destroyDICOMStudy,
-					destroyDICOMSeries, where, peer, srPeer, uuidLocal, size, dbg, w);
+					destroyDICOMSeries, where, peer, srPeer, uuidLocal, size, dbg, idx, w);
 			PluginTask.checkIfThreadTaskAborted();
 		}
 
@@ -211,13 +206,13 @@ public class SvcReplicateSync extends PluginService {
 	// 
 	private boolean findNew (ServiceExecutor executor,  Boolean useIndexes,  XmlDocMaker destroyOther, XmlDocMaker destroyDICOMPatient, XmlDocMaker destroyDICOMStudy,
 			XmlDocMaker destroyDICOMSeries, String where, String peer, ServerRoute srPeer, String uuidLocal, String size, 
-			Boolean dbg, XmlWriter w)
+			Boolean dbg, Integer idx, XmlWriter w)
 					throws Throwable {
 
 		// Find replica assets on  the remote peer.  We work through the cursor else
 		// we may run out of memory
 		if (dbg) {
-			System.out.println("CHunk starting with idx = " + idx_);
+			System.out.println("CHunk starting with idx = " + idx);
 			System.out.println("  Find replicas");
 		}
 
@@ -227,7 +222,7 @@ public class SvcReplicateSync extends PluginService {
 		dm.add("where", query);
 		dm.add("action", "get-value");
 		dm.add("use-indexes", useIndexes);
-		dm.add("idx", idx_);
+		dm.add("idx", idx);
 		dm.add("size", size);
 		dm.add("pdist", 0);
 		dm.add("xpath", "id");
@@ -245,7 +240,7 @@ public class SvcReplicateSync extends PluginService {
 		if (cursor !=null) more = !(cursor.booleanValue("total/@complete"));
 		if (more) {
 			Integer next = cursor.intValue("next");
-			idx_ = next;
+			idx = next;
 		}
 
 		// See if the primaries for the found replicas exist on the local server
