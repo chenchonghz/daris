@@ -267,10 +267,12 @@ public class SvcSubjectCreate extends PluginService {
 
 				w.add("id", new String[] { "mid", emid }, cid);
 
-				// Generate system event
-				SystemEventChannel.generate(new PSSDObjectEvent(Action.CREATE, cid,
-						1));
+			} else {
+				w.add("id", cid);
 			}
+			// Generate system event
+			SystemEventChannel.generate(new PSSDObjectEvent(Action.CREATE, cid,
+					1));
 		} finally {
 			if (fillIn) {
 				lock_.unlock();
