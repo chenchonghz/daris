@@ -6,7 +6,6 @@ import java.util.List;
 
 import nig.mf.pssd.plugin.util.DistributedAssetUtil;
 import arc.mf.plugin.*;
-import arc.mf.plugin.PluginService.Interface;
 import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.IntegerType;
 import arc.mf.plugin.dtype.StringType;
@@ -63,7 +62,9 @@ public class SvcReplicateSync extends PluginService {
 		String peer = args.value("peer");
 		Boolean destroy = args.booleanValue("destroy", false);
 		String size = args.stringValue("size", "10000");
-		Integer idx = args.intValue("idx", 1);
+		Integer t = args.intValue("idx", 1);
+		int[] idx = new int[]{t};
+
 		//		Boolean useNew = args.booleanValue("use-new", false);
 		Boolean useIndexes = args.booleanValue("use-indexes", true);
 		Boolean dbg = args.booleanValue("debug", false);
@@ -206,13 +207,13 @@ public class SvcReplicateSync extends PluginService {
 	// 
 	private boolean findNew (ServiceExecutor executor,  Boolean useIndexes,  XmlDocMaker destroyOther, XmlDocMaker destroyDICOMPatient, XmlDocMaker destroyDICOMStudy,
 			XmlDocMaker destroyDICOMSeries, String where, String peer, ServerRoute srPeer, String uuidLocal, String size, 
-			Boolean dbg, Integer idx, XmlWriter w)
+			Boolean dbg, int[] idx, XmlWriter w)
 					throws Throwable {
 
 		// Find replica assets on  the remote peer.  We work through the cursor else
 		// we may run out of memory
 		if (dbg) {
-			System.out.println("CHunk starting with idx = " + idx);
+			System.out.println("CHunk starting with idx = " + idx[0]);
 			System.out.println("  Find replicas");
 		}
 
@@ -222,7 +223,7 @@ public class SvcReplicateSync extends PluginService {
 		dm.add("where", query);
 		dm.add("action", "get-value");
 		dm.add("use-indexes", useIndexes);
-		dm.add("idx", idx);
+		dm.add("idx", idx[0]);
 		dm.add("size", size);
 		dm.add("pdist", 0);
 		dm.add("xpath", "id");
@@ -240,7 +241,7 @@ public class SvcReplicateSync extends PluginService {
 		if (cursor !=null) more = !(cursor.booleanValue("total/@complete"));
 		if (more) {
 			Integer next = cursor.intValue("next");
-			idx = next;
+			idx[0] = next;
 		}
 
 		// See if the primaries for the found replicas exist on the local server

@@ -62,8 +62,8 @@ public class SvcReplicateCheck extends PluginService {
 
 
 		// Init
-		Integer idx = 1;
-		Integer count = 0;
+		int[] idx = new int[]{1};
+		int[] count = new int[]{0};
 		Date date = new Date();
 		String dateTime = date.toString();     // Just used to tag message in log file
 
@@ -105,10 +105,10 @@ public class SvcReplicateCheck extends PluginService {
 		}
 
 		// Replicate one at a time
-		w.add("total-checked", count);
+		w.add("total-checked", count[0]);
 		w.add("total-to-replicate", assetIDs.size());
 		if (dbg) {
-			log(dateTime, "   nig.replicate.check : total checked = " + count);
+			log(dateTime, "   nig.replicate.check : total checked = " + count[0]);
 			log(dateTime, "   nig.replicate.check : total to replicate = " + assetIDs.size());
 		}
 		if (dst!=null) {
@@ -171,11 +171,11 @@ public class SvcReplicateCheck extends PluginService {
 	private boolean find (ServiceExecutor executor,  String dateTime, String where, String peer, ServerRoute sr, String uuidLocal, String size, 
 			Vector<String> assetList, Boolean checkAsset, Boolean exclDaRISProc, 
 			Boolean useIndexes, Boolean dbg,
-			Boolean includeDestroyed, Integer idx, Integer count, XmlWriter w)	throws Throwable {
+			Boolean includeDestroyed, int[] idx, int[] count, XmlWriter w)	throws Throwable {
 
 		// Find local  assets  with the given query. We work through the cursor else
 		// we may run out of memory
-		if (dbg) log(dateTime, "nig.replicate.check : find assets on primary in chunk starting with idx = " + idx);
+		if (dbg) log(dateTime, "nig.replicate.check : find assets on primary in chunk starting with idx = " + idx[0]);
 		XmlDocMaker dm = new XmlDocMaker("args");
 		if (exclDaRISProc) {
 			// Drop processed DataSets from query
@@ -194,7 +194,7 @@ public class SvcReplicateCheck extends PluginService {
 		}
 		if (where!=null) dm.add("where", where);
 
-		dm.add("idx", idx);
+		dm.add("idx", idx[0]);
 		dm.add("size", size);
 		dm.add("pdist", 0);
 		dm.add("action", "get-meta");
@@ -203,14 +203,14 @@ public class SvcReplicateCheck extends PluginService {
 		if (r==null) return false;  
 		Collection<XmlDoc.Element> assets = r.elements("asset");
 		if (assets==null) return false;
-		count += assets.size();
+		count[0] += assets.size();
 
 		// Get the cursor and increment for next time
 		XmlDoc.Element cursor = r.element("cursor");
 		boolean more = !(cursor.booleanValue("total/@complete"));
 		if (more) {
 			Integer next = cursor.intValue("next");
-			idx = next;
+			idx[0] = next;
 		}
 
 		// See if the replicas exist on the peer. 
