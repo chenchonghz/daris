@@ -37,7 +37,9 @@ import arc.mf.plugin.dtype.XmlDocType;
 import arc.mime.NamedMimeType;
 import arc.streams.SizedInputStream;
 import arc.streams.StreamCopy;
+import arc.xml.XmlDoc;
 import arc.xml.XmlDoc.Element;
+import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
 import nig.dicom.util.DicomFileCheck;
 
@@ -66,9 +68,8 @@ public class SvcMyTardisDatasetImport extends PluginService {
 		_defn.add(dataset);
 
 		_defn.add(new Interface.Element("source-mytardis-uri", UrlType.DEFAULT, "The source MyTardis server address."));
-		_defn.add(new Interface.Element("dicom-only", BooleanType.DEFAULT,
-				"Import only data files in DICOM format. All the data in other formats are ignored."));
-
+		_defn.add(new Interface.Element("dicom-ingest", BooleanType.DEFAULT,
+				"Ingest the contained DICOM data files as DaRIS DICOM datasets via DaRIS DICOM server engine. Defaults to true."));
 		_defn.add(new Interface.Element("project", CiteableIdType.DEFAULT,
 				"The citeable id of the DaRIS project to import to.", 1, 1));
 
@@ -100,14 +101,15 @@ public class SvcMyTardisDatasetImport extends PluginService {
 		final String datasetDescription = args.value("dataset/description");
 		final String instrument = args.value("dataset/instrument");
 		final String mytardisUri = args.value("source-mytardis-uri");
-		final boolean dicomOnly = args.booleanValue("dicom-only", false);
+		final boolean dicomIngest = args.booleanValue("dicom-ingest", true);
 		final String projectCid = args.value("project");
 		final String sourceUri = getMyTardisDatasetUri(mytardisUri, expId, datasetId);
 		final PluginService.Input input = inputs.input(0);
 		final boolean async = args.booleanValue("async", true);
+		final boolean datasetExists = datasetExists(executor(), projectCid, expId, expTitle, expDescription, datasetId,
+				datasetDescription, instrument, sourceUri);
 
-		if (datasetExists(executor(), projectCid, expId, expTitle, expDescription, datasetId, datasetDescription,
-				instrument, sourceUri)) {
+		if (datasetExists && !dicomIngest) {
 			try {
 				input.close();
 				input.stream().close();
@@ -124,7 +126,7 @@ public class SvcMyTardisDatasetImport extends PluginService {
 				public void run() {
 					try {
 						importMyTardisDataset(executor(), projectCid, expId, expTitle, expDescription, datasetId,
-								datasetDescription, instrument, sourceUri, input, dicomOnly);
+								datasetDescription, instrument, sourceUri, input, datasetExists, dicomIngest);
 					} catch (Throwable e) {
 						e.printStackTrace(System.out);
 					}
@@ -132,32 +134,36 @@ public class SvcMyTardisDatasetImport extends PluginService {
 			});
 		} else {
 			importMyTardisDataset(executor(), projectCid, expId, expTitle, expDescription, datasetId,
-					datasetDescription, instrument, sourceUri, input, dicomOnly);
+					datasetDescription, instrument, sourceUri, input, datasetExists, dicomIngest);
 		}
 
 	}
 
 	private static void importMyTardisDataset(ServiceExecutor executor, String projectCid, String expId,
 			String expTitle, String expDescription, String datasetId, String datasetDescription, String instrument,
-			String sourceUri, PluginService.Input input, boolean dicomOnly) throws Throwable {
-		File dir = null;
-		if (!dicomOnly) {
-			dir = PluginTask.createTemporaryDirectory();
-		}
+			String sourceUri, PluginService.Input input, boolean datasetExists, boolean dicomIngest) throws Throwable {
+		File dir = PluginTask.createTemporaryDirectory();
 		File dicomDir = PluginTask.createTemporaryDirectory();
 		try {
 			List<File> dicomFiles = new ArrayList<File>();
-			extract(input, dir, dicomDir, dicomFiles);
 
+			// extract the input archive to two directories:
+
+			// 1) all content files, including dicom data, are extracted to dir/
+
+			// 2) all dicom data are extracted to dicomDir/
+			extract(input, dir, dicomDir, dicomFiles);
 			String subjectCid = findOrCreateSubject(executor, projectCid, expId, expTitle, expDescription, datasetId,
 					datasetDescription, instrument, sourceUri);
-			if (dicomOnly) {
-				ingestDicomData(executor, subjectCid, dicomDir, dicomFiles);
-			} else {
+			if (!datasetExists) {
+				// Only create the dataset if it does not exist
 				String studyCid = findOrCreateStudy(executor, subjectCid, expId, expTitle, expDescription, datasetId,
 						datasetDescription, instrument, sourceUri);
 				createDataset(executor, studyCid, expId, expTitle, expDescription, datasetId, datasetDescription,
 						instrument, sourceUri, dir);
+			}
+			if (dicomIngest) {
+				// ingest dicom data
 				ingestDicomData(executor, subjectCid, dicomDir, dicomFiles);
 			}
 		} finally {
@@ -192,37 +198,187 @@ public class SvcMyTardisDatasetImport extends PluginService {
 	}
 
 	private static void ingestDicomData(ServiceExecutor executor, String subjectCid, File dicomDir,
-			List<File> dicomFiles) {
-		// TODO Auto-generated method stub
-
-	}
-
-	private static void createDataset(ServiceExecutor executor, String studyCid, String expId, String expTitle,
-			String expDescription, String datasetId, String datasetDescription, String instrument, String sourceUri,
-			File dir) {
-		// TODO Auto-generated method stub
-
-	}
-
-	private static boolean datasetExists(ServiceExecutor executor, String projectCid, String expId, String expTitle,
-			String expDesc, String datasetId, String datasetDescription, String instrument, String sourceUri)
-					throws Throwable {
-		// TODO:
-		return false;
+			List<File> dicomFiles) throws Throwable {
+		String mimeTypeAAR = "application/arc-archive";
+		File dcmArchive = PluginTask.createTemporaryArchive(dicomDir.getAbsolutePath(), dicomDir, mimeTypeAAR, 0);
+		XmlDocMaker dm = new XmlDocMaker("args");
+		dm.add("engine", "nig.dicom");
+		dm.add("arg", new String[] { "name", "nig.dicom.id.ignore-non-digits" }, "true");
+		dm.add("arg", new String[] { "name", "nig.dicom.subject.create" }, "true");
+		dm.add("arg", new String[] { "name", "nig.dicom.id.citable" }, subjectCid);
+		dm.add("arg", new String[] { "name", "nig.dicom.write.mf-dicom-patient" }, true);
+		dm.add("wait", true);
+		dm.add("type", mimeTypeAAR);
+		InputStream in = PluginTask.deleteOnCloseInputStream(dcmArchive);
+		PluginService.Input input = new PluginService.Input(in, dcmArchive.length(), mimeTypeAAR, null);
+		try {
+			executor.execute("dicom.ingest", dm.root(), new PluginService.Inputs(input), null);
+		} finally {
+			input.close();
+			in.close();
+			Files.deleteIfExists(dcmArchive.toPath());
+		}
 	}
 
 	private static String findOrCreateSubject(ServiceExecutor executor, String projectCid, String expId,
 			String expTitle, String expDesc, String datasetId, String datasetDescription, String instrument,
 			String sourceUri) throws Throwable {
-		// TODO:
-		return null;
+		String methodCid = executor.execute("asset.get", "<args><cid>" + projectCid + "</cid></args>", null, null)
+				.value("asset/meta/daris:pssd-project/method/id");
+		if (methodCid == null) {
+			throw new Exception("No method is set for project " + projectCid);
+		}
+		String subjectCid = executor.execute("asset.query",
+				"<args><where>cid in '" + projectCid
+						+ "' and model='om.pssd.subject' and cid contains (xpath(daris:mytardis-dataset/uri)='"
+						+ sourceUri + "' and model='om.pssd.dataset')</where><action>get-cid</action></args>",
+				null, null).value("cid");
+		if (subjectCid == null) {
+			XmlDocMaker dm = new XmlDocMaker("args");
+			dm.add("pid", projectCid);
+			dm.add("method", methodCid);
+			dm.add("fillin", true);
+			String description = descriptionFor(expId, expTitle, expDesc, datasetId, datasetDescription, instrument,
+					sourceUri);
+			dm.add("description", description);
+			subjectCid = executor.execute("om.pssd.subject.create", dm.root()).value("id");
+		}
+		return subjectCid;
+	}
+
+	private static String descriptionFor(String expId, String expTitle, String expDesc, String datasetId,
+			String datasetDescription, String instrument, String sourceUri) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("mytardis experiment id: ").append(expId).append("\n");
+		if (expTitle != null) {
+			sb.append("mytardis experiment title: ").append(expTitle).append("\n");
+		}
+		if (expDesc != null) {
+			sb.append("mytardis experiment description: ").append(expDesc).append("\n");
+		}
+		sb.append("mytardis dataset id: ").append(datasetId).append("\n");
+		if (datasetDescription != null) {
+			sb.append("mytardis dataset description: ").append(datasetDescription).append("\n");
+		}
+		if (instrument != null) {
+			sb.append("mytardis dataset instrument: ").append(instrument).append("\n");
+		}
+		sb.append("mytardis dataset uri: ").append(sourceUri).append("\n");
+		return sb.toString();
 	}
 
 	private static String findOrCreateStudy(ServiceExecutor executor, String subjectCid, String expId, String expTitle,
 			String expDesc, String datasetId, String datasetDescription, String instrument, String sourceUri)
 					throws Throwable {
-		// TODO
-		return null;
+		String studyCid = executor.execute("asset.query",
+				"<args><where>cid starts with '" + subjectCid
+						+ "' and model='om.pssd.study' and cid contains (model='om.pssd.dataset' and xpath(daris:mytardis-dataset/uri)='"
+						+ sourceUri + "')</where><action>get-cid</action></args>",
+				null, null).value("cid");
+		if (studyCid == null) {
+			String exMethodCid = executor.execute("asset.query",
+					"<args><where>cid in '" + subjectCid + "'</where><action>get-cid</action></args>", null, null)
+					.value("cid");
+			if (exMethodCid == null) {
+				throw new Exception("No ex-method is found in subject " + subjectCid);
+			}
+			// NOTE: pick the first step. We need to improve this when this
+			// service is used for production.
+			String exMethodStep = executor.execute("om.pssd.ex-method.study.step.find",
+					"<args><id>" + exMethodCid + "</id></args>", null, null).value("ex-method/step");
+			if (exMethodStep == null) {
+				throw new Exception("No step is found in ex-method " + exMethodCid);
+			}
+			// create study
+			XmlDocMaker dm = new XmlDocMaker("args");
+			dm.add("pid", exMethodCid);
+			dm.add("step", exMethodStep);
+			if (expTitle != null) {
+				dm.add("name", expTitle);
+			}
+			String description = descriptionFor(expId, expTitle, expDesc, datasetId, datasetDescription, instrument,
+					sourceUri);
+			if (expDesc != null) {
+				dm.add("description", description + "\n\n" + expDesc);
+			} else {
+				dm.add("description", description);
+			}
+			dm.add("fillin", true);
+			dm.push("meta");
+			dm.push("daris:mytardis-experiment");
+			dm.add("id", expId);
+			if (expTitle != null) {
+				dm.add("title", expTitle);
+			}
+			if (expDesc != null) {
+				dm.add("description", expDesc);
+			}
+			dm.pop();
+			dm.pop();
+			studyCid = executor.execute("om.pssd.study.create", dm.root()).value("id");
+		}
+		return studyCid;
+	}
+
+	private static boolean datasetExists(ServiceExecutor executor, String projectCid, String expId, String expTitle,
+			String expDesc, String datasetId, String datasetDescription, String instrument, String sourceUri)
+					throws Throwable {
+		long count = executor.execute("asset.query",
+				"<where>cid starts with '" + projectCid
+						+ "' and model='om.pssd.dataset' and xpath(daris:mytardis-dataset/uri)='" + sourceUri
+						+ "'</where><action>count</action>",
+				null, null).longValue("value", 0);
+		return count > 0;
+	}
+
+	private static String createDataset(ServiceExecutor executor, String studyCid, String expId, String expTitle,
+			String expDescription, String datasetId, String datasetDescription, String instrument, String sourceUri,
+			File dir) throws Throwable {
+		XmlDoc.Element studyAE = executor.execute("asset.get", "<args><cid>" + studyCid + "</cid></args>", null, null)
+				.element("element");
+		String exMethodCid = studyAE.value("meta/daris:pssd-study/method");
+		String exMethodStep = studyAE.value("meta/daris:pssd-study/method/@step");
+
+		XmlDocMaker dm = new XmlDocMaker("args");
+		dm.add("pid", studyCid);
+		dm.push("method");
+		dm.add("id", exMethodCid);
+		dm.add("step", exMethodStep);
+		dm.pop();
+		if (datasetDescription != null) {
+			dm.add("name", datasetDescription.length() > 32 ? datasetDescription.substring(0, 32) : datasetDescription);
+		}
+		String description = descriptionFor(expId, expTitle, expDescription, datasetId, datasetDescription, instrument,
+				sourceUri);
+		dm.add("description", description);
+		dm.add("fillin", true);
+		String filename = "mytardis-dataset-" + datasetId + ".zip";
+		dm.add("filename", filename);
+		dm.push("meta");
+		dm.push("daris:mytardis-dataset");
+		dm.add("id", datasetId);
+		if (datasetDescription != null) {
+			dm.add("description", datasetDescription);
+		}
+		if (instrument != null) {
+			dm.add("instrument", instrument);
+		}
+		dm.add("uri", sourceUri);
+		dm.pop();
+		dm.pop();
+		String arcMimeType = "application/zip";
+		File arcFile = PluginTask.createTemporaryArchive(dir.getAbsolutePath(), dir, arcMimeType, 0);
+		InputStream in = PluginTask.deleteOnCloseInputStream(arcFile);
+		PluginService.Input input = new PluginService.Input(in, arcFile.length(), arcMimeType, filename);
+		try {
+			return executor
+					.execute("om.pssd.dataset.derivation.create", dm.root(), new PluginService.Inputs(input), null)
+					.value("id");
+		} finally {
+			input.close();
+			in.close();
+			Files.deleteIfExists(arcFile.toPath());
+		}
 	}
 
 	private static void extract(PluginService.Input input, File dir, File dicomDir, List<File> dicomFiles)
