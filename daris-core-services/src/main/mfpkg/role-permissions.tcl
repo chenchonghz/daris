@@ -37,8 +37,7 @@ actor.grant :name  daris:pssd.model.doc.user :type role :perm < :resource -type 
 createRole    daris:pssd.model.user
 
 grantRoleReadAccessServices   daris:pssd.model.user \
-    { daris.project.metadata.harvest \
-      om.pssd.* \
+    { om.pssd.* \
       daris.* \
       nig.* \
       asset.model.* \
