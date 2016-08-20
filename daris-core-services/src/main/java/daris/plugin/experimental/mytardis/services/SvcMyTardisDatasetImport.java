@@ -22,7 +22,6 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.io.output.NullOutputStream;
 
 import arc.archive.ArchiveInput;
-import arc.archive.ArchiveOutput;
 import arc.archive.ArchiveRegistry;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.PluginTask;
@@ -67,14 +66,16 @@ public class SvcMyTardisDatasetImport extends PluginService {
 		dataset.add(new Interface.Element("instrument", StringType.DEFAULT, "Instrument.", 0, 1));
 		_defn.add(dataset);
 
-		_defn.add(new Interface.Element("source-mytardis-uri", UrlType.DEFAULT, "The source MyTardis server address."));
+		_defn.add(new Interface.Element("source-mytardis-uri", UrlType.DEFAULT, "The source MyTardis server address.",
+				1, 1));
 		_defn.add(new Interface.Element("dicom-ingest", BooleanType.DEFAULT,
-				"Ingest the contained DICOM data files as DaRIS DICOM datasets via DaRIS DICOM server engine. Defaults to true."));
+				"Ingest the contained DICOM data files as DaRIS DICOM datasets via DaRIS DICOM server engine. Defaults to true.",
+				0, 1));
 		_defn.add(new Interface.Element("project", CiteableIdType.DEFAULT,
 				"The citeable id of the DaRIS project to import to.", 1, 1));
 
 		_defn.add(new Interface.Element("async", BooleanType.DEFAULT,
-				"Run the service asynchronously. Defaults to true."));
+				"Run the service asynchronously. Defaults to true.", 0, 1));
 	}
 
 	@Override
@@ -324,9 +325,9 @@ public class SvcMyTardisDatasetImport extends PluginService {
 			String expDesc, String datasetId, String datasetDescription, String instrument, String sourceUri)
 					throws Throwable {
 		long count = executor.execute("asset.query",
-				"<where>cid starts with '" + projectCid
+				"<args><where>cid starts with '" + projectCid
 						+ "' and model='om.pssd.dataset' and xpath(daris:mytardis-dataset/uri)='" + sourceUri
-						+ "'</where><action>count</action>",
+						+ "'</where><action>count</action></args>",
 				null, null).longValue("value", 0);
 		return count > 0;
 	}
@@ -335,7 +336,7 @@ public class SvcMyTardisDatasetImport extends PluginService {
 			String expDescription, String datasetId, String datasetDescription, String instrument, String sourceUri,
 			File dir) throws Throwable {
 		XmlDoc.Element studyAE = executor.execute("asset.get", "<args><cid>" + studyCid + "</cid></args>", null, null)
-				.element("element");
+				.element("asset");
 		String exMethodCid = studyAE.value("meta/daris:pssd-study/method");
 		String exMethodStep = studyAE.value("meta/daris:pssd-study/method/@step");
 
@@ -366,7 +367,7 @@ public class SvcMyTardisDatasetImport extends PluginService {
 		dm.add("uri", sourceUri);
 		dm.pop();
 		dm.pop();
-		String arcMimeType = "application/zip";
+		String arcMimeType = "application/arc-archive";
 		File arcFile = PluginTask.createTemporaryArchive(dir.getAbsolutePath(), dir, arcMimeType, 0);
 		InputStream in = PluginTask.deleteOnCloseInputStream(arcFile);
 		PluginService.Input input = new PluginService.Input(in, arcFile.length(), arcMimeType, filename);
@@ -537,45 +538,6 @@ public class SvcMyTardisDatasetImport extends PluginService {
 			StreamCopy.copy(in, out);
 		} finally {
 			out.close();
-		}
-	}
-
-	static void aar(File dir, File output, int compressionLevel) throws Throwable {
-		archive(dir, output, "application/arc-archive", compressionLevel);
-	}
-
-	static void zip(File dir, File output, int compressionLevel) throws Throwable {
-		archive(dir, output, "application/zip", compressionLevel);
-	}
-
-	private static void archive(File dir, File output, String archiveMimeType, int compressionLevel) throws Throwable {
-		ArchiveOutput ao = ArchiveRegistry.createOutput(output, archiveMimeType, compressionLevel, null);
-		try {
-			File[] files = dir.listFiles();
-			for (File f : files) {
-				addToArchive(ao, f, dir);
-			}
-		} finally {
-			ao.close();
-		}
-	}
-
-	private static void addToArchive(ArchiveOutput ao, File file, File baseDir) throws Throwable {
-		if (file.isDirectory()) {
-			File[] fs = file.listFiles();
-			for (File f : fs) {
-				addToArchive(ao, f, baseDir);
-			}
-		} else {
-			String name = file.getAbsolutePath();
-			String base = baseDir.getAbsolutePath();
-			if (name.startsWith(base)) {
-				name = name.substring(0, base.length());
-			}
-			while (name.startsWith("/")) {
-				name = name.substring(1);
-			}
-			ao.add(null, name, file);
 		}
 	}
 
