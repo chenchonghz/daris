@@ -62,9 +62,9 @@ public class SvcMyTardisDatasetImport extends PluginService {
 
 		Interface.Element dataset = new Interface.Element("dataset", XmlDocType.DEFAULT,
 				"MyTardis dataset information.", 1, 1);
-		experiment.add(new Interface.Element("id", LongType.POSITIVE_ONE, "MyTardis dataset id.", 1, 1));
-		experiment.add(new Interface.Element("description", StringType.DEFAULT, "MyTardis dataset description.", 0, 1));
-		experiment.add(new Interface.Element("instrument", StringType.DEFAULT, "Instrument.", 0, 1));
+		dataset.add(new Interface.Element("id", LongType.POSITIVE_ONE, "MyTardis dataset id.", 1, 1));
+		dataset.add(new Interface.Element("description", StringType.DEFAULT, "MyTardis dataset description.", 0, 1));
+		dataset.add(new Interface.Element("instrument", StringType.DEFAULT, "Instrument.", 0, 1));
 		_defn.add(dataset);
 
 		_defn.add(new Interface.Element("source-mytardis-uri", UrlType.DEFAULT, "The source MyTardis server address."));

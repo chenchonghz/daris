@@ -159,6 +159,7 @@ if { $exists == "false" } {
 source doctypes.tcl
 source doctypes-dicom.tcl
 source doctypes-harvest.tcl
+source doctypes-mytardis.tcl
 
 # ============================================================================
 # Setup Roles and Permissions
