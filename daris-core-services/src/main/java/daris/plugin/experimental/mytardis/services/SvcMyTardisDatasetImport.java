@@ -16,6 +16,7 @@ import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.io.FileUtils;
 
 import arc.archive.ArchiveExtractor;
 import arc.archive.ArchiveInput;
@@ -196,7 +197,13 @@ public class SvcMyTardisDatasetImport extends PluginService {
 				}
 			}
 		} finally {
-			deleteDirectory(dir);
+			try {
+				FileUtils.forceDelete(dir);
+			} catch (Throwable e) {
+				if(FileUtils.deleteQuietly(dir)){
+					e.printStackTrace(System.out);
+				}
+			}
 		}
 	}
 
@@ -275,31 +282,6 @@ public class SvcMyTardisDatasetImport extends PluginService {
 		} finally {
 			input.close();
 		}
-	}
-
-	private static void deleteDirectory(File dir) throws Throwable {
-		if (dir == null || !dir.exists() || !dir.isDirectory()) {
-			return;
-		}
-		Path path = dir.toPath();
-		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				Files.delete(file);
-				return FileVisitResult.CONTINUE;
-			}
-
-			@Override
-			public FileVisitResult postVisitDirectory(Path dir, IOException e) throws IOException {
-				if (e == null) {
-					Files.delete(dir);
-					return FileVisitResult.CONTINUE;
-				} else {
-					throw e;
-				}
-			}
-
-		});
 	}
 
 	private static String findOrCreateSubject(ServiceExecutor executor, String projectCid, String expId,
