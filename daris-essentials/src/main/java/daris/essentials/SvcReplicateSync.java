@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import nig.mf.pssd.plugin.util.DistributedAssetUtil;
 import arc.mf.plugin.*;
@@ -65,7 +66,7 @@ public class SvcReplicateSync extends PluginService {
 		String size = args.stringValue("size", "10000");
 		Integer t = args.intValue("idx", 1);
 		int[] idx = new int[]{t};
-		
+
 		Date date = new Date();
 		String dateTime = date.toString();     // Just used to tag message in log file
 
@@ -222,6 +223,9 @@ public class SvcReplicateSync extends PluginService {
 			log(dateTime,"   nig.replicate.synchronize:  Find replicas");
 		}
 
+		long time = System.nanoTime();
+//		System.out.println("nano time="+time);
+
 		XmlDocMaker dm = new XmlDocMaker("args");
 		String query = "(rid in '" + uuidLocal + "')";
 		if (where!=null) query += " and " + where;
@@ -236,6 +240,9 @@ public class SvcReplicateSync extends PluginService {
 		dm.add("xpath", "cid");
 		dm.add("xpath", "type");
 		XmlDoc.Element r = executor.execute(srPeer, "asset.query", dm.root());
+		if (dbg) {
+			log (dateTime, "   nig.replicate.sycnhronize: asset.query on peer took " + duration(time));
+		}
 		if (r==null) return false;  
 		Collection<XmlDoc.Element> rAssets = r.elements("asset");
 		if (rAssets==null) return false;
@@ -251,6 +258,8 @@ public class SvcReplicateSync extends PluginService {
 
 		// See if the primaries for the found replicas exist on the local server
 		if (dbg) log(dateTime, "  Look for primaries matching replicas.");
+		time = System.nanoTime();
+//		System.out.println("nano time="+time);
 
 		dm = new XmlDocMaker("args");
 		for (XmlDoc.Element rAsset : rAssets) {
@@ -260,10 +269,16 @@ public class SvcReplicateSync extends PluginService {
 		}
 		XmlDoc.Element r2 = executor.execute("asset.exists", dm.root());       // Local execution only
 		Collection<XmlDoc.Element> lAssets = r2.elements("exists");
+		if (dbg) {
+			log (dateTime, "   nig.replicate.sycnhronize: asset.exists on local took " + duration(time));
+		}
 
 		// Build a list of  assets to destroy on the remote peer.   I.e. the ones that don't exist
 		// on the local server but do exist on the peer
 		if (dbg) log(dateTime,"   nig.replicate.synchronize: Check list for missing primaries.");
+		time = System.nanoTime();
+//		System.out.println("nano time="+time);
+
 		Iterator<XmlDoc.Element> rIt = rAssets.iterator();
 		int nExtra = 0;
 		for (XmlDoc.Element lAsset : lAssets) {
@@ -301,13 +316,24 @@ public class SvcReplicateSync extends PluginService {
 			}
 		}
 		if (dbg) {
+			log (dateTime, "   nig.replicate.sycnhronize: checking asset.exists for true/false on local took " + duration(time));
+
 			log(dateTime,"   nig.replicate.synchronize: Checked " + rAssets.size() + " remote assets of which " + nExtra + " were not found on the primary");
 		}
 		//
 		return more;
 	}
-	
+
 	private void log (String dateTime, String message) {
 		System.out.println(dateTime + " : " + message);
 	}
+
+	private String duration (long lastTime) throws Throwable {
+		long difference = System.nanoTime() - lastTime;
+		return String.format("%d min, %d sec",
+						TimeUnit.NANOSECONDS.toHours(difference),
+						TimeUnit.NANOSECONDS.toSeconds(difference) -
+						TimeUnit.MINUTES.toSeconds(TimeUnit.NANOSECONDS.toMinutes(difference)));
+	}
 }
+
