@@ -334,6 +334,9 @@ public class PSSDPluginModule implements HttpServletPluginModule {
 		_services.add(new daris.plugin.experimental.xnat.services.SvcXnatScanDicomIngest());
 		_services.add(new daris.plugin.experimental.xnat.services.SvcXnatScanDownload());
 
+		// MyTardis dataset import
+		_services.add(new daris.plugin.experimental.mytardis.services.SvcMyTardisDatasetImport());
+		
 		// Register a DICOM handler specific to NIG.
 		DicomAssetEngineRegistry.register(new NIGDicomAssetEngineFactory());
 
