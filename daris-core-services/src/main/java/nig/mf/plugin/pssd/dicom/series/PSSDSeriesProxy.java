@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 
 import nig.mf.plugin.pssd.dicom.DICOMMetaUtil;
+import nig.mf.plugin.pssd.dicom.DicomElements;
 import nig.mf.plugin.pssd.dicom.study.PSSDStudyProxy;
 import nig.mf.plugin.pssd.dicom.study.StudyMetadata;
 import arc.mf.plugin.PluginService;
@@ -170,6 +171,14 @@ public class PSSDSeriesProxy extends SeriesProxy {
 				XmlDoc.Element r = executor.execute("om.pssd.dataset.derivation.create",dm.root(),ins,null);
 				_series = r.value("id");
 				_createdSeries = true;
+				
+				// Extract additional meta-data that is not contained
+				// in mf-dicom-series from the DICOM header
+				try {
+					addSpecificDICOMMeta(executor, _series);
+				} catch (Throwable t) {
+					// Don't fail the DICOM server if this service fails for some reason
+				}
 			} else {
 				dm.add("id",_series);
 				executor.execute("om.pssd.dataset.derivation.update",dm.root(),ins,null);
@@ -180,6 +189,20 @@ public class PSSDSeriesProxy extends SeriesProxy {
 
 		// Interface says this should be the id of the asset...
 		return 0;
+	}
+	
+	/**
+	 * Fetch additional desired DICOM elements from the header into indexed meta-data
+	 * @param executor
+	 * @param cid
+	 * @throws Throwable
+	 */
+	private void addSpecificDICOMMeta (ServiceExecutor executor, String cid) throws Throwable {
+		XmlDocMaker dm = new XmlDocMaker("args");
+		dm.add("cid", cid);		
+		// Accession Number
+		dm.add("tag", "00080050");           // Accession Number
+		executor.execute("dicom.metadata.populate", dm.root());
 	}
 	
 	public void destroyAsset(ServiceExecutor executor) throws Throwable {

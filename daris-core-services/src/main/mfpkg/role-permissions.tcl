@@ -18,7 +18,7 @@ grantRoleReadWriteAccessDocTypes daris:pssd.model.doc.user \
       daris:pssd-publications daris:pssd-related-services \
       daris:pssd-role-member-registry \
       daris:pssd-dicom-server-registry \
-      daris:pssd-shoppingcart-layout-pattern daris:pssd-dicom-ingest }
+      daris:pssd-shoppingcart-layout-pattern daris:pssd-dicom-ingest daris:dicom-dataset}
 
 # Revoke excessively permissive access to all document namespaces from earlier versions.
 actor.revoke :type role :name daris:pssd.model.doc.user :perm < :access ACCESS :resource -type document:namespace "*" >
@@ -311,6 +311,7 @@ grantRolePerms daris:pssd.dicom-ingest \
       { service citeable.named.id.create           MODIFY } \
       { service system.session.self.describe       ACCESS } \
       { service server.identity                    ACCESS } \
+      { service dicom.metadata.populate            MODIFY } \
       { document daris:pssd-role-member-registry   ACCESS } \
     }
     
