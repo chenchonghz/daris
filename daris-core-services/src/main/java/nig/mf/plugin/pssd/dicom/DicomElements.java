@@ -35,6 +35,7 @@ public class DicomElements {
 	public static final DataElementTag STUDY_DESCRIPTION = new DataElementTag(0x0008,0x1030);
 	public static final DataElementTag STUDY_DATE = new DataElementTag(0x0008,0x0020);
 	public static final DataElementTag STUDY_TIME = new DataElementTag(0x0008,0x0030);
+	public static final DataElementTag ACCESSION_NUMBER = new DataElementTag(0x0008,0x0050);
 	public static final DataElementTag SERIES_UID = new DataElementTag(0x0020,0x000E);
 	public static final DataElementTag SERIES_NUMBER = new DataElementTag(0x0020,0x0011);
 	public static final DataElementTag SERIES_DESCRIPTION = new DataElementTag(0x0008,0x103E);
@@ -46,7 +47,7 @@ public class DicomElements {
 	public static final DataElementTag ACQUISITION_NB = new DataElementTag(0x0020,0x0012);
 	public static final DataElementTag INSTANCE_NB = new DataElementTag(0x0020,0x0013);
 	public static final DataElementTag IMAGE_COMMENT = new DataElementTag(0x0020,0x4000);
-	
+		
 	public static final DataElementTag EQUIPMENT_MANUFACTURER = new DataElementTag(0x0008,0x0070);
 	public static final DataElementTag EQUIPMENT_MODEL = new DataElementTag(0x0008,0x1090);
 
