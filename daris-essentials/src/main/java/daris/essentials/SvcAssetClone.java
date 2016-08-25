@@ -7,9 +7,9 @@ import arc.mf.plugin.PluginService;
 import arc.mf.plugin.PluginService.Interface.Element;
 import arc.mf.plugin.ServiceExecutor;
 import arc.mf.plugin.dtype.AssetType;
+import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.StringType;
 import arc.xml.XmlDoc;
-import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
 
 /**
@@ -25,6 +25,7 @@ public class SvcAssetClone extends PluginService {
 		_defn = new Interface();
 		_defn.add(new Element("id", AssetType.DEFAULT, "Asset ID to clone.", 0, Integer.MAX_VALUE));
 		_defn.add(new Element("namespace", StringType.DEFAULT, "Namespace to clone assets into.", 1, 1));
+		_defn.add(new Element("reference", BooleanType.DEFAULT, "Clone any content by reference (default) instead of copy.", 0, 1));
 
 	}
 
@@ -33,7 +34,7 @@ public class SvcAssetClone extends PluginService {
 	}
 
 	public String description() {
-		return "Clones assets. Any content is set by reference back to the original asset.";
+		return "Clones assets. The content can be cloned by copy or reference.";
 	}
 
 	public Interface definition() {
@@ -48,10 +49,11 @@ public class SvcAssetClone extends PluginService {
 
 		Collection<String> ids = args.values("id");
 		String namespace = args.value("namespace");
-		clone (executor(), ids, namespace, w);
+		Boolean doRef = args.booleanValue("reference",  true);
+		clone (executor(), ids, namespace, doRef, w);
 	}
 	
-	private  void clone (ServiceExecutor executor, Collection<String> ids, String namespace, XmlWriter w) throws Throwable {
+	private  void clone (ServiceExecutor executor, Collection<String> ids, String namespace, Boolean doRef, XmlWriter w) throws Throwable {
 		
 		// CHeck destination namespace exists
 		if (!AssetUtil.assetNameSpaceExists(executor, namespace)) {
@@ -60,7 +62,7 @@ public class SvcAssetClone extends PluginService {
 		
 		// Iterate
 		for (String id : ids) {
-			String t = AssetUtil.cloneAsset (executor, id, namespace, true);
+			String t = AssetUtil.cloneAsset (executor, id, namespace, doRef);
 			w.add("id", new String[]{"cloned", id}, t);
 		}
 	}
