@@ -386,16 +386,20 @@ public class AssetUtil {
 		dm.add("clone", new String[]{"content", content, "meta", "true", "model", "true", "templates", "true","version", "0"}, id);
 		XmlDoc.Element r = executor.execute("asset.create", dm.root());
 		String idNew = r.value("id");
+		
+		// If we cloned the content by copy we are done.
 		if (!byReference) return idNew;
 		
-		// Now set the content by reference
+		// Now set the asset content by reference if there is any
 		XmlDoc.Element asset = AssetUtil.getAsset(executor, null, id);
+		if (asset.element("asset/content")==null) return idNew;
 		
 		// Check whether the content is in DB or File System.
+		// We can't handle it if its in the DB
 		String contentUrl = asset.value("asset/content/url");
 		String contentType = asset.value("asset/content/type");
 
-		if (contentUrl == null && asset.element("asset/content") != null) {
+		if (contentUrl == null) {
 			throw new Exception(
 					"Content of asset(id="
 							+ id
