@@ -347,6 +347,71 @@ public class AssetUtil {
 		return r.booleanValue("exists");
 	}
 
+	
+	/**
+	 * DOes an asset exist on the local server?
+	 * 
+	 * @param executor
+	 * @param id
+	 * @param citeable Is the id a citeable ID 
+	 * @return
+	 * @throws Throwable
+	 */
+	public static boolean assetNameSpaceExists(ServiceExecutor executor, String namespace) throws Throwable {
+
+		XmlDocMaker dm = new XmlDocMaker("args");
+		dm.add("namespace", namespace);
+		XmlDoc.Element r = executor.execute("asset.namespace.exists", dm.root());
+		return r.booleanValue("exists");
+	}
+	
+	
+	/**
+	 * Clone asset by reference or copy
+	 * 
+	 * @param executor
+	 * @param id
+	 * @param namespace
+	 * @param byReference
+	 * @return
+	 * @throws Throwable
+	 */
+	public static String cloneAsset (ServiceExecutor executor, String id, String namespace, Boolean byReference) throws Throwable {
+
+		// CLone the asset 
+		String  content = "true";
+		if (byReference) content = "false";
+		XmlDocMaker dm = new XmlDocMaker("args");
+		dm.add("namespace", namespace);
+		dm.add("clone", new String[]{"content", content, "meta", "true", "model", "true", "templates", "true","version", "0"}, id);
+		XmlDoc.Element r = executor.execute("asset.create", dm.root());
+		String idNew = r.value("id");
+		if (!byReference) return idNew;
+		
+		// Now set the content by reference
+		XmlDoc.Element asset = AssetUtil.getAsset(executor, null, id);
+		
+		// Check whether the content is in DB or File System.
+		String contentUrl = asset.value("asset/content/url");
+		String contentType = asset.value("asset/content/type");
+
+		if (contentUrl == null && asset.element("asset/content") != null) {
+			throw new Exception(
+					"Content of asset(id="
+							+ id
+							+ ") is in the database and cannot be cloned by reference.");
+		}
+
+		// Set content by reference	
+		dm = new XmlDocMaker("args");
+		dm.add("id", idNew);
+		dm.add("url", new String[] { "by", "reference" }, contentUrl);
+		dm.add("ctype", contentType);
+		executor.execute("asset.set", dm.root());
+		//	
+		return idNew;
+	}
+	
 	public static String getNamespace(ServiceExecutor executor, String id,
 			String proute) throws Throwable {
 
