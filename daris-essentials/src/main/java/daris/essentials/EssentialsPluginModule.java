@@ -24,6 +24,7 @@ public class EssentialsPluginModule implements PluginModule {
 
         _svs.add(new SvcActorsHaveRole());
         _svs.add(new SvcAssetCidGet());
+        _svs.add(new SvcAssetClone());
         _svs.add(new SvcAssetDMFGet());
         _svs.add(new SvcAssetDMFPut());
         _svs.add(new SvcAssetCheck());
