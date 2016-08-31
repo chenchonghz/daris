@@ -241,7 +241,7 @@ public class SvcReplicateSync extends PluginService {
 		dm.add("xpath", "type");
 		XmlDoc.Element r = executor.execute(srPeer, "asset.query", dm.root());
 		if (dbg) {
-			log (dateTime, "   nig.replicate.sycnhronize: asset.query on peer took " + duration(time));
+//			log (dateTime, "   nig.replicate.sycnhronize: asset.query on peer took " + duration(time));
 		}
 		if (r==null) return false;  
 		Collection<XmlDoc.Element> rAssets = r.elements("asset");
@@ -316,7 +316,7 @@ public class SvcReplicateSync extends PluginService {
 			}
 		}
 		if (dbg) {
-			log (dateTime, "   nig.replicate.sycnhronize: checking asset.exists for true/false on local took " + duration(time));
+//			log (dateTime, "   nig.replicate.sycnhronize: checking asset.exists for true/false on local took " + duration(time));
 
 			log(dateTime,"   nig.replicate.synchronize: Checked " + rAssets.size() + " remote assets of which " + nExtra + " were not found on the primary");
 		}
