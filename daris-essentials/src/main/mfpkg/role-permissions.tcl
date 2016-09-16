@@ -118,7 +118,7 @@ authorization.role.create :ifexists ignore :role daris:essentials.administrator
 # grant daris:basic-user role to daris:essentials.administrator
 actor.grant :name daris:essentials.administrator :type role :role -type role daris:basic-user
 
-# grant access to (administrative) services
+# grant access to (administrative) services by granting all
 grant_role_service_access daris:essentials.administrator { dicom.* nig.* } ADMINISTER 
 
 # ============================================================================
