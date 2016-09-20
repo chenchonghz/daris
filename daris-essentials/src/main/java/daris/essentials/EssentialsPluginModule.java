@@ -28,6 +28,8 @@ public class EssentialsPluginModule implements PluginModule {
         _svs.add(new SvcAssetDMFGet());
         _svs.add(new SvcAssetDMFPut());
         _svs.add(new SvcAssetCheck());
+        _svs.add(new SvcAssetContentChecksumGenerate());
+        _svs.add(new SvcAssetContentStringReplace());
         _svs.add(new SvcAssetDocCopy());
         _svs.add(new SvcAssetDocRemove());
         _svs.add(new SvcAssetDocElementCopy());
@@ -45,7 +47,7 @@ public class EssentialsPluginModule implements PluginModule {
         //
         _svs.add(new SvcNameSpacesChildDestroy());
         _svs.add(new SvcReplicateSync());
-//        _svs.add(new SvcReplicateSyncTest());
+        // _svs.add(new SvcReplicateSyncTest());
         _svs.add(new SvcReplicateCheck());
         _svs.add(new SvcReplicateNameSpaceCheck());
 
@@ -53,12 +55,12 @@ public class EssentialsPluginModule implements PluginModule {
         _svs.add(new SvcDICOMMetadataCSVExport());
         _svs.add(new SvcDICOMMetadataPopulate());
         _svs.add(new SvcDICOMModelFix());
-//        _svs.add(new SvcDICOMSendEss());
+        // _svs.add(new SvcDICOMSendEss());
         _svs.add(new SvcDICOMStudyFind());
         _svs.add(new SvcDICOMMetaGrab());
         _svs.add(new SvcDICOMHeaderEdit());
         _svs.add(new SvcDICOMDestroy());
-//        _svs.add(new SvcDarisDicomSend());
+        // _svs.add(new SvcDarisDicomSend());
         _svs.add(new SvcDicomDownload());
         //
         _svs.add(new SvcSecureWalletKeyEntryGenerate());
