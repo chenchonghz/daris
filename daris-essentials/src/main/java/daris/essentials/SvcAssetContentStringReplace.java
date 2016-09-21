@@ -53,7 +53,7 @@ public class SvcAssetContentStringReplace extends PluginService {
 
     @Override
     public String description() {
-        return "Replaces each substring of the string content of the specified asset that matches the given regular expression (pattern) with the given replacement.";
+        return "Replaces each substring of the string content of the specified asset that matches the given regular expression (pattern) with the given replacement. Note: it can only process the file size less than 64KB, otherwise exception is thrown.";
     }
 
     @Override
