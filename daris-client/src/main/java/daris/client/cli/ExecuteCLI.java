@@ -847,6 +847,8 @@ public class ExecuteCLI {
             System.out.println(
                     "    --mf.transport <transport>       The Mediaflux server transport. Can be http, https or tcp/ip.");
             System.out.println(
+                    "    --mf.app <app>                   The context application name if applicable.");
+            System.out.println(
                     "    --mf.sid <sid>                   The Mediaflux session code (or the file contains the session code). For execute command only.");
             System.out.println(
                     "    --mf.token <token>               The Mediaflux secure identity token. For execute command only.");
