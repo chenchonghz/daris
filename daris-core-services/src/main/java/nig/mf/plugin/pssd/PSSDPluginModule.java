@@ -169,6 +169,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
 		_services.add(new SvcDataSetMove());
 		_services.add(new SvcDataSetCount());
 		_services.add(new SvcDatasetNameGrab());
+		_services.add(new SvcDatasetNameGrabFromFileName());
 		_services.add(new SvcDatasetDescriptionGrab());
 		_services.add(new SvcDataSetDerivationFind());
 		_services.add(new SvcDataSetClone());
