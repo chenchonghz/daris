@@ -36,6 +36,7 @@ public class EssentialsPluginModule implements PluginModule {
         _svs.add(new SvcAssetDocElementRemove());
         _svs.add(new SvcAssetDocElementRename());
         _svs.add(new SvcAssetDocElementReplace());
+        _svs.add(new SvcAssetDocTypeDictionaryReplace());
         _svs.add(new SvcAssetDocTypeNameReplace());
         _svs.add(new SvcAssetDocElementDateFix());
         _svs.add(new SvcAssetDocNamespaceReplace());
