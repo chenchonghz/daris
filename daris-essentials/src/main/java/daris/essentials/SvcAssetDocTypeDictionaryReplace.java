@@ -47,9 +47,18 @@ public class SvcAssetDocTypeDictionaryReplace extends PluginService {
         String type = args.value("type");
         String dictionary = args.value("dictionary");
         String newDictionary = args.value("new-dictionary");
+        checkExists (executor(), newDictionary);
         replaceDictionary(executor(), type, dictionary, newDictionary);
     }
-
+    
+    public static void checkExists (ServiceExecutor executor, String name) throws Throwable {
+    	XmlDocMaker dm = new XmlDocMaker("args");
+    	dm.add("name", name);
+    	if (!executor.execute("dictionary.exists", dm.root()).booleanValue("exists")) { 
+    		throw new Exception ("The dictionary '" + name + "' does not exist");
+    	}
+    }
+    
     public static void replaceDictionary(ServiceExecutor executor, String type,
             String dictionary, String newDictionary) throws Throwable {
         XmlDoc.Element te = executor
