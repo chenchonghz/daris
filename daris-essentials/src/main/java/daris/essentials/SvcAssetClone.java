@@ -14,7 +14,7 @@ import arc.xml.XmlWriter;
 
 /**
  * 
- * @author Wilson Liu
+ * @author Neil Killeen
  *
  */
 public class SvcAssetClone extends PluginService {
