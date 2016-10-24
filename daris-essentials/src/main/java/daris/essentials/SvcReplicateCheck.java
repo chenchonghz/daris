@@ -31,6 +31,7 @@ public class SvcReplicateCheck extends PluginService {
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
 		_defn.add(new Interface.Element("include-destroyed", BooleanType.DEFAULT, "Include soft destroyed assets (so don't include soft destroy selection in the where predicate. Default to false.", 0, 1));
+		_defn.add(new Interface.Element("list", BooleanType.DEFAULT, "List all the IDs of assets to be replicated. Default to false.", 0, 1));
 		_defn.add(new Interface.Element("rep-inc", IntegerType.DEFAULT, "When debug is true, messages are written to the server log. This parameter specifies the increment to report that assets have been replicated.  Defaults to 1000. ", 0, 1));
 	}
 	public String name() {
@@ -76,6 +77,7 @@ public class SvcReplicateCheck extends PluginService {
 		Boolean exclDaRISProc = args.booleanValue("exclude-daris-proc", false);
 		Boolean useIndexes = args.booleanValue("use-indexes", true);
 		Boolean dbg = args.booleanValue("debug", false);
+		Boolean list = args.booleanValue("list", false);
 		Boolean includeDestroyed = args.booleanValue("include-destroyed", false);
 		Integer repInc = args.intValue("rep-inc", 1000);
 
@@ -97,7 +99,7 @@ public class SvcReplicateCheck extends PluginService {
 		while (more) {
 			more = find (executor(),  dateTime, where, peer, sr, uuidLocal, size, 
 					assetIDs, checkAsset, exclDaRISProc, useIndexes, 
-					dbg,  includeDestroyed, idx, count, w);
+					dbg,  list, includeDestroyed, idx, count, w);
 			if (dbg) {
 				log(dateTime, "nig.replicate.check : checking for abort \n");
 			}
@@ -170,7 +172,7 @@ public class SvcReplicateCheck extends PluginService {
 
 	private boolean find (ServiceExecutor executor,  String dateTime, String where, String peer, ServerRoute sr, String uuidLocal, String size, 
 			Vector<String> assetList, Boolean checkAsset, Boolean exclDaRISProc, 
-			Boolean useIndexes, Boolean dbg,
+			Boolean useIndexes, Boolean dbg, Boolean list,
 			Boolean includeDestroyed, int[] idx, int[] count, XmlWriter w)	throws Throwable {
 
 		// Find local  assets  with the given query. We work through the cursor else
@@ -258,7 +260,7 @@ public class SvcReplicateCheck extends PluginService {
 			 */
 
 			if (result.booleanValue()==false) {
-				w.add("id", new String[]{"exists", "false"},  primaryID);
+				if (list) w.add("id", new String[]{"exists", "false"},  primaryID);
 				assetList.add(primaryID);
 			} else {
 
