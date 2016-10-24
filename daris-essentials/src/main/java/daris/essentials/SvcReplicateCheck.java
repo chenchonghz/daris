@@ -201,6 +201,10 @@ public class SvcReplicateCheck extends PluginService {
 		dm.add("pdist", 0);
 		dm.add("action", "get-meta");
 		dm.add("use-indexes", useIndexes);
+		if (dbg) {
+			log(dateTime, "   nig.replicate.check : query string is '" + where + "'");
+
+		}
 		XmlDoc.Element r = executor().execute("asset.query", dm.root());
 		if (r==null) return false;  
 		Collection<XmlDoc.Element> assets = r.elements("asset");
@@ -283,12 +287,20 @@ public class SvcReplicateCheck extends PluginService {
 					String cidRep = remoteAsset.value("asset/cid");            // Same for primary and replica
 					if (dbg) {
 						log(dateTime, "      nig.replicate.check : mtimes=" + mtime + ", " + mtimeRep);
-						log(dateTime, "      nig.replicate.check : sizes =" + csize + ", " + csizeRep);
+						if (csize!=null) log(dateTime, "      nig.replicate.check : sizes =" + csize + ", " + csizeRep);
 					}
-					if (mtime.after(mtimeRep) || !csize.equals(csizeRep)) {
-						w.add("id", new String[]{"exists", "true", "cid", cidRep, "mtime-primary", mtime.toString(), "mtime-replica", mtimeRep.toString(),
-								"csize-primary", csize, "csize-replica", csizeRep},  primaryID);
-						assetList.add(primaryID);	
+					if (csize!=null &&csizeRep!=null) {
+						if (mtime.after(mtimeRep) || !csize.equals(csizeRep)) {
+							w.add("id", new String[]{"exists", "true", "cid", cidRep, "mtime-primary", mtime.toString(), "mtime-replica", mtimeRep.toString(),
+									"csize-primary", csize, "csize-replica", csizeRep},  primaryID);
+							assetList.add(primaryID);	
+						}
+					} else {
+						if (mtime.after(mtimeRep)) {
+							w.add("id", new String[]{"exists", "true", "cid", cidRep, "mtime-primary", mtime.toString(), "mtime-replica", mtimeRep.toString()},
+									primaryID);
+							assetList.add(primaryID);	
+						}
 					}
 				}
 			}
