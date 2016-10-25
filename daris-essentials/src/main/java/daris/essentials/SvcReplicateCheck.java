@@ -188,9 +188,9 @@ public class SvcReplicateCheck extends PluginService {
 		}
 		if (includeDestroyed) {
 			if (where==null) {
-				where = "asset has been destroyed";
+				where = "((asset has been destroyed) or (asset has not been destroyed))";
 			} else {
-				where += "and (asset has been destroyed)";
+				where += "and ((asset has been destroyed) or (asset has not been destroyed))";
 			}
 			dm.add("include-destroyed", true);
 		}
@@ -286,10 +286,16 @@ public class SvcReplicateCheck extends PluginService {
 					String csizeRep = remoteAsset.value("asset/content/size");
 					String cidRep = remoteAsset.value("asset/cid");            // Same for primary and replica
 					if (dbg) {
-						log(dateTime, "      nig.replicate.check : mtimes=" + mtime + ", " + mtimeRep);
-						if (csize!=null) log(dateTime, "      nig.replicate.check : sizes =" + csize + ", " + csizeRep);
+						if (mtime!=null && mtimeRep!=null) {
+							log(dateTime, "      nig.replicate.check : mtimes=" + mtime + ", " + mtimeRep);
+						} else {			
+							log(dateTime, "      nig.replicate.check : mtimes are unexpectedly null for asset " + rid);
+						}
+						if (csize!=null && csizeRep!=null) {
+							log(dateTime, "      nig.replicate.check : sizes =" + csize + ", " + csizeRep);
+						}
 					}
-					if (csize!=null &&csizeRep!=null) {
+					if (csize!=null && csizeRep!=null) {
 						if (mtime.after(mtimeRep) || !csize.equals(csizeRep)) {
 							w.add("id", new String[]{"exists", "true", "cid", cidRep, "mtime-primary", mtime.toString(), "mtime-replica", mtimeRep.toString(),
 									"csize-primary", csize, "csize-replica", csizeRep},  primaryID);
