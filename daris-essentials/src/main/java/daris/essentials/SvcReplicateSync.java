@@ -29,6 +29,7 @@ public class SvcReplicateSync extends PluginService {
 		_defn.add(new Interface.Element("idx",IntegerType.DEFAULT, "Start index in the cursor. Defaults to 1.", 0, 1));
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
+		_defn.add(new Interface.Element("count-only", BooleanType.DEFAULT, "Just counts (rather than listing each asset) assets for synchronizing. Default to false.", 0, 1));
 	}
 
 	public String name() {
@@ -63,6 +64,7 @@ public class SvcReplicateSync extends PluginService {
 		String where = args.value("where");
 		String peer = args.value("peer");
 		Boolean destroy = args.booleanValue("destroy", false);
+		Boolean count = args.booleanValue("count-only", false);
 		String size = args.stringValue("size", "10000");
 		Integer t = args.intValue("idx", 1);
 		int[] idx = new int[]{t};
@@ -109,10 +111,10 @@ public class SvcReplicateSync extends PluginService {
 
 		// Destroy assets on remote peer bottom up in DICOM data model
 		// FOr PSSD, 'members=false' so it does not destroy children
-		int n = destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMSeries, "DICOM Series", destroy, w);
-		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMStudy, "DICOM Study", destroy, w);
-		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMPatient, "DICOM Patient", destroy, w);
-		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyOther, "Other", destroy, w);
+		int n = destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMSeries, "DICOM Series", destroy, count, w);
+		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMStudy, "DICOM Study", destroy, count, w);
+		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMPatient, "DICOM Patient", destroy, count, w);
+		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyOther, "Other", destroy, count, w);
 
 		if (dbg) {
 			System.out.println("");
@@ -127,7 +129,7 @@ public class SvcReplicateSync extends PluginService {
 
 
 	private int destroyOrListAssets (ServiceExecutor executor, String dateTime, ServerRoute sr, XmlDocMaker list, String type, 
-			Boolean destroy, XmlWriter w) throws Throwable {
+			Boolean destroy, Boolean count, XmlWriter w) throws Throwable {
 		Collection<XmlDoc.Element> elements = list.root().elements("id");
 		if (elements==null) return 0;
 		//
@@ -158,14 +160,21 @@ public class SvcReplicateSync extends PluginService {
 					dm.add("id", id);
 					executor.execute(sr, "asset.destroy", dm.root());
 					PluginTask.checkIfThreadTaskAborted();
-					w.add("id", new String[]{"rid", rid, "destroyed", "true"}, id);
+					if (!count) w.add("id", new String[]{"rid", rid, "destroyed", "true"}, id);
 				}
 			} else {
 				for (XmlDoc.Element el : elements) {
 					String id = el.value();
 					String rid = el.value("@rid");
-					w.add("id", new String[]{"rid", rid, "destroyed", "false"}, id);
+					if (!count) w.add("id", new String[]{"rid", rid, "destroyed", "false"}, id);
 				}
+			}
+		}
+		if (count) {
+			if (destroy) {
+				w.add("number-of-assets-destroyed", elements.size());
+			} else {
+				w.add("number-of-assets-to-destroy", elements.size());
 			}
 		}
 		return elements.size();
@@ -224,7 +233,7 @@ public class SvcReplicateSync extends PluginService {
 		}
 
 		long time = System.nanoTime();
-//		System.out.println("nano time="+time);
+		//		System.out.println("nano time="+time);
 
 		XmlDocMaker dm = new XmlDocMaker("args");
 		String query = "(rid in '" + uuidLocal + "')";
@@ -241,7 +250,7 @@ public class SvcReplicateSync extends PluginService {
 		dm.add("xpath", "type");
 		XmlDoc.Element r = executor.execute(srPeer, "asset.query", dm.root());
 		if (dbg) {
-//			log (dateTime, "   nig.replicate.sycnhronize: asset.query on peer took " + duration(time));
+			//			log (dateTime, "   nig.replicate.sycnhronize: asset.query on peer took " + duration(time));
 		}
 		if (r==null) return false;  
 		Collection<XmlDoc.Element> rAssets = r.elements("asset");
@@ -259,7 +268,7 @@ public class SvcReplicateSync extends PluginService {
 		// See if the primaries for the found replicas exist on the local server
 		if (dbg) log(dateTime, "  Look for primaries matching replicas.");
 		time = System.nanoTime();
-//		System.out.println("nano time="+time);
+		//		System.out.println("nano time="+time);
 
 		dm = new XmlDocMaker("args");
 		for (XmlDoc.Element rAsset : rAssets) {
@@ -277,7 +286,7 @@ public class SvcReplicateSync extends PluginService {
 		// on the local server but do exist on the peer
 		if (dbg) log(dateTime,"   nig.replicate.synchronize: Check list for missing primaries.");
 		time = System.nanoTime();
-//		System.out.println("nano time="+time);
+		//		System.out.println("nano time="+time);
 
 		Iterator<XmlDoc.Element> rIt = rAssets.iterator();
 		int nExtra = 0;
@@ -316,7 +325,7 @@ public class SvcReplicateSync extends PluginService {
 			}
 		}
 		if (dbg) {
-//			log (dateTime, "   nig.replicate.sycnhronize: checking asset.exists for true/false on local took " + duration(time));
+			//			log (dateTime, "   nig.replicate.sycnhronize: checking asset.exists for true/false on local took " + duration(time));
 
 			log(dateTime,"   nig.replicate.synchronize: Checked " + rAssets.size() + " remote assets of which " + nExtra + " were not found on the primary");
 		}
@@ -331,9 +340,9 @@ public class SvcReplicateSync extends PluginService {
 	private String duration (long lastTime) throws Throwable {
 		long difference = System.nanoTime() - lastTime;
 		return String.format("%d min, %d sec",
-						TimeUnit.NANOSECONDS.toHours(difference),
-						TimeUnit.NANOSECONDS.toSeconds(difference) -
-						TimeUnit.MINUTES.toSeconds(TimeUnit.NANOSECONDS.toMinutes(difference)));
+				TimeUnit.NANOSECONDS.toHours(difference),
+				TimeUnit.NANOSECONDS.toSeconds(difference) -
+				TimeUnit.MINUTES.toSeconds(TimeUnit.NANOSECONDS.toMinutes(difference)));
 	}
 }
 
