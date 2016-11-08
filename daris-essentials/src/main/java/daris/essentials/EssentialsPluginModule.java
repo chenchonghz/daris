@@ -44,10 +44,11 @@ public class EssentialsPluginModule implements PluginModule {
         _svs.add(new SvcAssetMetaStringReplace());
         _svs.add(new SvcAssetPidSet());
         //
-        _svs.add(new SvcNameSpaceMetaDataCopy());
         _svs.add(new SvcIPAddressResolve());
         //
         _svs.add(new SvcNameSpacesChildDestroy());
+        _svs.add(new SvcNameSpaceMetaDataCopy());
+        //
         _svs.add(new SvcReplicateSync());
         // _svs.add(new SvcReplicateSyncTest());
         _svs.add(new SvcReplicateCheck());
