@@ -2,7 +2,6 @@ package daris.essentials;
 
 import java.util.Collection;
 
-import nig.mf.plugin.util.AssetUtil;
 import arc.mf.plugin.*;
 import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.CiteableIdType;
@@ -23,7 +22,7 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 				"In a federation, specifies the route to the peer that manages this namespace.  If not supplied, then the namespace will be assumed to be local.", 0));
 		_defn.add(me);
 		//
-		me = new Interface.Element("to", StringType.DEFAULT, "The parent namespace to copy to.", 0, 1);
+		me = new Interface.Element("to", StringType.DEFAULT, "The parent namespace to copy to. The parent part of this must pre-exist.  For example, if you were copying e.g. /CAPIM to 1128/projects/proj-CAPIM-1.2.3 (so CAPIM is renamed to proj-CAPIM-1.2.3 in this case), the 1128/projects part must pre-exist.  THe proj-CAPIM-1.2.3 will be created if needed (when create=true).", 0, 1);
 		me.add(new Interface.Attribute("proute", CiteableIdType.DEFAULT,
 				"In a federation, specifies the route to the peer that manages this namespace.  If not supplied, then the namespace will be assumed to be local.", 0));
 		_defn.add(me);
@@ -63,11 +62,12 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 		String fromParent = args.value("from");
 		String fromRoute = args.value("from/@proute");              // Local if null
 		String toParent = args.value("to");
-		String toRoute = args.value("to/@proute");              // Local if null
+		String toRoute = args.value("to/@proute");                  // Local if null
 		Boolean create = args.booleanValue("create", false);
 		Boolean list = args.booleanValue("list", false);
 
 		// See if the peer is reachable. Kind of clumsy as it fails silently with no exception
+		// if you just try and access an unreachable peer
 		ServerRoute srFrom = new ServerRoute(fromRoute);
 		if (srFrom!=null) {
 			XmlDoc.Element r = executor().execute(srFrom, "server.uuid");
@@ -83,7 +83,6 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 			}
 		}
 
-
 		// Recursively set meta-data
 		copy (executor(), create, srFrom, srTo, fromParent, toParent, fromParent, toParent, list, w);
 	}
@@ -96,8 +95,11 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 	}
 
 	private String replaceRoot (String from, String fromRoot, String toRoot) throws Throwable {
-		//  e.g.  /CAPIM   ->  /projects/proj-<name>-<id>
+		//  e.g.  /CAPIM   ->  /projects/proj-<name>-<id> and CAPIM is renamed to proj-<name>-<id>
 		int nF = fromRoot.length();
+		if (nF<=0) {
+			throw new Exception ("The parent from path has zero length");
+		}
 		String t = from.substring(nF+1);
 		return  toRoot + t;
 	}
@@ -112,26 +114,32 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 		PluginTask.checkIfThreadTaskAborted();
 
 
-		// Meta-data
+		// Get asset
 		XmlDocMaker dm = new XmlDocMaker("args");
 		dm.add("namespace",fromNS);
 		XmlDoc.Element asset = executor().execute(srFrom, "asset.namespace.describe", dm.root());
 
-		// Create namespace as needed		
+		// Create namespace as needed/requested	
 		if (!assetNameSpaceExists(executor(), srTo, toNS)) {
 			if (create) {
-				if (list) w.add("to", new String[]{"from", fromNS, "created", "true"}, toNS);
+				if (list) {
+					w.add("to", new String[]{"from", fromNS, "created", "true"}, toNS);
+				}
 				createNameSpace (executor(), srTo, toNS);
 			} else {
-				if (list) w.add("to", new String[]{"from", fromNS, "skipped", "true"}, toNS);
+				if (list) {
+					w.add("to", new String[]{"from", fromNS, "created", "false"}, toNS);
+				}
 				return;
 			}
 		} else {
-			if (list) w.add("to", new String[]{"from", fromNS, "created", "false"}, toNS);
+			if (list) {
+				w.add("to", new String[]{"from", fromNS, "pre-exists", "true"}, toNS);
+			}
 		}
 
 
-		// Set meta-data 
+		// Set namespace meta-data 
 		XmlDoc.Element meta = asset.element("namespace/asset-meta");
 		boolean some = false;
 		if (meta!=null) {
@@ -147,7 +155,9 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 			}
 			dm.pop();
 		}
-		if (some) executor().execute(srTo, "asset.namespace.asset.meta.set", dm.root());
+		if (some) {
+			executor().execute(srTo, "asset.namespace.asset.meta.set", dm.root());
+		}
 
 		// Template
 		XmlDoc.Element template = asset.element("namespace/template");
@@ -170,11 +180,13 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 		}
 
 
-		// Now descend into the children	
+		// Now descend into the children namespaces	
 		dm = new XmlDocMaker("args");
 		dm.add("namespace", fromNS);
 		XmlDoc.Element r = executor().execute(srFrom, "asset.namespace.list", dm.root());
+		if (r==null) return;
 		XmlDoc.Element pathEl = r.element("namespace");
+		if (pathEl==null) return;
 		String path = pathEl.value("@path");
 		Collection<String> nss = pathEl.values("namespace");
 		if (nss==null) return;
