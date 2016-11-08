@@ -32,7 +32,7 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 				" If they don't they are skipped.  Set this to true to create any missing namespaces.", 0, 1));
 		_defn.add(new Interface.Element("list", BooleanType.DEFAULT, "List all namespaces traversed (defaults to false).", 0, 1));
 	}
-	
+
 	public String name() {
 		return "nig.namespace.metadata.copy";
 	}
@@ -82,8 +82,8 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 				throw new Exception ("Can't reach remote 'to' peer " + toRoute);
 			}
 		}
-	
-		
+
+
 		// Recursively set meta-data
 		copy (executor(), create, srFrom, srTo, fromParent, toParent, fromParent, toParent, list, w);
 	}
@@ -106,7 +106,7 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 
 	private void copy (ServiceExecutor executor, Boolean create, ServerRoute srFrom, ServerRoute srTo, String fromNS, String toNS, 
 			String fromParent, String toParent, Boolean list, XmlWriter w) throws Throwable {
-	
+
 
 		// Check abort
 		PluginTask.checkIfThreadTaskAborted();
@@ -116,9 +116,9 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 		XmlDocMaker dm = new XmlDocMaker("args");
 		dm.add("namespace",fromNS);
 		XmlDoc.Element asset = executor().execute(srFrom, "asset.namespace.describe", dm.root());
-		
+
 		// Create namespace as needed		
-		if (!AssetUtil.assetNameSpaceExists(executor(), toNS)) {
+		if (!assetNameSpaceExists(executor(), srTo, toNS)) {
 			if (create) {
 				if (list) w.add("to", new String[]{"from", fromNS, "created", "true"}, toNS);
 				createNameSpace (executor(), srTo, toNS);
@@ -130,7 +130,7 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 			if (list) w.add("to", new String[]{"from", fromNS, "created", "false"}, toNS);
 		}
 
-		
+
 		// Set meta-data 
 		XmlDoc.Element meta = asset.element("namespace/asset-meta");
 		boolean some = false;
@@ -139,9 +139,11 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 			dm.add("namespace", toNS);
 			dm.push("asset-meta");
 			Collection<XmlDoc.Element> els = meta.elements();
-			for (XmlDoc.Element el : els) {
-				dm.add(el);
+			if (els!=null) {
 				some = true;
+				for (XmlDoc.Element el : els) {
+					dm.add(el);
+				}
 			}
 			dm.pop();
 		}
@@ -155,9 +157,11 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 			dm.add("namespace", toNS);
 			dm.push("template");
 			Collection<XmlDoc.Element> els = template.elements();
-			for (XmlDoc.Element el : els) {
-				dm.add(el);
+			if (els!=null) {
 				some = true;
+				for (XmlDoc.Element el : els) {
+					dm.add(el);
+				}
 			}
 			dm.pop();
 		}
@@ -182,4 +186,14 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 			copy (executor(), create, srFrom, srTo, fns, tns, fromParent, toParent, list, w);
 		}
 	}
+
+
+	private Boolean assetNameSpaceExists(ServiceExecutor executor, ServerRoute sr, String namespace) throws Throwable {
+
+		XmlDocMaker dm = new XmlDocMaker("args");
+		dm.add("namespace", namespace);
+		XmlDoc.Element r = executor.execute(sr, "asset.namespace.exists", dm.root());
+		return r.booleanValue("exists");
+	}
+
 }
