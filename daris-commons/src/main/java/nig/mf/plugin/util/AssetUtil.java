@@ -349,11 +349,10 @@ public class AssetUtil {
 
 	
 	/**
-	 * DOes an asset exist on the local server?
+	 * DOes an asset namespace exist
 	 * 
 	 * @param executor
-	 * @param id
-	 * @param citeable Is the id a citeable ID 
+	 * @param namespace
 	 * @return
 	 * @throws Throwable
 	 */
@@ -362,6 +361,22 @@ public class AssetUtil {
 		XmlDocMaker dm = new XmlDocMaker("args");
 		dm.add("namespace", namespace);
 		XmlDoc.Element r = executor.execute("asset.namespace.exists", dm.root());
+		return r.booleanValue("exists");
+	}
+	
+	/**
+	 * DOes an asset namespace exist on the given server
+	 * 
+	 * @param executor
+	 * @param namespace
+	 * @return
+	 * @throws Throwable
+	 */
+	public static boolean assetNameSpaceExists(ServiceExecutor executor, ServerRoute sr, String namespace) throws Throwable {
+
+		XmlDocMaker dm = new XmlDocMaker("args");
+		dm.add("namespace", namespace);
+		XmlDoc.Element r = executor.execute(sr, "asset.namespace.exists", dm.root());
 		return r.booleanValue("exists");
 	}
 	
