@@ -89,10 +89,10 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 	}
 
 
-	private void createNameSpace (ServiceExecutor executor, String nameSpace) throws Throwable {
+	private void createNameSpace (ServiceExecutor executor, ServerRoute sr, String nameSpace) throws Throwable {
 		XmlDocMaker dm = new XmlDocMaker("args");
 		dm.add("namespace", nameSpace);
-		executor.execute("asset.namespace.create", dm.root());
+		executor.execute(sr, "asset.namespace.create", dm.root());
 	}
 
 	private String replaceRoot (String from, String fromRoot, String toRoot) throws Throwable {
@@ -121,7 +121,7 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 		if (!AssetUtil.assetNameSpaceExists(executor(), toNS)) {
 			if (create) {
 				if (list) w.add("to", new String[]{"from", fromNS, "created", "true"}, toNS);
-				createNameSpace (executor(), toNS);
+				createNameSpace (executor(), srTo, toNS);
 			} else {
 				if (list) w.add("to", new String[]{"from", fromNS, "skipped", "true"}, toNS);
 				return;
