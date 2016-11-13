@@ -285,6 +285,7 @@ public class SvcReplicateCheck extends PluginService {
 					XmlDoc.Element remoteAsset = executor.execute(sr, "asset.query", dm.root());
 					*/
 					// Use id overload e.g. "asset.get :id rid=1004.123455"
+					dm = new XmlDocMaker("args");
 					dm.add("id","rid="+rid);
 					XmlDoc.Element remoteAsset = executor.execute(sr, "asset.get", dm.root());
 					
