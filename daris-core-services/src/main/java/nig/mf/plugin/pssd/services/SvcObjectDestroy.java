@@ -232,6 +232,8 @@ public class SvcObjectDestroy extends PluginService {
                     PSSDUtils.removeInvalidACLs(executor);
                     // destroy project specific tag dictionaries if any.
                     ProjectSpecificTagDictionary.destroyAll(executor, cid);
+                    // destroy project specific dictionary namespace
+                    Project.destroyProjectSpecificDictionaryNamespace(executor, cid);
                 } else if (isRSubject) {
                     RSubject.destroyRoles(executor, cid);
                     PSSDUtils.removeInvalidACLs(executor);

@@ -65,6 +65,7 @@ source migrate-acls-1.tcl
 ## Just check if the migration is done. If not, throw exception and quit the installation.
 source migrate-namespaces-1-check.tcl
 
+## project dictionary namespace(1) (Nov-2016)
 
 
 ##

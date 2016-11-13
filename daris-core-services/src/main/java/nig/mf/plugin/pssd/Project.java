@@ -1007,5 +1007,75 @@ public class Project {
                         null, null)
                 .intValue("value") > 0;
     }
+    
+    
+    public static String projectSpecificDictionaryNamespaceOf(
+            String projectCid) {
+        return "daris-project-" + projectCid;
+    }
+
+    public static void createProjectSpecificDictionaryNamespace(
+            ServiceExecutor executor, String projectCid) throws Throwable {
+        String dictionaryNamespace = projectSpecificDictionaryNamespaceOf(
+                projectCid);
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("ifexists", "ignore");
+        dm.add("namespace", dictionaryNamespace);
+        dm.add("description",
+                "Project specific namespace for DaRIS project " + projectCid);
+        executor.execute("dictionary.namespace.create", dm.root());
+    }
+
+    public static void grantProjectSpecificDictionaryNamespacePermissions(
+            ServiceExecutor executor, String projectCid) throws Throwable {
+        String adminRole = Project.projectAdministratorRoleName(projectCid);
+        String memberRole = Project.memberRoleName(projectCid);
+        String guestRole = Project.guestRoleName(projectCid);
+        String dictionaryNamespace = projectSpecificDictionaryNamespaceOf(
+                projectCid);
+
+        /*
+         * project administrator has ADMINISTER access
+         */
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("type", "role");
+        dm.add("role", adminRole);
+        dm.push("perm");
+        dm.add("resource", new String[] { "type", "dictionary:namespace" },
+                dictionaryNamespace);
+        dm.add("access", "ADMINISTER");
+        executor.execute("actor.grant", dm.root());
+        /*
+         * project member has MODIFY access
+         */
+        dm = new XmlDocMaker("args");
+        dm.add("type", "role");
+        dm.add("role", memberRole);
+        dm.push("perm");
+        dm.add("resource", new String[] { "type", "dictionary:namespace" },
+                dictionaryNamespace);
+        dm.add("access", "MODIFY");
+        executor.execute("actor.grant", dm.root());
+        /*
+         * project guest has ACCESS access
+         */
+        dm = new XmlDocMaker("args");
+        dm.add("type", "role");
+        dm.add("role", guestRole);
+        dm.push("perm");
+        dm.add("resource", new String[] { "type", "dictionary:namespace" },
+                dictionaryNamespace);
+        dm.add("access", "ACCESS");
+        executor.execute("actor.grant", dm.root());
+    }
+
+    public static void destroyProjectSpecificDictionaryNamespace(
+            ServiceExecutor executor, String projectCid) throws Throwable {
+        String dictionaryNamespace = projectSpecificDictionaryNamespaceOf(
+                projectCid);
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("namespace", dictionaryNamespace);
+        executor.execute("dictionary.namespace.destroy", dm.root());
+    }
 
 }

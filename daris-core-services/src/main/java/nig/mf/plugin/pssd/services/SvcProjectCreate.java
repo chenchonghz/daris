@@ -4,18 +4,6 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-import nig.mf.plugin.pssd.Application;
-import nig.mf.plugin.pssd.ModelUser;
-import nig.mf.plugin.pssd.PSSDObjectEvent;
-import nig.mf.plugin.pssd.PSSDObjectEvent.Action;
-import nig.mf.plugin.pssd.Project;
-import nig.mf.plugin.pssd.ProjectMember;
-import nig.mf.plugin.pssd.method.Method;
-import nig.mf.plugin.pssd.user.UserCredential;
-import nig.mf.plugin.pssd.util.PSSDUtils;
-import nig.mf.pssd.Role;
-import nig.mf.pssd.plugin.util.DistributedAssetUtil;
-import nig.mf.pssd.plugin.util.DistributedQuery.ResultAssetType;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.PluginService.Interface.Element;
 import arc.mf.plugin.ServerRoute;
@@ -29,8 +17,19 @@ import arc.mf.plugin.dtype.XmlDocType;
 import arc.mf.plugin.event.SystemEventChannel;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDocMaker;
-import arc.xml.XmlDocMaker.ExNoRootNode;
 import arc.xml.XmlWriter;
+import nig.mf.plugin.pssd.Application;
+import nig.mf.plugin.pssd.ModelUser;
+import nig.mf.plugin.pssd.PSSDObjectEvent;
+import nig.mf.plugin.pssd.PSSDObjectEvent.Action;
+import nig.mf.plugin.pssd.Project;
+import nig.mf.plugin.pssd.ProjectMember;
+import nig.mf.plugin.pssd.method.Method;
+import nig.mf.plugin.pssd.user.UserCredential;
+import nig.mf.plugin.pssd.util.PSSDUtils;
+import nig.mf.pssd.Role;
+import nig.mf.pssd.plugin.util.DistributedAssetUtil;
+import nig.mf.pssd.plugin.util.DistributedQuery.ResultAssetType;
 
 public class SvcProjectCreate extends PluginService {
     private Interface _defn;
@@ -38,33 +37,24 @@ public class SvcProjectCreate extends PluginService {
 
     public SvcProjectCreate() {
         _defn = new Interface();
-        _defn.add(new Element(
-                "cid-root-name",
-                StringType.DEFAULT,
+        _defn.add(new Element("cid-root-name", StringType.DEFAULT,
                 "Specify the named citable ID root for the collection. Defaults to 'pssd.project'. Using other named roots allows projects to be created in a CID sandbox, perhaps for testing.",
                 0, 1));
-        _defn.add(new Interface.Element(
-                "project-number",
+        _defn.add(new Interface.Element("project-number",
                 IntegerType.POSITIVE_ONE,
                 "Specifies the project number (under the local server's project CID root) for the identifier. If specified, then there cannot be any other asset/object with this identity assigned. Use with extreme caution as you must be certain the CID exists nowhere else.",
                 0, 1));
-        _defn.add(new Element(
-                "fillin",
-                BooleanType.DEFAULT,
+        _defn.add(new Element("fillin", BooleanType.DEFAULT,
                 "If the project-number is not given, fill in the Project allocator space (re-use allocated CIDs with no assets), otherwise create the next available CID at the end of the CID pool. Use with extreme caution.  Defaults to false. Concurrency issues mean that this argument may be ignored if many Projects are being created simultaneously.",
                 0, 1));
         addInterfaceDefn(_defn);
-        _defn.add(new Element(
-                "self-admin",
-                BooleanType.DEFAULT,
+        _defn.add(new Element("self-admin", BooleanType.DEFAULT,
                 "Give the caller project-administrator access as well (regardless of whether specified in 'member' or not).  Defaults to true.",
                 0, 1));
     }
 
     public static void addInterfaceDefn(Interface defn) {
-        defn.add(new Interface.Element(
-                "namespace",
-                StringType.DEFAULT,
+        defn.add(new Interface.Element("namespace", StringType.DEFAULT,
                 "The namespace in which to create this project (must pre-exist). Defaults to 'pssd'.",
                 0, 1));
         defn.add(new Interface.Element("name", StringType.DEFAULT,
@@ -75,31 +65,27 @@ public class SvcProjectCreate extends PluginService {
         // NB: "method", "member", "role-member"and "data-use" must all match
         // elements in the daris:pssd-project document type.
         // Method meta-data
-        Interface.Element me = new Interface.Element(
-                "method",
+        Interface.Element me = new Interface.Element("method",
                 XmlDocType.DEFAULT,
                 "Method utilized by this project.  In a federation must be managed by the local server.",
                 0, Integer.MAX_VALUE);
         me.add(new Interface.Element("id", CiteableIdType.DEFAULT,
-                "The identity of the method (must be local to this server).",
-                1, 1));
+                "The identity of the method (must be local to this server).", 1,
+                1));
         me.add(new Interface.Element("notes", StringType.DEFAULT,
-                "Arbitrary notes associated with the use of this method.", 0, 1));
+                "Arbitrary notes associated with the use of this method.", 0,
+                1));
         defn.add(me);
 
         // Project team user member
-        me = new Interface.Element(
-                "member",
-                XmlDocType.DEFAULT,
+        me = new Interface.Element("member", XmlDocType.DEFAULT,
                 "User to become a member of this project. In a federation must be local to this server.",
                 0, Integer.MAX_VALUE);
         //
         Interface.Element ie = new Interface.Element("authority",
                 StringType.DEFAULT,
                 "The authority of interest. Defaults to local.", 0, 1);
-        ie.add(new Interface.Attribute(
-                "protocol",
-                StringType.DEFAULT,
+        ie.add(new Interface.Attribute("protocol", StringType.DEFAULT,
                 "The protocol of the identity authority. If unspecified, defaults to federated user within the same type of repository.",
                 0));
         me.add(ie);
@@ -108,13 +94,12 @@ public class SvcProjectCreate extends PluginService {
                 "The domain name of the member.", 1, 1));
         me.add(new Interface.Element("user", StringType.DEFAULT,
                 "The user name within the domain.", 1, 1));
-        me.add(new Interface.Element("role", new EnumType(new String[] {
-                Project.ADMINISTRATOR_ROLE_NAME,
-                Project.SUBJECT_ADMINISTRATOR_ROLE_NAME,
-                Project.MEMBER_ROLE_NAME, Project.GUEST_ROLE_NAME }),
+        me.add(new Interface.Element("role",
+                new EnumType(new String[] { Project.ADMINISTRATOR_ROLE_NAME,
+                        Project.SUBJECT_ADMINISTRATOR_ROLE_NAME,
+                        Project.MEMBER_ROLE_NAME, Project.GUEST_ROLE_NAME }),
                 "The project-team role bestowed on the user member.", 1, 1));
-        me.add(new Interface.Element(
-                "data-use",
+        me.add(new Interface.Element("data-use",
                 new EnumType(new String[] { Project.CONSENT_SPECIFIC_ROLE_NAME,
                         Project.CONSENT_EXTENDED_ROLE_NAME,
                         Project.CONSENT_UNSPECIFIED_ROLE_NAME }),
@@ -123,20 +108,17 @@ public class SvcProjectCreate extends PluginService {
         defn.add(me);
 
         // Project team role member
-        me = new Interface.Element(
-                "role-member",
-                XmlDocType.DEFAULT,
+        me = new Interface.Element("role-member", XmlDocType.DEFAULT,
                 "Role to become a member of this project. In a federation must be local to this server.",
                 0, Integer.MAX_VALUE);
         me.add(new Interface.Element("member", StringType.DEFAULT,
                 "The role to become a member of the Project.", 0, 1));
-        me.add(new Interface.Element("role", new EnumType(new String[] {
-                Project.ADMINISTRATOR_ROLE_NAME,
-                Project.SUBJECT_ADMINISTRATOR_ROLE_NAME,
-                Project.MEMBER_ROLE_NAME, Project.GUEST_ROLE_NAME }),
+        me.add(new Interface.Element("role",
+                new EnumType(new String[] { Project.ADMINISTRATOR_ROLE_NAME,
+                        Project.SUBJECT_ADMINISTRATOR_ROLE_NAME,
+                        Project.MEMBER_ROLE_NAME, Project.GUEST_ROLE_NAME }),
                 "The project-team role bestowed on the role member.", 1, 1));
-        me.add(new Interface.Element(
-                "data-use",
+        me.add(new Interface.Element("data-use",
                 new EnumType(new String[] { Project.CONSENT_SPECIFIC_ROLE_NAME,
                         Project.CONSENT_EXTENDED_ROLE_NAME,
                         Project.CONSENT_UNSPECIFIED_ROLE_NAME }),
@@ -145,8 +127,7 @@ public class SvcProjectCreate extends PluginService {
         defn.add(me);
 
         // Project data-use
-        me = new Interface.Element(
-                "data-use",
+        me = new Interface.Element("data-use",
                 new EnumType(new String[] { Project.CONSENT_SPECIFIC_ROLE_NAME,
                         Project.CONSENT_EXTENDED_ROLE_NAME,
                         Project.CONSENT_UNSPECIFIED_ROLE_NAME }),
@@ -154,8 +135,7 @@ public class SvcProjectCreate extends PluginService {
                 1, 1);
         defn.add(me);
 
-        defn.add(new Interface.Element(
-                "allow-incomplete-meta",
+        defn.add(new Interface.Element("allow-incomplete-meta",
                 BooleanType.DEFAULT,
                 "Should the metadata be accepted if incomplete? Defaults to false.",
                 0, 1));
@@ -184,8 +164,8 @@ public class SvcProjectCreate extends PluginService {
         return ACCESS_MODIFY;
     }
 
-    public void execute(XmlDoc.Element args, Inputs in, Outputs out, XmlWriter w)
-            throws Throwable {
+    public void execute(XmlDoc.Element args, Inputs in, Outputs out,
+            XmlWriter w) throws Throwable {
 
         // Projects are always created on the local server
         String proute = null;
@@ -200,10 +180,8 @@ public class SvcProjectCreate extends PluginService {
             XmlDoc.Element r = executor().execute("citeable.named.id.describe");
             String t = r.value("id[@name='" + cidRootName + "']");
             if (t == null) {
-                throw new Exception(
-                        "The citable ID root '"
-                                + cidRootName
-                                + "' does not exist. Please create first with citeable.named.id.create");
+                throw new Exception("The citable ID root '" + cidRootName
+                        + "' does not exist. Please create first with citeable.named.id.create");
             }
         }
         String projectRoot = nig.mf.pssd.plugin.util.CiteableIdUtil
@@ -248,7 +226,13 @@ public class SvcProjectCreate extends PluginService {
             // Create the team-member and the data re-use (consent) roles
             // locally
             String selfMemberRole = null;
+            // create project specific roles
             Project.createProjectRoles(executor(), cid);
+
+            // create project specific dictionary namespace
+            Project.createProjectSpecificDictionaryNamespace(executor(), cid);
+            Project.grantProjectSpecificDictionaryNamespacePermissions(
+                    executor(), cid);
 
             // Create the project and grant the Project team their Project roles
             try {
@@ -257,6 +241,8 @@ public class SvcProjectCreate extends PluginService {
             } catch (Throwable t) {
                 // Cleanup project and roles and rethrow
                 cleanUp(executor(), cid);
+                Project.destroyProjectSpecificDictionaryNamespace(executor(),
+                        cid);
                 throw t;
             }
 
@@ -266,35 +252,27 @@ public class SvcProjectCreate extends PluginService {
             String adminRole = Project.projectAdministratorRoleName(cid);
             if (selfAdmin) {
                 // Revoke any lesser than project-admin team role that caller
-                // holds
-                // leaving just the admin role behind
-                if (selfMemberRole != null && !selfMemberRole.equals(adminRole)) {
+                // holds leaving just the admin role behind
+                if (selfMemberRole != null
+                        && !selfMemberRole.equals(adminRole)) {
                     PSSDUtils.revokeRoleToSelf(executor(), selfMemberRole);
                 }
             } else {
                 // Revoke admin role as appropriate
                 if (selfMemberRole != null) {
                     if (!selfMemberRole.equals(adminRole)) {
-                        PSSDUtils.revokeRoleToSelf(executor(), adminRole); // Caller
-                                                                           // is
-                                                                           // a
-                                                                           // lesser
-                                                                           // than
-                                                                           // admin
-                                                                           // team
-                                                                           // member
+                        // Caller is a lesser than admin team member
+                        PSSDUtils.revokeRoleToSelf(executor(), adminRole);
                     }
                 } else {
-                    PSSDUtils.revokeRoleToSelf(executor(), adminRole); // Caller
-                                                                       // is not
-                                                                       // a team
-                                                                       // member
+                    // Caller is not a team member
+                    PSSDUtils.revokeRoleToSelf(executor(), adminRole);
                 }
             }
 
             // Generate system event
-            SystemEventChannel.generate(new PSSDObjectEvent(Action.CREATE, cid,
-                    0));
+            SystemEventChannel
+                    .generate(new PSSDObjectEvent(Action.CREATE, cid, 0));
             w.add("id", cid);
         } finally {
             if (fillIn) {
@@ -335,8 +313,8 @@ public class SvcProjectCreate extends PluginService {
                     dm.add("user", user);
 
                     // user.exists won't find LDAP users
-                    XmlDoc.Element r = executor().execute(
-                            "authentication.user.exists", dm.root());
+                    XmlDoc.Element r = executor()
+                            .execute("authentication.user.exists", dm.root());
                     if (!r.booleanValue("exists")) {
                         throw new Exception(
                                 "Cannot add project member: the domain ("
@@ -356,8 +334,8 @@ public class SvcProjectCreate extends PluginService {
                     String member = me.value("member");
                     XmlDocMaker dm = new XmlDocMaker("args");
                     dm.add("role", member);
-                    XmlDoc.Element r = executor().execute(
-                            "authorization.role.exists", dm.root());
+                    XmlDoc.Element r = executor()
+                            .execute("authorization.role.exists", dm.root());
                     if (!r.booleanValue("exists")) {
                         throw new Exception(
                                 "Cannot add project member-role: the member-role ("
@@ -375,8 +353,8 @@ public class SvcProjectCreate extends PluginService {
      * @param args
      * @throws Throwable
      */
-    private void checkMethodsLocal(ServiceExecutor executor, XmlDoc.Element args)
-            throws Throwable {
+    private void checkMethodsLocal(ServiceExecutor executor,
+            XmlDoc.Element args) throws Throwable {
 
         Collection<XmlDoc.Element> methods = args.elements("method");
         if (methods != null) {
@@ -399,10 +377,8 @@ public class SvcProjectCreate extends PluginService {
         if (!executor.execute("asset.namespace.exists",
                 "<args><namespace>" + parentNS + "</namespace></args>", null,
                 null).booleanValue("exists", false)) {
-            throw new Exception(
-                    "The given namespace '"
-                            + parentNS
-                            + "' does not exist.  Please contact the DaRIS administrator to create and associate with a Mediaflux store");
+            throw new Exception("The given namespace '" + parentNS
+                    + "' does not exist.  Please contact the DaRIS administrator to create and associate with a Mediaflux store");
         }
 
         String projectNS = parentNS + "/" + cid;
@@ -455,8 +431,8 @@ public class SvcProjectCreate extends PluginService {
                     String pdist = "0";
                     Boolean pssdOnly = true;
                     if (!DistributedAssetUtil.assetExists(executor, proute,
-                            pdist, id, ResultAssetType.primary, false,
-                            pssdOnly, null)) {
+                            pdist, id, ResultAssetType.primary, false, pssdOnly,
+                            null)) {
                         throw new Exception("The Method with cid '" + id
                                 + "' does not exist");
                     }
@@ -473,8 +449,8 @@ public class SvcProjectCreate extends PluginService {
                 for (XmlDoc.Element me : members) {
                     UserCredential userCred = new UserCredential(
                             me.value("authority"),
-                            me.value("authority/@protocol"),
-                            me.value("domain"), me.value("user"));
+                            me.value("authority/@protocol"), me.value("domain"),
+                            me.value("user"));
 
                     // Find callers project-specific role, if any
                     if (userCred.equals(selfUserCred)) {
@@ -488,13 +464,9 @@ public class SvcProjectCreate extends PluginService {
 
                     // Grant the hierarchical team role to the user-member
                     Project.grantProjectRole(executor, cid, userCred,
-                            me.value("role"), false); // We
-                                                      // want
-                                                      // an
-                                                      // error
-                                                      // if
-                    // the
-                    // role has not been created // not
+                            me.value("role"), false);
+                            // We want an error if the role has not been created
+                            // not
 
                     // Grant data-use role to non admin user-members
                     // The "data-use" field will be null for admins.
@@ -554,10 +526,12 @@ public class SvcProjectCreate extends PluginService {
         dm.add("namespace", projectNS);
 
         // pssd.object.admin
-        addProjectNamespaceACL(dm, Role.objectAdminRoleName(), new String[] {
-                "administer", "access", "create", "execute", "destroy" },
+        addProjectNamespaceACL(dm, Role.objectAdminRoleName(),
+                new String[] { "administer", "access", "create", "execute",
+                        "destroy" },
                 new String[] { "access", "create", "modify", "destroy",
-                        "licence" }, new String[] { "access", "modify" });
+                        "licence" },
+                new String[] { "access", "modify" });
 
         // pssd.object.guest
         addProjectNamespaceACL(dm, Role.objectGuestRoleName(),
@@ -568,22 +542,25 @@ public class SvcProjectCreate extends PluginService {
         addProjectNamespaceACL(dm,
                 Project.projectAdministratorRoleName(projectCid),
                 new String[] { "administer", "access", "create", "execute",
-                        "destroy" }, new String[] { "access", "create",
-                        "modify", "destroy", "licence" }, new String[] {
-                        "access", "modify" });
+                        "destroy" },
+                new String[] { "access", "create", "modify", "destroy",
+                        "licence" },
+                new String[] { "access", "modify" });
 
         // pssd.project.subject.admin
         addProjectNamespaceACL(dm,
-                Project.subjectAdministratorRoleName(projectCid), new String[] {
-                        "access", "create", "execute", "destroy" },
+                Project.subjectAdministratorRoleName(projectCid),
+                new String[] { "access", "create", "execute", "destroy" },
                 new String[] { "access", "create", "modify", "destroy",
-                        "licence" }, new String[] { "access", "modify" });
+                        "licence" },
+                new String[] { "access", "modify" });
 
         // pssd.project.member
         addProjectNamespaceACL(dm, Project.memberRoleName(projectCid),
                 new String[] { "access", "create", "execute", "destroy" },
                 new String[] { "access", "create", "modify", "destroy",
-                        "licence" }, new String[] { "access", "modify" });
+                        "licence" },
+                new String[] { "access", "modify" });
 
         // pssd.project.guest
         addProjectNamespaceACL(dm, Project.guestRoleName(projectCid),
@@ -651,7 +628,8 @@ public class SvcProjectCreate extends PluginService {
      * @param cid
      * @throws Throwable
      */
-    private void cleanUp(ServiceExecutor executor, String cid) throws Throwable {
+    private void cleanUp(ServiceExecutor executor, String cid)
+            throws Throwable {
 
         // Destroy the asset if it exists. This service will destroy any
         // project associated roles too. Else just destroy the roles.
