@@ -66,6 +66,7 @@ source migrate-acls-1.tcl
 source migrate-namespaces-1-check.tcl
 
 ## project dictionary namespace(1) (Nov-2016)
+source migrate-project-dictionary-namespace-1.tcl
 
 
 ##
