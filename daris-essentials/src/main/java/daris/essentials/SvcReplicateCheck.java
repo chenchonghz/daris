@@ -276,15 +276,8 @@ public class SvcReplicateCheck extends PluginService {
 					Date mtime = asset.dateValue("asset/mtime");
 					String csize = asset.value("asset/content/size");
 
-					/*
-					// To get the remote asset we have to know its id... There is no asset.get :id rid
-					// We have to query for it !
-					dm = new XmlDocMaker("args");
-					dm.add("where", "rid='" + rid + "'");;
-					dm.add("action", "get-meta");
-					XmlDoc.Element remoteAsset = executor.execute(sr, "asset.query", dm.root());
-					*/
 					// Use id overload e.g. "asset.get :id rid=1004.123455"
+					dm = new XmlDocMaker("args");
 					dm.add("id","rid="+rid);
 					XmlDoc.Element remoteAsset = executor.execute(sr, "asset.get", dm.root());
 					

@@ -227,7 +227,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		Collection<XmlDoc.Element> results = r2.elements("exists");
 
 
-		// Create a list of assets to replicate
+		// Now check each replicated asset to see if its namespace is as expected.
 		if (dbg) {
 			log(dateTime, "   nig.replicate.namespace.check : iterate through " + results.size() + " results and build list for move.");
 		}
@@ -251,12 +251,12 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 				XmlDoc.Element asset = AssetUtil.getAsset(executor, null, primaryID);
 				String assetNameSpace = asset.value("asset/namespace");
 
-				// To get the remote asset we have to know its id... There is no asset.get :id rid
-				// We have to query for it !
+				// To get the remote asset we have to know its id... 
 				dm = new XmlDocMaker("args");
-				dm.add("where", "rid='" + rid + "'");;
-				dm.add("action", "get-meta");
-				XmlDoc.Element remoteAsset = executor.execute(sr, "asset.query", dm.root());
+				dm.add("id","rid="+rid);
+				XmlDoc.Element remoteAsset = executor.execute(sr, "asset.get", dm.root());	
+				
+				// FInd the namespace
 				String remoteAssetNameSpace = remoteAsset.value("asset/namespace");
 				if (dbg) {
 //					log(dateTime, "      nig.replicate.namespace.check :namespaces=" + assetNameSpace + ", " +remoteAssetNameSpace);
