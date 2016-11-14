@@ -56,7 +56,7 @@ if [ "${DEST}" = "mbciu" ]; then
    echo "*** Setting Destination Melbourne Brain Centre Imaging Unit"
 #   MF_HOST=daris-1.melbourne.nectar.org.au
 # Non NATed faster interface to DaRIS-1
-   MF_HOST=103.6.255.171
+   MF_HOST=45.113.235.209
    # HTTP for speed
    MF_PORT=9443
    MF_TRANSPORT=HTTP
