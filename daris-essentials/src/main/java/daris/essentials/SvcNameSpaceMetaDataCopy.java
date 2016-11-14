@@ -83,7 +83,7 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 			}
 		}
 
-		// Recursively set meta-data
+		// Recursively create namespaces and set meta-data
 		copy (executor(), create, srFrom, srTo, fromParent, toParent, fromParent, toParent, list, w);
 	}
 
@@ -95,13 +95,16 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 	}
 
 	private String replaceRoot (String from, String fromRoot, String toRoot) throws Throwable {
-		//  e.g.  /CAPIM   ->  /projects/proj-<name>-<id> and CAPIM is renamed to proj-<name>-<id>
+		//          fromRoot /
+		//          toRoot   /projects
+		//          from     /CAPIM
+		//          to       /projects/proj-CAPIM-<id>
 		int nF = fromRoot.length();
 		if (nF<=0) {
 			throw new Exception ("The parent from path has zero length");
 		}
 		String t = from.substring(nF+1);
-		return  toRoot + t;
+		return  toRoot + "/" + t;
 	}
 
 
@@ -137,10 +140,12 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 				w.add("to", new String[]{"from", fromNS, "pre-exists", "true"}, toNS);
 			}
 		}
-
+		
+		
 
 		// Set namespace meta-data 
 		XmlDoc.Element meta = asset.element("namespace/asset-meta");
+		System.out.println("   asset-meta="+meta);
 		boolean some = false;
 		if (meta!=null) {
 			dm = new XmlDocMaker("args");
