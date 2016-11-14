@@ -18,14 +18,12 @@
 	<dependencySets>
 		<dependencySet>
 			<useStrictFiltering>true</useStrictFiltering>
-			<outputDirectory>/libs</outputDirectory>
+			<outputDirectory>lib</outputDirectory>
 			<useProjectArtifact>true</useProjectArtifact>
 			<scope>provided</scope>
-			<includes>
-				<include>${project.groupId}:daris-commons</include>
-				<include>${project.groupId}:daris-dcmtools</include>
-			</includes>
-			<outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+			<excludes>
+                <exclude>${project.groupId}:${project.artifactId}</exclude>
+            </excludes>
 		</dependencySet>
 	</dependencySets>
 </assembly>
