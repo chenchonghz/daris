@@ -1039,7 +1039,7 @@ public class Project {
          */
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("type", "role");
-        dm.add("role", adminRole);
+        dm.add("name", adminRole);
         dm.push("perm");
         dm.add("resource", new String[] { "type", "dictionary:namespace" },
                 dictionaryNamespace);
@@ -1050,7 +1050,7 @@ public class Project {
          */
         dm = new XmlDocMaker("args");
         dm.add("type", "role");
-        dm.add("role", memberRole);
+        dm.add("name", memberRole);
         dm.push("perm");
         dm.add("resource", new String[] { "type", "dictionary:namespace" },
                 dictionaryNamespace);
@@ -1061,7 +1061,7 @@ public class Project {
          */
         dm = new XmlDocMaker("args");
         dm.add("type", "role");
-        dm.add("role", guestRole);
+        dm.add("name", guestRole);
         dm.push("perm");
         dm.add("resource", new String[] { "type", "dictionary:namespace" },
                 dictionaryNamespace);
