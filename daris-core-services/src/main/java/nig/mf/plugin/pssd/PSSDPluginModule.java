@@ -297,7 +297,6 @@ public class PSSDPluginModule implements HttpServletPluginModule {
 		_services.add(new SvcDICOMAERegList());
 		_services.add(new SvcDICOMAERegDestroy());
 		_services.add(new SvcDICOMAEAccess());
-		_services.add(new SvcDicomArchiveContentGet());
 		_services.add(new SvcDicomLocalAETitleList());
 		_services.add(new SvcDicomSRGet());
 		_services.add(new SvcDicomSRExport());
@@ -314,8 +313,6 @@ public class PSSDPluginModule implements HttpServletPluginModule {
 
 		_services.add(new SvcFCPList());
 
-		_services.add(new SvcArchiveContentList());
-		_services.add(new SvcArchiveContentGet());
 		_services.add(new SvcArchiveContentImageGet());
 
 		_services.add(new SvcTempNamespaceGet());
