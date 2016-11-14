@@ -329,6 +329,12 @@ public class PSSDPluginModule implements HttpServletPluginModule {
 		_services.add(new SvcProjectNamespaceDefaultGet());
 		_services.add(new SvcProjectCitableRootCreate());
 
+		_services.add(new SvcProjectDictionaryNamespaceCreate());
+		_services.add(new SvcProjectDictionaryNamespaceDescribe());
+		_services.add(new SvcProjectDictionaryCreate());
+		_services.add(new SvcProjectDictionaryDestroy());
+		_services.add(new SvcProjectDictionaryList());
+
 		// XNAT rest client
 		_services.add(new daris.plugin.experimental.xnat.services.SvcXnatExperimentDicomIngest());
 		_services.add(new daris.plugin.experimental.xnat.services.SvcXnatExperimentDownload());
@@ -337,7 +343,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
 
 		// MyTardis dataset import
 		_services.add(new daris.plugin.experimental.mytardis.services.SvcMyTardisDatasetImport());
-		
+
 		// Register a DICOM handler specific to NIG.
 		DicomAssetEngineRegistry.register(new NIGDicomAssetEngineFactory());
 

@@ -226,16 +226,19 @@ public class SvcProjectCreate extends PluginService {
             // Create the team-member and the data re-use (consent) roles
             // locally
             String selfMemberRole = null;
-            // create project specific roles
-            Project.createProjectRoles(executor(), cid);
-
-            // create project specific dictionary namespace
-            Project.createProjectSpecificDictionaryNamespace(executor(), cid);
-            Project.grantProjectSpecificDictionaryNamespacePermissions(
-                    executor(), cid);
+            
 
             // Create the project and grant the Project team their Project roles
             try {
+            	
+            	// create project specific roles
+                Project.createProjectRoles(executor(), cid);
+
+                // create project specific dictionary namespace
+                Project.createProjectSpecificDictionaryNamespace(executor(), cid);
+                Project.grantProjectSpecificDictionaryNamespacePermissions(
+                        executor(), cid);
+                
                 selfMemberRole = createProjectAsset(executor(), args, cid);
 
             } catch (Throwable t) {

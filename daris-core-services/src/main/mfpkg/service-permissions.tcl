@@ -330,4 +330,12 @@ actor.grant :role -type role service-user :type plugin:service :name daris.archi
 
 actor.grant :role -type role service-user :type plugin:service :name daris.dicom.archive.content.get
 
+actor.grant :role -type role service-user :type plugin:service :name daris.project.dictionary.namespace.create
+actor.grant :role -type role service-user :type plugin:service :name daris.project.dictionary.namespace.describe
+actor.grant :role -type role service-user :type plugin:service :name daris.project.dictionary.create
+actor.grant :role -type role service-user :type plugin:service :name daris.project.dictionary.list
+actor.grant :role -type role service-user :type plugin:service :name daris.project.dictionary.destroy
+
+
+
 
