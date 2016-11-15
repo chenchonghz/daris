@@ -5,6 +5,8 @@ import java.util.Vector;
 
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.event.logical.shared.AttachEvent;
+import com.google.gwt.event.logical.shared.AttachEvent.Handler;
 import com.google.gwt.user.client.ui.Widget;
 
 import arc.gui.gwt.widget.BaseWidget;
@@ -23,111 +25,122 @@ import daris.client.model.archive.messages.ArchiveContentImageGet;
 
 public class ArchiveEntryImagePanel extends ContainerWidget {
 
-    private ArchiveEntryCollectionRef _arc;
-    private ArchiveEntry _entry;
+	private ArchiveEntryCollectionRef _arc;
+	private ArchiveEntry _entry;
 
-    private AbsolutePanel _ap;
+	private AbsolutePanel _ap;
 
-    public ArchiveEntryImagePanel(ArchiveEntryCollectionRef arc, ArchiveEntry entry) {
+	public ArchiveEntryImagePanel(ArchiveEntryCollectionRef arc, ArchiveEntry entry) {
 
-        _arc = arc;
-        _entry = entry;
+		_arc = arc;
+		_entry = entry;
 
-        _ap = new AbsolutePanel();
-        _ap.fitToParent();
-        _ap.setOverflow(Overflow.HIDDEN);
-        initWidget(_ap);
+		_ap = new AbsolutePanel();
+		_ap.fitToParent();
+		_ap.setOverflow(Overflow.HIDDEN);
+		initWidget(_ap);
 
-        loadImage();
-    }
+		addAttachHandler(new Handler() {
 
-    private void loadImage() {
-        /*
-         * show loading message
-         */
-        HTML loadingMsg = new HTML("loading image: " + _entry.name());
-        loadingMsg.setFontSize(10);
-        loadingMsg.setPosition(Position.ABSOLUTE);
-        add(loadingMsg);
+			@Override
+			public void onAttachOrDetach(AttachEvent event) {
+				if (event.isAttached()) {
+					loadImage();
+				}
+			}
+		});
 
-        /*
-         * load image
-         */
-        new ArchiveContentImageGet(_arc, _entry)
-                .send(new ObjectMessageResponse<ImageEntry>() {
+	}
 
-                    @Override
-                    public void responded(ImageEntry ie) {
-                        Image img = new Image(ie.outputUrl());
-                        new ImageLoader(img, new ImageLoadHandler() {
-                            @Override
-                            public void loaded(ImageWidget i) {
-                                i.setPosition(Position.ABSOLUTE);
-                                add(i);
-                            }
-                        }).load();
-                    }
-                });
+	private void loadImage() {
+		/*
+		 * show loading message
+		 */
+		HTML loadingMsg = new HTML("loading image: " + _entry.name());
+		loadingMsg.setFontSize(10);
+		loadingMsg.setPosition(Position.ABSOLUTE);
+		add(loadingMsg);
 
-    }
+		/*
+		 * load image
+		 */
+		int width = width();
+		int height = height();
+		Integer size = (width > 0 && height > 0) ? (width > height ? width : height) : null;
+		new ArchiveContentImageGet(_arc, _entry, false, size).send(new ObjectMessageResponse<ImageEntry>() {
 
-    @Override
-    protected void doAdd(Widget w, boolean doLayout) {
+			@Override
+			public void responded(ImageEntry ie) {
+				Image img = new Image(ie.outputUrl());
+				new ImageLoader(img, new ImageLoadHandler() {
+					@Override
+					public void loaded(ImageWidget i) {
+						i.setPosition(Position.ABSOLUTE);
+						add(i);
+					}
+				}).load();
+			}
+		});
 
-        if (children() != null) {
-            List<Widget> rws = new Vector<Widget>();
-            for (Widget cw : children()) {
-                if (cw != w) {
-                    rws.add(cw);
-                }
-            }
-            for (Widget rw : rws) {
-                remove(rw);
-            }
-        }
-        _ap.add(w);
-    }
+	}
 
-    @Override
-    protected boolean doRemove(Widget w, boolean doLayout) {
+	@Override
+	protected void doAdd(Widget w, boolean doLayout) {
 
-        return _ap.remove(w);
-    }
+		if (children() != null) {
+			List<Widget> rws = new Vector<Widget>();
+			for (Widget cw : children()) {
+				if (cw != w) {
+					rws.add(cw);
+				}
+			}
+			for (Widget rw : rws) {
+				remove(rw);
+			}
+		}
+		_ap.add(w);
+	}
 
-    @Override
-    protected void doLayoutChildren() {
+	@Override
+	protected boolean doRemove(Widget w, boolean doLayout) {
 
-        super.doLayoutChildren();
-        for (BaseWidget w : children()) {
-            if (w instanceof Image) {
-                resizeAndPositionImage((Image) w);
-            } else {
-                // must be the loading message
-                w.setLeft((width() - w.width()) / 2);
-                w.setTop((height() - w.height()) / 2);
-            }
-        }
-    }
+		return _ap.remove(w);
+	}
 
-    private void resizeAndPositionImage(Image i) {
+	@Override
+	protected void doLayoutChildren() {
 
-        int w = width();
-        int h = height();
-        double ar = ((double) i.width()) / ((double) i.height());
+		super.doLayoutChildren();
+		for (BaseWidget w : children()) {
+			if (w instanceof Image) {
+				resizeAndPositionImage((Image) w);
+			} else {
+				// must be the loading message
+				w.setLeft((width() - w.width()) / 2);
+				w.setTop((height() - w.height()) / 2);
+			}
+		}
+	}
 
-        int nw = w;
-        int nh = (int) (nw / ar);
-        if (nh > h) {
-            nh = h;
-            nw = (int) (nh * ar);
-        }
-        i.resizeTo(nw, nh);
-        if (nw == w) {
-            i.setLeft(0);
-            i.setTop((h - nh) / 2);
-        } else {
-            i.setLeft((w - nw) / 2);
-            i.setTop(0);
-        }
-    }
+	private void resizeAndPositionImage(Image i) {
+
+		int w = width();
+		int h = height();
+		double ar = ((double) i.width()) / ((double) i.height());
+
+		int nw = w;
+		int nh = (int) (nw / ar);
+		if (nh > h) {
+			nh = h;
+			nw = (int) (nh * ar);
+		}
+		i.resizeTo(nw, nh);
+		if (nw == w) {
+			i.setLeft(0);
+			i.setTop((h - nh) / 2);
+		} else {
+			i.setLeft((w - nw) / 2);
+			i.setTop(0);
+		}
+	}
 }

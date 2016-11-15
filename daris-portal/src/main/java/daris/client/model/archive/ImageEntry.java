@@ -1,29 +1,34 @@
 package daris.client.model.archive;
 
-import arc.mf.client.xml.XmlElement;
+public class ImageEntry {
 
-public class ImageEntry extends ArchiveEntry {
-
-    private long _outputSize;
-    private String _outputFormat;
+    private ArchiveEntry _entry;
+    private boolean _lossless;
     private String _outputUrl;
 
-    public ImageEntry(XmlElement ee) throws Throwable {
-        super(ee);
-        _outputSize = ee.longValue("@output-size", size());
-        _outputFormat = ee.stringValue("@output-format", fileExtension());
+    public ImageEntry(ArchiveEntry entry, boolean lossless) {
+        _entry = entry;
+        _lossless = lossless;
+        _outputUrl = null;
     }
 
-    public long outputSize() {
-        return _outputSize;
+    public int ordinal() {
+        return _entry.ordinal();
     }
 
-    public String outputFormat() {
-        return _outputFormat;
+    public String name() {
+        return _entry.name();
     }
 
-    public String outputFileName() {
-        return fileName() + "." + _outputFormat;
+    public String imageFileName() {
+        String fileName = _entry.fileName();
+        String fileExt = _entry.fileExtension();
+        String imgExt = _lossless ? "png" : "jpg";
+        if (!imgExt.equalsIgnoreCase(fileExt)) {
+            return fileName.replaceAll("\\." + fileExt + "$", "." + imgExt);
+        } else {
+            return fileName;
+        }
     }
 
     public String outputUrl() {
@@ -33,4 +38,5 @@ public class ImageEntry extends ArchiveEntry {
     public void setOutputUrl(String outputUrl) {
         _outputUrl = outputUrl;
     }
+
 }
