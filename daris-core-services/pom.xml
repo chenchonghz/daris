@@ -40,7 +40,7 @@
 		<dependency>
 			<groupId>com.arcitecta</groupId>
 			<artifactId>aplugin</artifactId>
-			<version>4.2.026</version>
+			<version>4.4.045</version>
 			<!-- provided so that we do not deploy -->
 			<scope>provided</scope>
 		</dependency>
