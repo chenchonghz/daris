@@ -16,7 +16,7 @@ public class ArchiveContentImageGet extends ServiceTask<ImageEntry> {
 
     private ArchiveEntryCollectionRef _arc;
     private ArchiveEntry _entry;
-    private Boolean _lossless;
+    private boolean _lossless;
     private Integer _size;
 
     public ArchiveContentImageGet(ArchiveEntryCollectionRef arc,
@@ -25,7 +25,7 @@ public class ArchiveContentImageGet extends ServiceTask<ImageEntry> {
     }
 
     public ArchiveContentImageGet(ArchiveEntryCollectionRef arc,
-            ArchiveEntry entry, Boolean lossless, Integer size) {
+            ArchiveEntry entry, boolean lossless, Integer size) {
         super("daris.archive.content.image.get");
         _arc = arc;
         _entry = entry;
@@ -44,9 +44,7 @@ public class ArchiveContentImageGet extends ServiceTask<ImageEntry> {
         if (_entry.name() != null) {
             w.add("name", _entry.name());
         }
-        if (_lossless != null) {
-            w.add("lossless", _lossless);
-        }
+        w.add("lossless", _lossless);
         if (_size != null) {
             w.add("size", _size);
         }
