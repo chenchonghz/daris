@@ -8,7 +8,6 @@ import arc.mf.plugin.http.HttpResponse;
 import arc.mf.plugin.http.HttpServer;
 import arc.mf.plugin.http.HttpServer.SessionKey;
 import arc.xml.XmlDoc;
-import nig.mf.plugin.pssd.services.SvcArchiveContentGet;
 import nig.mf.plugin.pssd.servlets.DicomServlet;
 
 public class DicomViewModule implements Module {
@@ -29,21 +28,22 @@ public class DicomViewModule implements Module {
         String id = request.variableValue(DicomServlet.ARG_ID);
         // cid
         String cid = request.variableValue(DicomServlet.ARG_CID);
-
-        XmlDoc.Element ae = null;
+        if (id == null && cid == null) {
+            throw new Exception("Missing id or cid argument");
+        }
+        XmlDoc.Element ae = id == null
+                ? ServerUtils.assetMetaFromCid(server, sessionKey, cid)
+                : ServerUtils.assetMetaFromId(server, sessionKey, id);
         if (id == null) {
-            ae = server.execute(sessionKey, "asset.get",
-                    "<cid>" + cid + "</cid>", null, null).element("asset");
             id = ae.value("@id");
-        } else {
-            ae = server.execute(sessionKey, "asset.get", "<id>" + id + "</id>",
-                    null, null).element("asset");
+        }
+        if (cid == null) {
             cid = ae.value("cid");
         }
         String cType = ae.value("content/type");
         String cExt = ae.value("content/type/@ext");
         if (!ae.elementExists("meta/mf-dicom-series")
-                || !SvcArchiveContentGet.isArchiveTypeSupported(cExt, cType)) {
+                || !isArchiveTypeSupported(cExt, cType)) {
             throw new Exception(
                     "Asset " + id + " is not a valid DICOM series.");
         }
@@ -122,6 +122,28 @@ public class DicomViewModule implements Module {
             urls.add(url.toString());
         }
         return urls;
+    }
+
+    private static boolean isArchiveTypeSupported(String extension,
+            String mimeType) {
+        boolean extSupported = false;
+        if (extension != null) {
+            extSupported = extension.equalsIgnoreCase("aar")
+                    || extension.equalsIgnoreCase("zip")
+                    || extension.equalsIgnoreCase("jar")
+                    || extension.equalsIgnoreCase("tar");
+        }
+        boolean typeSupported = false;
+        if (mimeType != null) {
+            typeSupported = mimeType.equals("application/arc-archive")
+                    || mimeType.equals("application/zip")
+                    || mimeType.equals("application/x-zip")
+                    || mimeType.equals("application/x-zip-compressed")
+                    || mimeType.equals("application/zip")
+                    || mimeType.equals("application/java-archive")
+                    || mimeType.equals("application/x-tar");
+        }
+        return extSupported || typeSupported;
     }
 
 }

@@ -1,10 +1,11 @@
 package nig.mf.plugin.pssd.services;
 
-import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.InputStream;
-
-import javax.imageio.ImageIO;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.util.AbstractMap.SimpleEntry;
 
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.PluginTask;
@@ -12,31 +13,24 @@ import arc.mf.plugin.ServiceExecutor;
 import arc.mf.plugin.dtype.AssetType;
 import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.CiteableIdType;
+import arc.mf.plugin.dtype.IntegerType;
 import arc.mf.plugin.dtype.LongType;
-import arc.streams.SizedInputStream;
+import arc.mf.plugin.dtype.StringType;
+import arc.streams.StreamCopy;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDoc.Element;
 import arc.xml.XmlDocMaker;
-import arc.xml.XmlDocWriter;
 import arc.xml.XmlWriter;
+import ij.IJ;
+import ij.ImagePlus;
+import ij.process.ImageProcessor;
 
 public class SvcArchiveContentImageGet extends PluginService {
 
     public static final String SERVICE_NAME = "daris.archive.content.image.get";
 
-    public static final String SERVICE_DESCRIPTION = "retrieve a file entry from the specified image series asset, which must have zip/aar archive as content and a mf-dicom-series docment in the metadata.";
-
-    private static final String[] _supportedImageFormats = { "bmp", "tif",
-            "tiff", "gif", "png", "jpg", "jpeg", "dcm" };
-
-    private static boolean isImageFormatSupported(String fileExt) {
-        for (int i = 0; i < _supportedImageFormats.length; i++) {
-            if (_supportedImageFormats[i].equalsIgnoreCase(fileExt)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    public static final String[] IMAGE_FORMATS = { "bmp", "tif", "tiff", "gif",
+            "png", "jpg", "jpeg", "dcm" };
 
     private Interface _defn;
 
@@ -46,16 +40,23 @@ public class SvcArchiveContentImageGet extends PluginService {
                 "The id of the image series asset", 0, 1));
         _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT,
                 "The citeable id of the image series asset", 0, 1));
-        Interface.Element idxElem = new Interface.Element("idx",
+        Interface.Element idx = new Interface.Element("idx",
                 LongType.POSITIVE_ONE, "The ordinal position. Defaults to one.",
                 0, 1);
-        idxElem.add(new Interface.Attribute("frame", LongType.POSITIVE,
+        idx.add(new Interface.Attribute("frame", LongType.POSITIVE,
                 "This specifies the frame ordinal of a DICOM image. Can only be greater than one for multi-frame data - that is, (0028,0008) set and greater than 1. Defaults to one.",
                 0));
-        _defn.add(idxElem);
-        _defn.add(new Interface.Element("auto-convert", BooleanType.DEFAULT,
-                "Convert the image to .png format, if it is not supported by browsers. Defaults to false.",
+        _defn.add(idx);
+        _defn.add(new Interface.Element("name", StringType.DEFAULT,
+                "The entry file name. If specified, it will not try to retrieve the entry name from the archive, therefore, it may significantly improve the performance for sequential archives.",
                 0, 1));
+        _defn.add(new Interface.Element("lossless", BooleanType.DEFAULT,
+                "If set to false, will generate JPEG image with lossy compression. By default, it generates a lossless encoded PNG image.",
+                0, 1));
+        _defn.add(new Interface.Element("size", IntegerType.POSITIVE,
+                "If specified, set the size (in pixels) of the largest dimension (width or height). The image will only be resized if it is larger than this size.",
+                0, 1));
+
     }
 
     @Override
@@ -70,7 +71,7 @@ public class SvcArchiveContentImageGet extends PluginService {
 
     @Override
     public String description() {
-        return SERVICE_DESCRIPTION;
+        return "retrieve a file entry from the specified image series asset, which must have zip/aar archive as content and a mf-dicom-series docment in the metadata.";
     }
 
     @Override
@@ -94,156 +95,166 @@ public class SvcArchiveContentImageGet extends PluginService {
         /*
          * parse & validate arguments
          */
-        String id = args.value("id");
-        String cid = args.value("cid");
         long idx = args.longValue("idx", 1);
         long frame = args.longValue("idx/frame", 1);
+        String entryName = args.value("name");
+        boolean lossless = args.booleanValue("lossless", true);
+        Integer size = args.intValue("size", null);
 
-        boolean autoConvert = args.booleanValue("auto-convert", false);
+        String id = args.value("id");
+        String cid = args.value("cid");
+
         if (id == null && cid == null) {
             throw new Exception("id or cid is expected. Found none.");
         }
         if (id != null && cid != null) {
             throw new Exception("id or cid is expected. Found both.");
         }
-        if (outputs == null) {
-            throw new Exception("Expect 1 out. Found none.");
+
+        XmlDoc.Element ae = getAssetMeta(executor(), id, cid);
+        if (id == null) {
+            id = ae.value("@id");
         }
-        if (outputs.size() != 1) {
-            throw new Exception("Expect 1 out. Found " + outputs.size() + ".");
+        if (cid == null) {
+            cid = ae.value("cid");
         }
 
-        /*
-         * get asset metadata & content
-         */
+        if (entryName == null) {
+            // retrieve the entry name from the archive by calling
+            // asset.archive.content.list
+            SimpleEntry<String, Long> entryInfo = getArchiveEntryInfo(
+                    executor(), id, idx);
+            entryName = entryInfo.getKey();
+            // Long entrySize = entryInfo.getValue();
+        }
+
+        if (!isImageFile(entryName)) {
+            throw new Exception("Entry (idx=" + idx + ") " + entryName
+                    + " is not a supported image.");
+        }
+
+        if (entryName.toLowerCase().endsWith(".dcm")) {
+            getDicomImageEntry(executor(), id, idx, frame, lossless, null,
+                    outputs.output(0));
+        } else if (entryName.toLowerCase().endsWith(".png")) {
+            if (lossless && size == null) {
+                getImageEntry(executor(), id, idx, entryName,
+                        outputs.output(0));
+            } else {
+                getPNGImageEntry(executor(), id, idx, entryName, size,
+                        outputs.output(0));
+            }
+        } else if (entryName.toLowerCase().endsWith(".jpg")
+                || entryName.toLowerCase().endsWith(".jpeg")) {
+            if (!lossless && size == null) {
+                getImageEntry(executor(), id, idx, entryName,
+                        outputs.output(0));
+            } else {
+                getJPGImageEntry(executor(), id, idx, entryName, size,
+                        outputs.output(0));
+            }
+        } else {
+            if (lossless) {
+                getPNGImageEntry(executor(), id, idx, entryName, size,
+                        outputs.output(0));
+            } else {
+                getJPGImageEntry(executor(), id, idx, entryName, size,
+                        outputs.output(0));
+            }
+        }
+    }
+
+    private static XmlDoc.Element getAssetMeta(ServiceExecutor executor,
+            String id, String cid) throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
         if (id != null) {
             dm.add("id", id);
         } else {
             dm.add("cid", cid);
         }
-        Outputs sos = new Outputs(1);
-        XmlDoc.Element ae = executor()
-                .execute("asset.get", dm.root(), null, sos).element("asset");
-        if (id == null) {
-            id = ae.value("@id");
-        }
-        if (sos.output(0) == null) {
-            throw new Exception("No content found for asset " + id);
-        }
-        String cType = ae.value("content/type");
-        String cExt = ae.value("content/type/@ext");
-        if (!SvcArchiveContentGet.isArchiveTypeSupported(cExt, cType)) {
-            throw new Exception("Unsupported content mime type: " + cType);
-        }
-        ImageArchiveEntry entry = getImageArchiveEntry(executor(), id, cid, idx,
-                ae, sos.output(0));
-        String fileName = entry.fileName;
-        if (fileName == null) {
-            fileName = String.format("%05d.%s", entry.idx, entry.extension);
-        }
-        if (!autoConvert || entry.isSupportedByBrowsers()) {
-            outputs.output(0).setData(
-                    new SizedInputStream(entry.stream, entry.length),
-                    entry.length, entry.mimeType());
-            w.add("entry", new String[] { "idx", String.valueOf(idx), "size",
-                    String.valueOf(entry.length) }, fileName);
-        } else {
-            if ("dcm".equalsIgnoreCase(entry.extension)) {
-                entry.stream.close();
-                Output pngStream = getDicomImage(executor(), id, idx, frame,
-                        true);
-                outputs.output(0).setData(pngStream.stream(),
-                        pngStream.length(), "image/png");
-                w.add("entry",
-                        new String[] { "idx", String.valueOf(idx), "size",
-                                String.valueOf(entry.length), "output-format",
-                                "png", "output-size",
-                                String.valueOf(pngStream.length()) },
-                        fileName);
-            } else {
-                File pngFile = PluginTask.createTemporaryFile(".png");
-                scanForImageIOPlugins();
-                BufferedImage bufferedImage = ImageIO.read(entry.stream);
-                ImageIO.write(bufferedImage, "png", pngFile);
-                fileName = fileName + ".png";
-                outputs.output(0).setData(
-                        new SizedInputStream(
-                                PluginTask.deleteOnCloseInputStream(pngFile),
-                                pngFile.length()),
-                        pngFile.length(), "image/png");
-                w.add("entry",
-                        new String[] { "idx", String.valueOf(idx), "size",
-                                String.valueOf(entry.length), "output-format",
-                                "png", "output-size",
-                                String.valueOf(pngFile.length()) },
-                        fileName);
-            }
-        }
+        XmlDoc.Element ae = executor.execute("asset.get", dm.root())
+                .element("asset");
+        return ae;
     }
 
-    private static boolean _scannedImageIOPlugins = false;
-
-    private static void scanForImageIOPlugins() {
-        if (!_scannedImageIOPlugins) {
-            ImageIO.scanForPlugins();
-            _scannedImageIOPlugins = true;
-        }
-    }
-
-    private static class ImageArchiveEntry {
-        public final long idx;
-        public final String fileName;
-        public final String extension;
-        public final long length;
-        public final InputStream stream;
-
-        public ImageArchiveEntry(long idx, String fileName, long length,
-                InputStream stream) {
-            this.idx = idx;
-            this.fileName = fileName;
-            int dotIdx = this.fileName.lastIndexOf('.');
-            this.extension = dotIdx == -1 ? null
-                    : this.fileName.substring(dotIdx + 1);
-            this.length = length;
-            this.stream = stream;
-        }
-
-        boolean isSupportedByBrowsers() {
-            return "jpg".equalsIgnoreCase(extension)
-                    || "jpeg".equalsIgnoreCase(extension)
-                    || "png".equalsIgnoreCase(extension)
-                    || "gif".equalsIgnoreCase(extension);
-        }
-
-        String mimeType() {
-            if ("bmp".equalsIgnoreCase(extension)) {
-                return "image/bmp";
-            } else if ("tif".equalsIgnoreCase(extension)
-                    || "tiff".equalsIgnoreCase(extension)) {
-                return "image/tiff";
-            } else if ("png".equalsIgnoreCase(extension)) {
-                return "image/png";
-            } else if ("gif".equalsIgnoreCase(extension)) {
-                return "image/gif";
-            } else if ("jpg".equalsIgnoreCase(extension)
-                    || "jpeg".equalsIgnoreCase(extension)) {
-                return "image/jpeg";
-            } else if ("dcm".equalsIgnoreCase(extension)) {
+    private static String getMimeType(String name) {
+        if (name != null) {
+            String lcn = name.toLowerCase();
+            if (lcn.endsWith(".dcm")) {
                 return "application/dicom";
-            } else {
-                throw new UnsupportedOperationException(
-                        "Unsupported format: " + extension);
+            }
+            if (lcn.endsWith(".png")) {
+                return "image/png";
+            }
+            if (lcn.endsWith(".gif")) {
+                return "image/gif";
+            }
+            if (lcn.endsWith(".bmp")) {
+                return "image/bmp";
+            }
+            if (lcn.endsWith(".jpg") || lcn.endsWith(".jpeg")) {
+                return "image/jpeg";
+            }
+            if (lcn.endsWith(".tif") || lcn.endsWith(".tiff")) {
+                return "image/tiff";
             }
         }
-
+        return null;
     }
 
-    private static Output getDicomImage(ServiceExecutor executor,
-            String assetId, long idx, long frame, boolean lossless)
-                    throws Throwable {
+    public static boolean isImageFile(String name) {
+        int idx = name.lastIndexOf('.');
+        if (idx >= 0) {
+            String ext = name.substring(idx + 1);
+            return isImageFileExtension(ext);
+        }
+        return false;
+    }
+
+    public static boolean isImageFileExtension(String ext) {
+        for (String format : IMAGE_FORMATS) {
+            if (format.equalsIgnoreCase(ext)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void getPNGImageEntry(ServiceExecutor executor,
+            String assetId, long idx, String name, Integer size,
+            PluginService.Output out) throws Throwable {
+        File f1 = PluginTask.createTemporaryFile(name);
+        try {
+            getArchiveEntry(executor, assetId, idx, f1);
+            File f2 = PluginTask.createTemporaryFile(".png");
+            convertToPNG(f1, f2, size);
+            out.setData(PluginTask.deleteOnCloseInputStream(f2), f2.length(),
+                    "image/png");
+        } finally {
+            PluginTask.deleteTemporaryFile(f1);
+        }
+    }
+
+    public static void getJPGImageEntry(ServiceExecutor executor,
+            String assetId, long idx, String name, Integer size,
+            PluginService.Output out) throws Throwable {
+        File f1 = PluginTask.createTemporaryFile(name);
+        try {
+            getArchiveEntry(executor, assetId, idx, f1);
+            File f2 = PluginTask.createTemporaryFile(".jpg");
+            convertToJPG(f1, f2, size);
+            out.setData(PluginTask.deleteOnCloseInputStream(f2), f2.length(),
+                    "image/jpeg");
+        } finally {
+            PluginTask.deleteTemporaryFile(f1);
+        }
+    }
+
+    public static void getDicomImageEntry(ServiceExecutor executor,
+            String assetId, long idx, long frame, boolean lossless, Float size,
+            PluginService.Output output) throws Throwable {
         // NOTE: idx and frame start from 1. However, idx and frame attribute in
-        // dicom.image.get services start from 0;
+        // dicom.image.get services starts from 0;
         XmlDocMaker dm = new XmlDocMaker("args");
         if (frame > 1) {
             dm.add("id", new String[] { "idx", String.valueOf(idx - 1), "frame",
@@ -253,30 +264,115 @@ public class SvcArchiveContentImageGet extends PluginService {
                     assetId);
         }
         dm.add("lossless", lossless);
+        // TODO dicom.image.get :size argument does not take effect.
+        if (size != null) {
+            // dm.add("size", size);
+        }
         Outputs outputs = new Outputs(1);
         executor.execute("dicom.image.get", dm.root(), null, outputs);
-        return outputs.output(0);
+        String mimeType = outputs.output(0).mimeType();
+        if (mimeType == null) {
+            mimeType = lossless ? "image/png" : "image/jpeg";
+        }
+        output.setData(outputs.output(0).stream(), outputs.output(0).length(),
+                mimeType);
     }
 
-    private static ImageArchiveEntry getImageArchiveEntry(
-            ServiceExecutor executor, String id, String cid, long idx,
-            XmlDoc.Element ae, Output so) throws Throwable {
-        XmlDocMaker dm = new XmlDocMaker("result");
-        XmlDocWriter w = new XmlDocWriter(dm);
+    public static void getImageEntry(ServiceExecutor executor, String assetId,
+            long idx, String entryName, PluginService.Output out)
+                    throws Throwable {
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("id", assetId);
+        dm.add("idx", idx);
         Outputs outputs = new Outputs(1);
-        SvcArchiveContentGet.getArchiveEntry(executor, id, cid, idx, ae, so,
-                outputs, w);
-        String name = dm.root().value("entry");
-        long length = dm.root().longValue("entry/@size");
-        int dotIdx = name.lastIndexOf('.');
-        String ext = dotIdx == -1 ? null : name.substring(dotIdx + 1);
-        if (!isImageFormatSupported(ext)) {
-            throw new Exception("Unsupported image type: " + ext + " (file: "
-                    + name + ").");
+        executor.execute("asset.archive.content.get", dm.root(), null, outputs);
+        String mimeType = outputs.output(0).mimeType();
+        if (mimeType == null) {
+            mimeType = getMimeType(entryName);
         }
-        ext = ext.toLowerCase();
-        return new ImageArchiveEntry(idx, name, length,
-                outputs.output(0).stream());
+        out.setData(outputs.output(0).stream(), outputs.output(0).length(),
+                mimeType);
+    }
+
+    public static void getArchiveEntry(ServiceExecutor executor, String assetId,
+            long idx, OutputStream out) throws Throwable {
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("id", assetId);
+        dm.add("idx", idx);
+        Outputs outputs = new Outputs(1);
+        executor.execute("asset.archive.content.get", dm.root(), null, outputs);
+        Output output = outputs.output(0);
+        BufferedInputStream bis = new BufferedInputStream(output.stream());
+        BufferedOutputStream bos = new BufferedOutputStream(out);
+        try {
+            StreamCopy.copy(bis, bos);
+        } finally {
+            bos.close();
+            bis.close();
+            output.close();
+        }
+    }
+
+    public static void getArchiveEntry(ServiceExecutor executor, String assetId,
+            long idx, File outputFile) throws Throwable {
+        OutputStream os = new FileOutputStream(outputFile);
+        try {
+            getArchiveEntry(executor, assetId, idx, os);
+        } finally {
+            os.close();
+        }
+    }
+
+    public static SimpleEntry<String, Long> getArchiveEntryInfo(
+            ServiceExecutor executor, String assetId, long idx)
+                    throws Throwable {
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("id", assetId);
+        dm.add("idx", idx);
+        dm.add("size", 1);
+        XmlDoc.Element ee = executor
+                .execute("asset.archive.content.list", dm.root())
+                .element("entry");
+        if (ee == null) {
+            throw new Exception("Entry " + idx
+                    + " is not found in archive asset " + assetId);
+        }
+        String name = ee.value();
+        Long size = ee.longValue("@size", null);
+        return new SimpleEntry<String, Long>(name, size);
+    }
+
+    public static void convertToPNG(File in, File out, Integer size)
+            throws Throwable {
+        convert(in, out, size, "PNG");
+    }
+
+    public static void convertToJPG(File in, File out, Integer size)
+            throws Throwable {
+        convert(in, out, size, "JPG");
+    }
+
+    public static void convert(File in, File out, Integer size, String toFormat)
+            throws Throwable {
+        ImagePlus img = IJ.openImage(in.getAbsolutePath());
+        try {
+            int w = img.getWidth();
+            int h = img.getHeight();
+            double ratio = ((double) w) / ((double) h);
+            ImageProcessor ip = img.getProcessor();
+            if (size != null && size > 0) {
+                if (w >= h) {
+                    img.setProcessor(
+                            ip.resize(size, (int) (size / ratio), true));
+                } else {
+                    img.setProcessor(
+                            ip.resize((int) (ratio * size), size, true));
+                }
+            }
+            IJ.saveAs(img, toFormat, out.getAbsolutePath());
+        } finally {
+            img.close();
+        }
     }
 
 }

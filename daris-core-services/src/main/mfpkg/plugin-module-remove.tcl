@@ -3,7 +3,7 @@ set plugin_namespace  mflux/plugins/daris-core-services
 set plugin_zip        daris-core-services-plugin.zip
 set plugin_jar        daris-core-services-plugin.jar
 set module_class      nig.mf.plugin.pssd.PSSDPluginModule
-set plugin_libs       { lib/daris-commons-1.0.4.jar lib/daris-dcmtools-1.0.1.jar }
+set plugin_libs       { lib/daris-commons-1.0.4.jar lib/daris-dcmtools-1.0.1.jar lib/ij-1.51g.jar }
 
 # clean up old version of the module
 if { [xvalue exists [plugin.module.exists :path /mflux/plugins/daris-core-services-plugin.jar :class nig.mf.plugin.pssd.PSSDPluginModule]] == "true" } {

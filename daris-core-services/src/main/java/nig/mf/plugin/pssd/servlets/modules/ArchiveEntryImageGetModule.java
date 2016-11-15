@@ -1,5 +1,7 @@
 package nig.mf.plugin.pssd.servlets.modules;
 
+import java.util.AbstractMap.SimpleEntry;
+
 import arc.mf.plugin.http.HttpRequest;
 import arc.mf.plugin.http.HttpResponse;
 import arc.mf.plugin.http.HttpServer;
@@ -40,16 +42,20 @@ public class ArchiveEntryImageGetModule implements Module {
         // filename
         String fileName = request.variableValue(ArchiveServlet.ARG_FILENAME);
 
-        XmlDocMaker dm = new XmlDocMaker("args");
-        if (id != null) {
-            dm.add("id", id);
-        } else {
-            dm.add("cid", cid);
+        if (id == null && cid == null) {
+            throw new Exception("Missing id or cid argument");
         }
+        if (id == null) {
+            id = ServerUtils.idFromCid(server, sessionKey, cid);
+        }
+
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("id", id);
         dm.add("idx", idx);
-        dm.add("auto-convert", true);
-        String entryFileName = ArchiveEntryGetModule.getEntryFileName(server,
-                sessionKey, id, cid, idx);
+        SimpleEntry<String, Long> entryInfo = ArchiveEntryGetModule
+                .getArchiveEntryInfo(server, sessionKey, id, idx);
+        String entryFileName = ArchiveEntryGetModule
+                .extractFileName(entryInfo.getKey());
         String outputMimeType = getOutputMimeType(server, sessionKey,
                 entryFileName);
         String outputFileName = getOutputFileName(
