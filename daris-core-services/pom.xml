@@ -44,8 +44,12 @@
 			<!-- provided so that we do not deploy -->
 			<scope>provided</scope>
 		</dependency>
-		<!-- <dependency> <groupId>com.github.jai-imageio</groupId> <artifactId>jai-imageio-core</artifactId> 
-			<version>1.3.0</version> </dependency> -->
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+			<version>1.51g</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
