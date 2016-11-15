@@ -5,6 +5,7 @@ import arc.mf.client.util.UnhandledException;
 import arc.mf.client.xml.XmlWriterNe;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDoc.Element;
+import daris.client.model.archive.ArchiveEntry;
 import daris.client.model.archive.ArchiveEntryCollectionRef;
 import daris.client.model.archive.ImageEntry;
 import daris.client.util.ServiceTask;
@@ -16,7 +17,7 @@ public class ArchiveContentImageGet extends ServiceTask<ImageEntry> {
     }
 
     private ArchiveEntryCollectionRef _arc;
-    private int _idx;
+    private ArchiveEntry _entry;
 
     /**
      * 
@@ -24,10 +25,11 @@ public class ArchiveContentImageGet extends ServiceTask<ImageEntry> {
      * @param idx
      *            starts from one.
      */
-    public ArchiveContentImageGet(ArchiveEntryCollectionRef arc, int idx) {
+    public ArchiveContentImageGet(ArchiveEntryCollectionRef arc,
+            ArchiveEntry entry) {
         super("daris.archive.content.image.get");
         _arc = arc;
-        _idx = idx;
+        _entry = entry;
     }
 
     @Override
@@ -37,10 +39,11 @@ public class ArchiveContentImageGet extends ServiceTask<ImageEntry> {
         } else {
             w.add("cid", _arc.citeableId());
         }
-        // convert the image to browser supported png format.
-        w.add("auto-convert", true);
-        // _idx starts from 1.
-        w.add("idx", _idx);
+        w.add("idx", _entry.ordinal());
+        if (_entry.name() != null) {
+            w.add("name", _entry.name());
+        }
+        w.add("lossless", false);
     }
 
     @Override
