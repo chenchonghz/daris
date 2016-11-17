@@ -143,7 +143,6 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 		
 		// Set namespace meta-data 
 		XmlDoc.Element meta = asset.element("namespace/asset-meta");
-		System.out.println("   asset-meta="+meta);
 		boolean some = false;
 		if (meta!=null) {
 			dm = new XmlDocMaker("args");
