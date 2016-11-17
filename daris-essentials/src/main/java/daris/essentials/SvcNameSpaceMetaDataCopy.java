@@ -97,10 +97,7 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 	}
 
 	private String replaceRoot (String from, String fromRoot, String toRoot) throws Throwable {
-		//          fromRoot /
-		//          toRoot   /projects
-		//          from     /CAPIM
-		//          to       /projects/proj-CAPIM-<id>
+		// Replace the fromRoot component of from by the toRoot
 		int nF = fromRoot.length();
 		if (nF<=0) {
 			throw new Exception ("The parent 'from' path has zero length");
