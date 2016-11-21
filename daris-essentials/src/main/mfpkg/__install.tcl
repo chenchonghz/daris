@@ -45,6 +45,7 @@ if { [xvalue exists [asset.doc.namespace.exists :namespace "daris"]] == "false" 
 source doc-types-bruker.tcl
 source doc-types-siemens-raw.tcl
 source doc-types-dicom.tcl
+source doc-types-generic.tcl
 
 # ============================================================================
 # Set roles and their permissions

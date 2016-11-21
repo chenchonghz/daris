@@ -17,19 +17,20 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 
 	public SvcNameSpaceMetaDataCopy() {
 		_defn = new Interface();
-		Interface.Element me = new Interface.Element("from", StringType.DEFAULT, "The parent namespace to copy from.", 0, 1);
+		Interface.Element me = new Interface.Element("from", StringType.DEFAULT, "The parent namespace to copy from.", 1, 1);
 		me.add(new Interface.Attribute("proute", CiteableIdType.DEFAULT,
 				"In a federation, specifies the route to the peer that manages this namespace.  If not supplied, then the namespace will be assumed to be local.", 0));
 		_defn.add(me);
 		//
-		me = new Interface.Element("to", StringType.DEFAULT, "The parent namespace to copy to. The parent part of this must pre-exist.  For example, if you were copying e.g. /CAPIM to 1128/projects/proj-CAPIM-1.2.3 (so CAPIM is renamed to proj-CAPIM-1.2.3 in this case), the 1128/projects part must pre-exist.  THe proj-CAPIM-1.2.3 will be created if needed (when create=true).", 0, 1);
+		me = new Interface.Element("to", StringType.DEFAULT, "The parent namespace to copy to. The parent part of this must pre-exist.  E.g. if the from tree is '/a/b/c/d', 'from=/a/b'  and 'to=/x/y/z' then /x/y must exist and the result will be 'x/y/z/c/d' that is 'b' is renamed to 'z' in this process (create=true).", 1, 1);
 		me.add(new Interface.Attribute("proute", CiteableIdType.DEFAULT,
 				"In a federation, specifies the route to the peer that manages this namespace.  If not supplied, then the namespace will be assumed to be local.", 0));
 		_defn.add(me);
 		//
-		_defn.add(new Interface.Element("create", BooleanType.DEFAULT, "By default this service expects all the recipient namespaces to pre-exist. Set to true to create the child namespaces. If false and namespace does not exist, that namespace is skipped."+ 
+		_defn.add(new Interface.Element("create", BooleanType.DEFAULT, "By default this service expects all the recipient namespaces to pre-exist. Set to true to create the child namespaces as required. If false and namespace does not exist, that namespace is skipped."+ 
 				" If they don't they are skipped.  Set this to true to create any missing namespaces.", 0, 1));
 		_defn.add(new Interface.Element("list", BooleanType.DEFAULT, "List all namespaces traversed (defaults to false).", 0, 1));
+		_defn.add(new Interface.Element("recurse", BooleanType.DEFAULT, "By default this service will recurse down the namespace tree. Set to false to take the top level only.", 0, 1));
 	}
 
 	public String name() {
@@ -37,7 +38,7 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 	}
 
 	public String description() {
-		return "Specialised service to recrusively copy (set) namespace meta-data and template meta-data from one namespace root to another.  For example to copy from namespace parent /CAPIM (from) to new parent  /projects/proj-CAPIM-101.3.1 (to).";
+		return "Specialised service to recursively copy (set) namespace meta-data and template meta-data from one namespace root to another. For example to c opy from namespace parent /CAPIM (from) to new parent  /projects/proj-CAPIM-101.3.1 (to).";
 	}
 
 	public Interface definition() {
@@ -65,6 +66,7 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 		String toRoute = args.value("to/@proute");                  // Local if null
 		Boolean create = args.booleanValue("create", false);
 		Boolean list = args.booleanValue("list", false);
+		Boolean recurse = args.booleanValue("recurse", true);
 
 		// See if the peer is reachable. Kind of clumsy as it fails silently with no exception
 		// if you just try and access an unreachable peer
@@ -83,8 +85,8 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 			}
 		}
 
-		// Recursively set meta-data
-		copy (executor(), create, srFrom, srTo, fromParent, toParent, fromParent, toParent, list, w);
+		// Recursively create namespaces and set meta-data
+		copy (executor(), create, srFrom, srTo, fromParent, toParent, fromParent, toParent, list, recurse, w);
 	}
 
 
@@ -95,19 +97,19 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 	}
 
 	private String replaceRoot (String from, String fromRoot, String toRoot) throws Throwable {
-		//  e.g.  /CAPIM   ->  /projects/proj-<name>-<id> and CAPIM is renamed to proj-<name>-<id>
+		// Replace the fromRoot component of from by the toRoot
 		int nF = fromRoot.length();
 		if (nF<=0) {
-			throw new Exception ("The parent from path has zero length");
+			throw new Exception ("The parent 'from' path has zero length");
 		}
 		String t = from.substring(nF+1);
-		return  toRoot + t;
+		return  toRoot + "/" + t;
 	}
 
 
 
 	private void copy (ServiceExecutor executor, Boolean create, ServerRoute srFrom, ServerRoute srTo, String fromNS, String toNS, 
-			String fromParent, String toParent, Boolean list, XmlWriter w) throws Throwable {
+			String fromParent, String toParent, Boolean list, Boolean recurse, XmlWriter w) throws Throwable {
 
 
 		// Check abort
@@ -137,8 +139,8 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 				w.add("to", new String[]{"from", fromNS, "pre-exists", "true"}, toNS);
 			}
 		}
-
-
+		
+		
 		// Set namespace meta-data 
 		XmlDoc.Element meta = asset.element("namespace/asset-meta");
 		boolean some = false;
@@ -178,8 +180,8 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 		if (some) {
 			executor().execute(srTo, "asset.namespace.template.set", dm.root());
 		}
-
-
+		if (!recurse) return;
+		
 		// Now descend into the children namespaces	
 		dm = new XmlDocMaker("args");
 		dm.add("namespace", fromNS);
@@ -195,7 +197,7 @@ public class SvcNameSpaceMetaDataCopy extends PluginService {
 		for (String ns : nss) {
 			String fns = path + "/" + ns;
 			String tns = replaceRoot (fns, fromParent, toParent);
-			copy (executor(), create, srFrom, srTo, fns, tns, fromParent, toParent, list, w);
+			copy (executor(), create, srFrom, srTo, fns, tns, fromParent, toParent, list, recurse, w);
 		}
 	}
 
