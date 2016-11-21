@@ -15,8 +15,8 @@ import arc.xml.XmlWriter;
 public class SvcLicenceUsage extends PluginService {
 
 
-	private static final String LICENCE_USAGE_ASSET_NAME = "LicenceUsage";
-	private static final String LICENCE_USAGE_DOCTYPE =  "daris:LicenceUsage";
+	public static final String LICENCE_USAGE_ASSET_NAME = "LicenceUsage";
+	public static final String LICENCE_USAGE_DOCTYPE =  "daris:LicenceUsage";
 
 
 	private Interface _defn;
@@ -66,7 +66,7 @@ public class SvcLicenceUsage extends PluginService {
 		String date  = args.value("date");
 		String nUsedS = args.value("nused");
 		String nameSpace = args.value("namespace");
-		
+
 		// FInd current license usage
 		XmlDoc.Element r = executor().execute("licence.describe");
 		String total = r.value("licence/total");
@@ -82,18 +82,9 @@ public class SvcLicenceUsage extends PluginService {
 		if (date==null) date = DateUtil.todaysDate(2);
 
 		// FInd the licence usage asset
-		XmlDocMaker dm = new XmlDocMaker("args");
-		dm.add("pdist", "0");
-		//
-		String where = "namespace='" + nameSpace + 
-				"' and name='" + LICENCE_USAGE_ASSET_NAME + "'";
-		dm.add("where", where);
-		r = executor().execute("asset.query", dm.root());
-		String id = r.value("id");
+		String id = findLicenceUsageAsset(executor(), nameSpace, LICENCE_USAGE_ASSET_NAME);
 		if (id==null) {
 			id = createLicenceUsageAsset (executor(), nameSpace);
-		} else {
-			id = r.value("id");
 		}
 		w.add("id", id);
 		w.add("date", date);
@@ -121,7 +112,7 @@ public class SvcLicenceUsage extends PluginService {
 				usedToday.setValue(max);
 
 				// Update
-				dm = new XmlDocMaker("args");
+				XmlDocMaker dm = new XmlDocMaker("args");
 				dm.add("id", id);
 				dm.push("meta");
 				removeAttribute(meta, "id");
@@ -131,7 +122,7 @@ public class SvcLicenceUsage extends PluginService {
 			}
 		} else {
 			max = nUsed;
-			dm = new XmlDocMaker("args");
+			XmlDocMaker dm = new XmlDocMaker("args");
 			dm.add("id", id);
 			dm.push("meta");
 			dm.push(LICENCE_USAGE_DOCTYPE);
@@ -143,6 +134,20 @@ public class SvcLicenceUsage extends PluginService {
 		}
 	}
 
+
+	public static String findLicenceUsageAsset (ServiceExecutor executor, String nameSpace, String name) throws Throwable {
+		XmlDocMaker dm = new XmlDocMaker("args");
+		dm.add("pdist", "0");
+		//
+		String where = "namespace='" + nameSpace + 
+				"' and name='" + name + "'";
+		dm.add("where", where);
+		XmlDoc.Element r = executor.execute("asset.query", dm.root());
+		if (r==null) return null;
+		return r.value("id");
+	}
+
+
 	private String createLicenceUsageAsset (ServiceExecutor executor, String nameSpace) throws Throwable {
 		XmlDocMaker dm = new XmlDocMaker("args");
 
@@ -151,7 +156,7 @@ public class SvcLicenceUsage extends PluginService {
 		XmlDoc.Element r = executor.execute("asset.create", dm.root());
 		return r.value("id");
 	}
-	
+
 	private void removeAttribute (XmlDoc.Element doc, String attributeName) throws Throwable {
 		XmlDoc.Attribute attr = doc.attribute(attributeName);
 		if (attr != null) {
