@@ -46,6 +46,7 @@ public class EssentialsPluginModule implements PluginModule {
         //
         _svs.add(new SvcIPAddressResolve());
         _svs.add(new SvcLicenceUsage());
+        _svs.add(new SvcLicenceUsageDescribe());
         //
         _svs.add(new SvcNameSpacesChildDestroy());
         _svs.add(new SvcNameSpaceMetaDataCopy());
