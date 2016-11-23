@@ -23,6 +23,7 @@ import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.io.FileSaver;
 import ij.process.ImageProcessor;
 
 public class SvcArchiveContentImageGet extends PluginService {
@@ -369,7 +370,15 @@ public class SvcArchiveContentImageGet extends PluginService {
                             ip.resize((int) (ratio * size), size, true));
                 }
             }
-            IJ.saveAs(img, toFormat, out.getAbsolutePath());
+            FileSaver fs = new FileSaver(img);
+            if ("PNG".equalsIgnoreCase(toFormat)) {
+                fs.saveAsPng(out.getAbsolutePath());
+            } else if ("JPG".equalsIgnoreCase(toFormat)
+                    || "JPEG".equalsIgnoreCase(toFormat)) {
+                fs.saveAsJpeg(out.getAbsolutePath());
+            } else {
+                throw new Exception("Unsupported format: " + toFormat);
+            }
         } finally {
             img.close();
         }
