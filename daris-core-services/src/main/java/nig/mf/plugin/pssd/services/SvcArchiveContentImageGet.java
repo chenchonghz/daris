@@ -363,11 +363,15 @@ public class SvcArchiveContentImageGet extends PluginService {
             ImageProcessor ip = img.getProcessor();
             if (size != null && size > 0) {
                 if (w >= h) {
-                    img.setProcessor(
-                            ip.resize(size, (int) (size / ratio), true));
+                    if (w > size) {
+                        img.setProcessor(
+                                ip.resize(size, (int) (size / ratio), true));
+                    }
                 } else {
-                    img.setProcessor(
-                            ip.resize((int) (ratio * size), size, true));
+                    if (h > size) {
+                        img.setProcessor(
+                                ip.resize((int) (ratio * size), size, true));
+                    }
                 }
             }
             FileSaver fs = new FileSaver(img);
