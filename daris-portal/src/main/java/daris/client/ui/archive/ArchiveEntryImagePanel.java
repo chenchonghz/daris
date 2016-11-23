@@ -25,122 +25,129 @@ import daris.client.model.archive.messages.ArchiveContentImageGet;
 
 public class ArchiveEntryImagePanel extends ContainerWidget {
 
-	private ArchiveEntryCollectionRef _arc;
-	private ArchiveEntry _entry;
+    private ArchiveEntryCollectionRef _arc;
+    private ArchiveEntry _entry;
 
-	private AbsolutePanel _ap;
+    private AbsolutePanel _ap;
 
-	public ArchiveEntryImagePanel(ArchiveEntryCollectionRef arc, ArchiveEntry entry) {
+    public ArchiveEntryImagePanel(ArchiveEntryCollectionRef arc,
+            ArchiveEntry entry) {
 
-		_arc = arc;
-		_entry = entry;
+        _arc = arc;
+        _entry = entry;
 
-		_ap = new AbsolutePanel();
-		_ap.fitToParent();
-		_ap.setOverflow(Overflow.HIDDEN);
-		initWidget(_ap);
+        _ap = new AbsolutePanel();
+        _ap.fitToParent();
+        _ap.setOverflow(Overflow.HIDDEN);
+        initWidget(_ap);
 
-		addAttachHandler(new Handler() {
+        addAttachHandler(new Handler() {
 
-			@Override
-			public void onAttachOrDetach(AttachEvent event) {
-				if (event.isAttached()) {
-					loadImage();
-				}
-			}
-		});
+            @Override
+            public void onAttachOrDetach(AttachEvent event) {
+                if (event.isAttached()) {
+                    loadImage();
+                }
+            }
+        });
 
-	}
+    }
 
-	private void loadImage() {
-		/*
-		 * show loading message
-		 */
-		HTML loadingMsg = new HTML("loading image: " + _entry.name());
-		loadingMsg.setFontSize(10);
-		loadingMsg.setPosition(Position.ABSOLUTE);
-		add(loadingMsg);
+    private void loadImage() {
+        /*
+         * show loading message
+         */
+        HTML loadingMsg = new HTML("loading image: " + _entry.name());
+        loadingMsg.setFontSize(10);
+        loadingMsg.setPosition(Position.ABSOLUTE);
+        add(loadingMsg);
 
-		/*
-		 * load image
-		 */
-		int width = width();
-		int height = height();
-		Integer size = (width > 0 && height > 0) ? (width > height ? width : height) : null;
-		new ArchiveContentImageGet(_arc, _entry, false, size).send(new ObjectMessageResponse<ImageEntry>() {
+        /*
+         * load image
+         */
+        int width = width();
+        int height = height();
+        if (width <= 0 && height <= 0) {
+            width = com.google.gwt.user.client.Window.getClientWidth();
+            height = com.google.gwt.user.client.Window.getClientHeight();
+        }
+        Integer size = (width > 0 && height > 0)
+                ? (width > height ? width : height) : null;
+        new ArchiveContentImageGet(_arc, _entry, false, size)
+                .send(new ObjectMessageResponse<ImageEntry>() {
 
-			@Override
-			public void responded(ImageEntry ie) {
-				Image img = new Image(ie.outputUrl());
-				new ImageLoader(img, new ImageLoadHandler() {
-					@Override
-					public void loaded(ImageWidget i) {
-						i.setPosition(Position.ABSOLUTE);
-						add(i);
-					}
-				}).load();
-			}
-		});
+                    @Override
+                    public void responded(ImageEntry ie) {
+                        Image img = new Image(ie.outputUrl());
+                        new ImageLoader(img, new ImageLoadHandler() {
+                            @Override
+                            public void loaded(ImageWidget i) {
+                                i.setPosition(Position.ABSOLUTE);
+                                add(i);
+                            }
+                        }).load();
+                    }
+                });
 
-	}
+    }
 
-	@Override
-	protected void doAdd(Widget w, boolean doLayout) {
+    @Override
+    protected void doAdd(Widget w, boolean doLayout) {
 
-		if (children() != null) {
-			List<Widget> rws = new Vector<Widget>();
-			for (Widget cw : children()) {
-				if (cw != w) {
-					rws.add(cw);
-				}
-			}
-			for (Widget rw : rws) {
-				remove(rw);
-			}
-		}
-		_ap.add(w);
-	}
+        if (children() != null) {
+            List<Widget> rws = new Vector<Widget>();
+            for (Widget cw : children()) {
+                if (cw != w) {
+                    rws.add(cw);
+                }
+            }
+            for (Widget rw : rws) {
+                remove(rw);
+            }
+        }
+        _ap.add(w);
+    }
 
-	@Override
-	protected boolean doRemove(Widget w, boolean doLayout) {
+    @Override
+    protected boolean doRemove(Widget w, boolean doLayout) {
 
-		return _ap.remove(w);
-	}
+        return _ap.remove(w);
+    }
 
-	@Override
-	protected void doLayoutChildren() {
+    @Override
+    protected void doLayoutChildren() {
 
-		super.doLayoutChildren();
-		for (BaseWidget w : children()) {
-			if (w instanceof Image) {
-				resizeAndPositionImage((Image) w);
-			} else {
-				// must be the loading message
-				w.setLeft((width() - w.width()) / 2);
-				w.setTop((height() - w.height()) / 2);
-			}
-		}
-	}
+        super.doLayoutChildren();
+        for (BaseWidget w : children()) {
+            if (w instanceof Image) {
+                resizeAndPositionImage((Image) w);
+            } else {
+                // must be the loading message
+                w.setLeft((width() - w.width()) / 2);
+                w.setTop((height() - w.height()) / 2);
+            }
+        }
+    }
 
-	private void resizeAndPositionImage(Image i) {
+    private void resizeAndPositionImage(Image i) {
 
-		int w = width();
-		int h = height();
-		double ar = ((double) i.width()) / ((double) i.height());
+        int w = width();
+        int h = height();
+        double ar = ((double) i.width()) / ((double) i.height());
 
-		int nw = w;
-		int nh = (int) (nw / ar);
-		if (nh > h) {
-			nh = h;
-			nw = (int) (nh * ar);
-		}
-		i.resizeTo(nw, nh);
-		if (nw == w) {
-			i.setLeft(0);
-			i.setTop((h - nh) / 2);
-		} else {
-			i.setLeft((w - nw) / 2);
-			i.setTop(0);
-		}
-	}
+        int nw = w;
+        int nh = (int) (nw / ar);
+        if (nh > h) {
+            nh = h;
+            nw = (int) (nh * ar);
+        }
+        i.resizeTo(nw, nh);
+        if (nw == w) {
+            i.setLeft(0);
+            i.setTop((h - nh) / 2);
+        } else {
+            i.setLeft((w - nw) / 2);
+            i.setTop(0);
+        }
+    }
 }
