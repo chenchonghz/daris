@@ -110,13 +110,13 @@ public class ArchiveEntryNavigator extends ContainerWidget
                 new WidgetFormatter<ArchiveEntry, Integer>() {
 
                     @Override
-                    public BaseWidget format(ArchiveEntry ae,
-                            final Integer idx) {
+                    public BaseWidget format(final ArchiveEntry ae,
+                            Integer idx) {
                         Button button = new Button("Download");
                         button.addClickHandler(new ClickHandler() {
                             @Override
                             public void onClick(ClickEvent event) {
-                                new ArchiveContentGet(_arc, idx).send();
+                                new ArchiveContentGet(_arc, ae).send();
                             }
                         });
                         return button;
