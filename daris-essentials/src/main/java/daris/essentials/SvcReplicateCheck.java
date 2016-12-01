@@ -33,6 +33,7 @@ public class SvcReplicateCheck extends PluginService {
 		_defn.add(new Interface.Element("include-destroyed", BooleanType.DEFAULT, "Include soft destroyed assets (so don't include soft destroy selection in the where predicate. Default to false.", 0, 1));
 		_defn.add(new Interface.Element("list", BooleanType.DEFAULT, "List all the IDs of assets to be replicated. Default to false.", 0, 1));
 		_defn.add(new Interface.Element("rep-inc", IntegerType.DEFAULT, "When debug is true, messages are written to the server log. This parameter specifies the increment to report that assets have been replicated.  Defaults to 1000. ", 0, 1));
+		_defn.add(new Interface.Element("throw-on-fail", BooleanType.DEFAULT, "By default, service will fail if it fails to replicate any asset. Set to false to not fail and wirte a message in the mediaflux-server log instead for every asset that fails to replciate.", 0, 1));
 	}
 	public String name() {
 		return "nig.replicate.check";
@@ -79,6 +80,7 @@ public class SvcReplicateCheck extends PluginService {
 		Boolean dbg = args.booleanValue("debug", false);
 		Boolean list = args.booleanValue("list", false);
 		Boolean includeDestroyed = args.booleanValue("include-destroyed", false);
+		Boolean throwOnFail = args.booleanValue("throw-on-fail", true);
 		Integer repInc = args.intValue("rep-inc", 1000);
 
 
@@ -149,7 +151,11 @@ public class SvcReplicateCheck extends PluginService {
 					executor().execute("asset.replicate.to", dm.root());
 					nRep++;
 				} catch (Throwable t) {
-					log(dateTime, "Failed to send asset " + id + " with error " + t.getMessage());
+					if (throwOnFail) {
+						throw new Exception(t);
+					} else {
+						log(dateTime, "Failed to send asset " + id + " with error " + t.getMessage());
+					}
 				}
 				c++;
 			}
@@ -280,7 +286,7 @@ public class SvcReplicateCheck extends PluginService {
 					dm = new XmlDocMaker("args");
 					dm.add("id","rid="+rid);
 					XmlDoc.Element remoteAsset = executor.execute(sr, "asset.get", dm.root());
-					
+
 					Date mtimeRep = remoteAsset.dateValue("asset/mtime");
 					String csizeRep = remoteAsset.value("asset/content/size");
 					String cidRep = remoteAsset.value("asset/cid");            // Same for primary and replica
