@@ -1,8 +1,7 @@
-
 asset.doc.type.update :create yes :type daris:LicenceUsage \
   :label "LicenceUsage" \
   :description "Used to track licence usage" \
-   :definition < \
+  :definition < \
     :element -name "max-used" -type "integer" -index "true" -min-occurs "0" \
     < \
       :restriction -base "integer" \
@@ -17,4 +16,4 @@ asset.doc.type.update :create yes :type daris:LicenceUsage \
         > \
       > \
     > \
-    >
+   >

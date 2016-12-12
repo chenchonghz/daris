@@ -68,6 +68,7 @@ public class EssentialsPluginModule implements PluginModule {
         // _svs.add(new SvcDarisDicomSend());
         _svs.add(new SvcDicomDownload());
         //
+        _svs.add(new SvcRolePermsRemove());
         _svs.add(new SvcSecureWalletKeyEntryGenerate());
     }
 

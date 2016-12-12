@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import nig.mf.plugin.util.AssetUtil;
-import nig.mf.pssd.plugin.util.CiteableIdUtil;
 
 import arc.mf.plugin.*;
 import arc.mf.plugin.dtype.*;
