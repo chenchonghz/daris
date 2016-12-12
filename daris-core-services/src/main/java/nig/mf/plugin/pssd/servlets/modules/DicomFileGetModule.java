@@ -5,7 +5,6 @@ import arc.mf.plugin.http.HttpResponse;
 import arc.mf.plugin.http.HttpServer;
 import arc.mf.plugin.http.HttpServer.SessionKey;
 import arc.xml.XmlDocMaker;
-import nig.mf.plugin.pssd.services.SvcDicomArchiveContentGet;
 import nig.mf.plugin.pssd.servlets.DicomServlet;
 import nig.mf.plugin.pssd.servlets.Disposition;
 
@@ -41,12 +40,14 @@ public class DicomFileGetModule implements Module {
         // filename
         String fileName = request.variableValue(DicomServlet.ARG_FILENAME);
 
-        XmlDocMaker dm = new XmlDocMaker("args");
-        if (id != null) {
-            dm.add("id", id);
-        } else {
-            dm.add("cid", cid);
+        if (id == null && cid == null) {
+            throw new Exception("Missing id or cid argument");
         }
+        if (id == null) {
+            id = ServerUtils.idFromCid(server, sessionKey, cid);
+        }
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("id", id);
         dm.add("idx", idx);
         try {
             response.setHeaderField("Content-Type", DICOM_FILE_MIME_TYPE);
@@ -55,8 +56,8 @@ public class DicomFileGetModule implements Module {
             }
             response.setHeaderField("Content-Disposition",
                     disposition.name() + "; filename=\"" + fileName + "\"");
-            server.execute(sessionKey, SvcDicomArchiveContentGet.SERVICE_NAME,
-                    dm.root(), (HttpRequest) null, response);
+            server.execute(sessionKey, "asset.archive.content.get", dm.root(),
+                    (HttpRequest) null, response);
         } catch (Throwable e) {
             StringBuilder error = new StringBuilder();
             error.append("<h3>");

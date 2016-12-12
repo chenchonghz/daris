@@ -73,7 +73,7 @@ public class ArchiveEntryView extends StackPane {
             ArchiveEntry ae) {
         try {
             InMemoryOutput output = new InMemoryOutput();
-            new ArchiveContentImageGet(arc, ae.ordinal()).setOutput(output)
+            new ArchiveContentImageGet(arc, ae).setOutput(output)
                     .setResponseHandler((e, o) -> {
                         ApplicationThread.execute(() -> {
                             try (InputStream in = output.stream()) {

@@ -1,17 +1,11 @@
 package nig.mf.plugin.pssd.services;
 
-import java.io.File;
-import java.io.FileOutputStream;
-
-import arc.archive.ArchiveInput;
-import arc.archive.ArchiveRegistry;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.ServiceExecutor;
 import arc.mf.plugin.dtype.AssetType;
 import arc.mf.plugin.dtype.CiteableIdType;
+import arc.mf.plugin.dtype.IntegerType;
 import arc.mf.plugin.dtype.LongType;
-import arc.streams.SizedInputStream;
-import arc.xml.XmlDoc;
 import arc.xml.XmlDoc.Element;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
@@ -20,19 +14,29 @@ public class SvcArchiveContentGet extends PluginService {
 
     public static final String SERVICE_NAME = "daris.archive.content.get";
 
-    public static final String SERVICE_DESCRIPTION = "retrieve a file entry from the specified asset's content.";
-
     private Interface _defn;
 
     public SvcArchiveContentGet() {
         _defn = new Interface();
-        _defn.add(new Interface.Element("id", AssetType.DEFAULT,
-                "The id of the asset that has the archive as content", 0, 1));
-        _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT,
-                "The citeable id of the asset that has the archive as content",
-                0, 1));
+
+        Interface.Element id = new Interface.Element("id", AssetType.DEFAULT,
+                "The asset identifier (or path).", 0, 1);
+        id.add(new Interface.Attribute("version", IntegerType.POSITIVE,
+                "Version of the asset. A value of zero means the latest version. Defaults to zero.",
+                0));
+        _defn.add(id);
+
+        Interface.Element cid = new Interface.Element("cid",
+                CiteableIdType.DEFAULT, "The citeable identifier of the asset.",
+                0, 1);
+        cid.add(new Interface.Attribute("version", IntegerType.POSITIVE,
+                "Version of the asset. A value of zero means the latest version. Defaults to zero.",
+                0));
+        _defn.add(cid);
+
         _defn.add(new Interface.Element("idx", LongType.POSITIVE_ONE,
-                "The ordinal position. Defaults to 1.", 0, 1));
+                "The ordinal position of the file entry. Defaults to 1.", 1,
+                1));
     }
 
     @Override
@@ -47,7 +51,7 @@ public class SvcArchiveContentGet extends PluginService {
 
     @Override
     public String description() {
-        return SERVICE_DESCRIPTION;
+        return "Retrieves a file entry from the specified asset's content archive. Note: the service wraps asset.archive.content.get service with support of citeable identifier.";
     }
 
     @Override
@@ -58,103 +62,39 @@ public class SvcArchiveContentGet extends PluginService {
          */
         String id = args.value("id");
         String cid = args.value("cid");
-        long idx = args.longValue("idx", 1);
+
         if (id == null && cid == null) {
             throw new Exception("id or cid is expected. Found none.");
         }
         if (id != null && cid != null) {
             throw new Exception("id or cid is expected. Found both.");
         }
-        if (outputs == null) {
-            throw new Exception("Expect 1 out. Found none.");
-        }
-        if (outputs.size() != 1) {
-            throw new Exception("Expect 1 out. Found " + outputs.size() + ".");
+
+        long idx = args.longValue("idx");
+
+        Integer version = null;
+        if (id == null) {
+            version = args.intOrNullValue("cid/@version");
+            id = idFromCid(executor(), cid, version);
+        } else {
+            version = args.intOrNullValue("id/@version");
         }
 
-        /*
-         * get asset metadata & content
-         */
         XmlDocMaker dm = new XmlDocMaker("args");
-        if (id != null) {
-            dm.add("id", id);
-        } else {
-            dm.add("cid", cid);
-        }
-        Outputs sos = new Outputs(1);
-        XmlDoc.Element ae = executor()
-                .execute("asset.get", dm.root(), null, sos).element("asset");
-        String cType = ae.value("content/type");
-        String cExt = ae.value("content/type/@ext");
-        if (!isArchiveTypeSupported(cExt, cType)) {
-            throw new Exception("Unsupported content mime type: " + cType);
-        }
-        /*
-         * get archive entry
-         */
-        getArchiveEntry(executor(), id, cid, idx, ae, sos.output(0), outputs,
-                w);
+        dm.add("id", new String[] { "version",
+                version == null ? null : version.toString() }, id);
+        dm.add("idx", idx);
+
+        executor().execute("asset.archive.content.get", dm.root(), null,
+                outputs);
     }
 
-    public static void getArchiveEntry(ServiceExecutor executor, String id,
-            String cid, long idx, XmlDoc.Element ae, Output so, Outputs outputs,
-            XmlWriter w) throws Throwable {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("asset(");
-        if (id != null) {
-            sb.append("id=");
-            sb.append(id);
-        } else {
-            sb.append("cid=");
-            sb.append(cid);
-        }
-        sb.append(")");
-        String idString = sb.toString();
-
-        XmlDoc.Element ce = ae.element("content");
-        if (ce == null || so == null) {
-            throw new Exception(idString + " has no content.");
-        }
-
-        /*
-         * get the entry
-         */
-        try {
-            long csize = ce.longValue("size");
-            String ext = ce.value("type/@ext");
-            if (!("zip".equalsIgnoreCase(ext) || "jar".equalsIgnoreCase(ext)
-                    || "aar".equalsIgnoreCase(ext)
-                    || "tar".equalsIgnoreCase(ext))) {
-                throw new Exception("Unsupported archive format: " + ext + ".");
-            }
-            ArchiveInput in = ArchiveRegistry.createInputForExtension(
-                    new SizedInputStream(so.stream(), csize), ext,
-                    ArchiveInput.ACCESS_RANDOM);
-            try {
-                ArchiveInput.Entry entry = in.get(((int) idx) - 1);
-                if (entry == null) {
-                    throw new Exception("Failed to retrieve entry " + idx
-                            + " from content of " + idString + ".");
-                }
-                File tf = PluginService.createTemporaryFile();
-                arc.streams.StreamCopy.copy(entry.stream(),
-                        new FileOutputStream(tf));
-                Output out = outputs.output(0);
-                out.setData(PluginService.deleteOnCloseInputStream(tf),
-                        entry.size(), null);
-                w.add("entry", new String[] { "idx", String.valueOf(idx),
-                        "size", String.valueOf(entry.size()) }, entry.name());
-            } finally {
-                in.close();
-            }
-        } finally {
-            if (so.stream() != null) {
-                so.stream().close();
-            }
-            so.close();
-        }
-
+    static String idFromCid(ServiceExecutor executor, String cid,
+            Integer version) throws Throwable {
+        XmlDocMaker dm = new XmlDocMaker("args");
+        dm.add("cid", new String[] { "version",
+                version == null ? null : version.toString() }, cid);
+        return executor.execute("asset.get", dm.root()).value("asset/@id");
     }
 
     @Override
@@ -170,28 +110,6 @@ public class SvcArchiveContentGet extends PluginService {
     @Override
     public int maxNumberOfOutputs() {
         return 1;
-    }
-
-    public static boolean isArchiveTypeSupported(String extension,
-            String mimeType) {
-        boolean extSupported = false;
-        if (extension != null) {
-            extSupported = extension.equalsIgnoreCase("aar")
-                    || extension.equalsIgnoreCase("zip")
-                    || extension.equalsIgnoreCase("jar")
-                    || extension.equalsIgnoreCase("tar");
-        }
-        boolean typeSupported = false;
-        if (mimeType != null) {
-            typeSupported = mimeType.equals("application/arc-archive")
-                    || mimeType.equals("application/zip")
-                    || mimeType.equals("application/x-zip")
-                    || mimeType.equals("application/x-zip-compressed")
-                    || mimeType.equals("application/zip")
-                    || mimeType.equals("application/java-archive")
-                    || mimeType.equals("application/x-tar");
-        }
-        return extSupported || typeSupported;
     }
 
 }

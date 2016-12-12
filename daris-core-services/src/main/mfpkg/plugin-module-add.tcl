@@ -3,7 +3,7 @@ set plugin_namespace  mflux/plugins/daris-core-services
 set plugin_zip        daris-core-services-plugin.zip
 set plugin_jar        daris-core-services-plugin.jar
 set module_class      nig.mf.plugin.pssd.PSSDPluginModule
-set plugin_libs       { lib/daris-commons-1.0.4.jar lib/daris-dcmtools-1.0.1.jar }
+set plugin_libs       { lib/daris-commons-1.0.4.jar lib/daris-dcmtools-1.0.1.jar lib/ij-1.51h.jar }
 
 # import the plugin jar from the zip file to Mediaflux system. It will be an asset
 # in the specified namespace with plugin jar file as content.

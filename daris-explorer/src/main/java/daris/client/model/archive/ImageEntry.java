@@ -1,29 +1,31 @@
 package daris.client.model.archive;
 
-import arc.xml.XmlDoc;
+public class ImageEntry {
 
-public class ImageEntry extends ArchiveEntry {
-
-    private long _outputSize;
-    private String _outputFormat;
+    private ArchiveEntry _entry;
+    private boolean _lossless;
     private String _outputUrl;
 
-    public ImageEntry(XmlDoc.Element ee) throws Throwable {
-        super(ee);
-        _outputSize = ee.longValue("@output-size", size());
-        _outputFormat = ee.stringValue("@output-format", fileExtension());
+    public ImageEntry(ArchiveEntry entry, boolean lossless) {
+        _entry = entry;
+        _lossless = lossless;
     }
 
-    public long outputSize() {
-        return _outputSize;
+    public String entryName() {
+        return _entry.name();
     }
 
-    public String outputFormat() {
-        return _outputFormat;
+    public String entryFileName() {
+        return _entry.fileName();
     }
 
-    public String outputFileName() {
-        return fileName() + "." + _outputFormat;
+    public String imageFileName() {
+        String ext = _lossless ? ".png" : ".jpg";
+        String fileName = entryFileName();
+        if (!fileName.endsWith(ext) && !fileName.endsWith(ext.toUpperCase())) {
+            fileName = fileName + ext;
+        }
+        return fileName;
     }
 
     public String outputUrl() {

@@ -1,14 +1,10 @@
 package daris.essentials;
 
 import nig.mf.plugin.util.AssetUtil;
-import nig.util.DateUtil;
 import arc.mf.plugin.PluginService;
-import arc.mf.plugin.ServiceExecutor;
-import arc.mf.plugin.dtype.IntegerType;
 import arc.mf.plugin.dtype.StringType;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDoc.Element;
-import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
 
 
@@ -31,7 +27,7 @@ public class SvcLicenceUsageDescribe extends PluginService {
 	}
 
 	public String description() {
-		return "Describe tracked licence usage asset (created by servcie nig.licence.usage).";
+		return "Describe tracked licence usage asset (created by service nig.licence.usage).";
 	}
 
 	public String name() {
