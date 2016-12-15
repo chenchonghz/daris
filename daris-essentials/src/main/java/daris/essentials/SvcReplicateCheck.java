@@ -98,8 +98,9 @@ public class SvcReplicateCheck extends PluginService {
 		// Iterate through cursor and build list of assets 
 		boolean more = true;
 		Vector<String> assetIDs = new Vector<String>();
+		Integer sid = schemaID(executor());
 		while (more) {
-			more = find (executor(),  dateTime, where, peer, sr, uuidLocal, size, 
+			more = find (executor(),  sid, dateTime, where, peer, sr, uuidLocal, size, 
 					assetIDs, checkAsset, exclDaRISProc, useIndexes, 
 					dbg,  list, includeDestroyed, idx, count, w);
 			if (dbg) {
@@ -176,7 +177,7 @@ public class SvcReplicateCheck extends PluginService {
 		return r.value("uuid");
 	}
 
-	private boolean find (ServiceExecutor executor,  String dateTime, String where, String peer, ServerRoute sr, String uuidLocal, String size, 
+	private boolean find (ServiceExecutor executor, Integer sid, String dateTime, String where, String peer, ServerRoute sr, String uuidLocal, String size, 
 			Vector<String> assetList, Boolean checkAsset, Boolean exclDaRISProc, 
 			Boolean useIndexes, Boolean dbg, Boolean list,
 			Boolean includeDestroyed, int[] idx, int[] count, XmlWriter w)	throws Throwable {
@@ -225,10 +226,7 @@ public class SvcReplicateCheck extends PluginService {
 			idx[0] = next;
 		}
 
-		// See if the replicas exist on the peer. 
-		// One query per asset
-
-		// Make a list of rids to find
+		// See if the replicas exist on the peer - make a list of rids to find
 		dm = new XmlDocMaker("args");	
 		for (XmlDoc.Element asset : assets) {
 			// Get the asset id, and the rid (asset may already be a replica from elsewhere)
@@ -238,8 +236,15 @@ public class SvcReplicateCheck extends PluginService {
 			// when replicated to another peer
 			String rid = asset.value("rid");    
 
-			// If primary, set expected rid on remote peer
-			if (rid==null) rid = uuidLocal + "." + id;
+			// If primary, set expected rid on remote peer. If the asset is in a numbered schema
+			// that has to be accounted for.
+			if (rid==null) {
+				if (sid==null) {
+					rid = uuidLocal + "." + id;
+				} else {
+					rid = uuidLocal + "." + sid + "." + id;
+				}
+			}
 			dm.add("rid", rid);
 		}
 
@@ -252,16 +257,19 @@ public class SvcReplicateCheck extends PluginService {
 		Collection<XmlDoc.Element> results = r2.elements("exists");
 
 
-		// Create a list of assets to replicate
+		// Create a list of assets that don't have replcias that we want to replicate
 		if (dbg) {
 			log(dateTime, "   nig.replicate.check : iterate through " + results.size() + " results and build list for replication.");
 		}
+		
+		Integer n = null;
 		for (XmlDoc.Element result : results) {
 
 			// Fetch the rid and pull out the id
 			String rid = result.value("@rid");
 			String[] t = rid.split("\\.");
-			String primaryID = t[1];
+			if (n==null) n = t.length;           // They are all the same length
+			String primaryID = t[n-1];
 
 			/*
 			System.out.println("rid="+rid);
@@ -318,5 +326,16 @@ public class SvcReplicateCheck extends PluginService {
 		}
 		//
 		return more;
+	}
+
+
+	private Integer schemaID (ServiceExecutor executor) throws Throwable {
+		XmlDoc.Element r = executor.execute("schema.self.describe");
+		// TBD real code
+		Integer iSchema = r.intValue("id");
+
+		// Needs to return the schema number if there is one
+		// Null if none
+		return null;
 	}
 }

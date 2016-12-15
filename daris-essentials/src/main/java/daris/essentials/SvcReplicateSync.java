@@ -101,7 +101,7 @@ public class SvcReplicateSync extends PluginService {
 
 		// FInd assets
 		while (more) {
-			more = findNew (executor(), dateTime, useIndexes, destroyOther, destroyDICOMPatient, destroyDICOMStudy,
+			more = find (executor(), dateTime, useIndexes, destroyOther, destroyDICOMPatient, destroyDICOMStudy,
 					destroyDICOMSeries, where, peer, srPeer, uuidLocal, size, dbg, idx, w);
 			PluginTask.checkIfThreadTaskAborted();
 		}
@@ -220,7 +220,7 @@ public class SvcReplicateSync extends PluginService {
 	// 4. On the local peer, if the asset was replicated from us check existence
 	//     by id. If the asset was replicated from somewhere else check existence by rid
 	// 
-	private boolean findNew (ServiceExecutor executor,  String dateTime, Boolean useIndexes,  XmlDocMaker destroyOther, XmlDocMaker destroyDICOMPatient, XmlDocMaker destroyDICOMStudy,
+	private boolean find (ServiceExecutor executor,  String dateTime, Boolean useIndexes,  XmlDocMaker destroyOther, XmlDocMaker destroyDICOMPatient, XmlDocMaker destroyDICOMStudy,
 			XmlDocMaker destroyDICOMSeries, String where, String peer, ServerRoute srPeer, String uuidLocal, String size, 
 			Boolean dbg, int[] idx, XmlWriter w)
 					throws Throwable {
@@ -246,7 +246,6 @@ public class SvcReplicateSync extends PluginService {
 		dm.add("pdist", 0);
 		dm.add("xpath", "id");
 		dm.add("xpath", "rid");
-		dm.add("xpath", "cid");
 		dm.add("xpath", "type");
 		XmlDoc.Element r = executor.execute(srPeer, "asset.query", dm.root());
 		if (dbg) {
@@ -298,8 +297,7 @@ public class SvcReplicateSync extends PluginService {
 				List<XmlDoc.Element> t = rAsset.elements("value");
 				String idOnPeer = t.get(0).value();
 				String rid = t.get(1).value();
-				String cid = t.get(2).value();
-				String type = t.get(3).value();
+				String type = t.get(2).value();
 				nExtra++;
 
 
