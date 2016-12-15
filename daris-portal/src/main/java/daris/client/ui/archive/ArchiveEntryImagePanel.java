@@ -5,6 +5,8 @@ import java.util.Vector;
 
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.event.logical.shared.AttachEvent;
+import com.google.gwt.event.logical.shared.AttachEvent.Handler;
 import com.google.gwt.user.client.ui.Widget;
 
 import arc.gui.gwt.widget.BaseWidget;
@@ -28,7 +30,8 @@ public class ArchiveEntryImagePanel extends ContainerWidget {
 
     private AbsolutePanel _ap;
 
-    public ArchiveEntryImagePanel(ArchiveEntryCollectionRef arc, ArchiveEntry entry) {
+    public ArchiveEntryImagePanel(ArchiveEntryCollectionRef arc,
+            ArchiveEntry entry) {
 
         _arc = arc;
         _entry = entry;
@@ -38,7 +41,16 @@ public class ArchiveEntryImagePanel extends ContainerWidget {
         _ap.setOverflow(Overflow.HIDDEN);
         initWidget(_ap);
 
-        loadImage();
+        addAttachHandler(new Handler() {
+
+            @Override
+            public void onAttachOrDetach(AttachEvent event) {
+                if (event.isAttached()) {
+                    loadImage();
+                }
+            }
+        });
+
     }
 
     private void loadImage() {
@@ -53,7 +65,15 @@ public class ArchiveEntryImagePanel extends ContainerWidget {
         /*
          * load image
          */
-        new ArchiveContentImageGet(_arc, _entry)
+        int width = width();
+        int height = height();
+        if (width <= 0 && height <= 0) {
+            width = com.google.gwt.user.client.Window.getClientWidth();
+            height = com.google.gwt.user.client.Window.getClientHeight();
+        }
+        Integer size = (width > 0 && height > 0)
+                ? (width > height ? width : height) : null;
+        new ArchiveContentImageGet(_arc, _entry, false, size)
                 .send(new ObjectMessageResponse<ImageEntry>() {
 
                     @Override

@@ -1,10 +1,9 @@
 package daris.client.model.archive.messages;
 
 import arc.mf.client.ServerClient.Output;
-import arc.mf.client.util.UnhandledException;
 import arc.mf.client.xml.XmlWriterNe;
-import arc.xml.XmlDoc;
 import arc.xml.XmlDoc.Element;
+import daris.client.model.archive.ArchiveEntry;
 import daris.client.model.archive.ArchiveEntryCollectionRef;
 import daris.client.model.archive.ImageEntry;
 import daris.client.util.ServiceTask;
@@ -16,18 +15,22 @@ public class ArchiveContentImageGet extends ServiceTask<ImageEntry> {
     }
 
     private ArchiveEntryCollectionRef _arc;
-    private int _idx;
+    private ArchiveEntry _entry;
+    private boolean _lossless;
+    private Integer _size;
 
-    /**
-     * 
-     * @param arc
-     * @param idx
-     *            starts from one.
-     */
-    public ArchiveContentImageGet(ArchiveEntryCollectionRef arc, int idx) {
+    public ArchiveContentImageGet(ArchiveEntryCollectionRef arc,
+            ArchiveEntry entry) {
+        this(arc, entry, false, null);
+    }
+
+    public ArchiveContentImageGet(ArchiveEntryCollectionRef arc,
+            ArchiveEntry entry, boolean lossless, Integer size) {
         super("daris.archive.content.image.get");
         _arc = arc;
-        _idx = idx;
+        _entry = entry;
+        _lossless = lossless;
+        _size = size;
     }
 
     @Override
@@ -37,25 +40,20 @@ public class ArchiveContentImageGet extends ServiceTask<ImageEntry> {
         } else {
             w.add("cid", _arc.citeableId());
         }
-        // convert the image to browser supported png format.
-        w.add("auto-convert", true);
-        // _idx starts from 1.
-        w.add("idx", _idx);
+        w.add("idx", _entry.ordinal());
+        if (_entry.name() != null) {
+            w.add("name", _entry.name());
+        }
+        w.add("lossless", _lossless);
+        if (_size != null) {
+            w.add("size", _size);
+        }
     }
 
     @Override
     public ImageEntry instantiate(Element xe) {
-        try {
-            XmlDoc.Element ee = xe.element("entry");
-            if (ee != null) {
-                return new ImageEntry(ee);
-            } else {
-                return null;
-            }
-        } catch (Throwable e) {
-            UnhandledException.report("Instantiating archive entry", e);
-            return null;
-        }
+        ImageEntry ie = new ImageEntry(_entry, _lossless);
+        return ie;
     }
 
 }

@@ -13,7 +13,7 @@ import daris.client.util.DownloadUtil;
 public class ArchiveContentGet extends ObjectMessage<ArchiveEntry> {
 
     private ArchiveEntryCollectionRef _arc;
-    private int _idx;
+    private ArchiveEntry _entry;
 
     /**
      * 
@@ -21,9 +21,10 @@ public class ArchiveContentGet extends ObjectMessage<ArchiveEntry> {
      * @param idx
      *            starts from one.
      */
-    public ArchiveContentGet(ArchiveEntryCollectionRef arc, int idx) {
+    public ArchiveContentGet(ArchiveEntryCollectionRef arc,
+            ArchiveEntry entry) {
         _arc = arc;
-        _idx = idx;
+        _entry = entry;
     }
 
     @Override
@@ -33,8 +34,8 @@ public class ArchiveContentGet extends ObjectMessage<ArchiveEntry> {
         } else {
             w.add("cid", _arc.citeableId());
         }
-        // _idx starts from 1.
-        w.add("idx", _idx);
+        // idx starts from 1.
+        w.add("idx", _entry.ordinal());
     }
 
     @Override
@@ -44,11 +45,7 @@ public class ArchiveContentGet extends ObjectMessage<ArchiveEntry> {
 
     @Override
     protected ArchiveEntry instantiate(XmlElement xe) throws Throwable {
-        XmlElement ee = xe.element("entry");
-        if (ee != null) {
-            return new ArchiveEntry(ee);
-        }
-        return null;
+        return _entry;
     }
 
     @Override
@@ -58,7 +55,7 @@ public class ArchiveContentGet extends ObjectMessage<ArchiveEntry> {
 
     @Override
     protected String idToString() {
-        return String.valueOf(_idx);
+        return String.valueOf(_entry.ordinal());
     }
 
     @Override
@@ -67,9 +64,9 @@ public class ArchiveContentGet extends ObjectMessage<ArchiveEntry> {
     }
 
     @Override
-    protected void process(ArchiveEntry o, List<Output> outputs)
+    protected void process(ArchiveEntry entry, List<Output> outputs)
             throws Throwable {
         Output output = outputs.get(0);
-        DownloadUtil.download(output, o.fileName());
+        DownloadUtil.download(output, entry.fileName());
     }
 }

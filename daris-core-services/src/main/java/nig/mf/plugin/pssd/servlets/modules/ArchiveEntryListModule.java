@@ -6,7 +6,6 @@ import arc.mf.plugin.http.HttpServer;
 import arc.mf.plugin.http.HttpServer.SessionKey;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDocMaker;
-import nig.mf.plugin.pssd.services.SvcArchiveContentList;
 import nig.mf.plugin.pssd.servlets.ArchiveServlet;
 
 public class ArchiveEntryListModule implements Module {
@@ -27,15 +26,18 @@ public class ArchiveEntryListModule implements Module {
         String id = request.variableValue(ArchiveServlet.ARG_ID);
         // cid
         String cid = request.variableValue(ArchiveServlet.ARG_CID);
+        if (id == null && cid == null) {
+            throw new Exception("Missing id or cid argument");
+        }
+        if (id == null) {
+            id = ServerUtils.idFromCid(server, sessionKey, cid);
+        }
 
         XmlDocMaker dm = new XmlDocMaker("args");
-        if (id != null) {
-            dm.add("id", id);
-        } else {
-            dm.add("cid", cid);
-        }
+        dm.add("id", id);
+        dm.add("size", "infinity");
         XmlDoc.Element re = server.execute(sessionKey,
-                SvcArchiveContentList.SERVICE_NAME, dm.root());
+                "asset.archive.content.list", dm.root());
         response.setContent(re.toString(), "text/xml");
     }
 }

@@ -31,10 +31,7 @@ public class DicomImageGetModule implements Module {
         // cid
         String cid = request.variableValue(DicomServlet.ARG_CID);
         if (id == null) {
-            id = server
-                    .execute(sessionKey, "asset.get",
-                            "<cid>" + cid + "</cid>", null, null)
-                    .value("asset/@id");
+            id = ServerUtils.idFromCid(server, sessionKey, cid);
         }
         // idx
         String idxStr = request.variableValue(DicomServlet.ARG_IDX);
