@@ -107,11 +107,8 @@ public class SvcAssetCheck extends PluginService {
 			Integer next = cursor.intValue("next");
 			idx_ = next;
 		}
-
-		// See if the replicas exist on the peer. 
-		// One query per asset
 		
-		// Make a list of rids to find
+		// Make a list of ids to find
 		for (String asset : assets) {
 			dm = new XmlDocMaker("args");	
 			dm.add("id", asset);

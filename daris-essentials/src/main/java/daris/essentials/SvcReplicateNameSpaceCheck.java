@@ -92,9 +92,10 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 
 		// Iterate through cursor and build list of assets 
 		boolean more = true;
+		String schemaID = SvcReplicateCheck.schemaID(executor());
 		Vector<XmlDoc.Element> assets = new Vector<XmlDoc.Element>();
 		while (more) {
-			more = find (executor(),  dateTime, where, peer, remoteSR, dst, uuidLocal, size, 
+			more = find (executor(),  schemaID, dateTime, where, peer, remoteSR, dst, uuidLocal, size, 
 					assets, exclDaRISProc, useIndexes, 
 					dbg, includeDestroyed, idx, count, w);
 			if (dbg) {
@@ -155,7 +156,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		return r.value("uuid");
 	}
 
-	private boolean find (ServiceExecutor executor,  String dateTime, String where, String peer, 
+	private boolean find (ServiceExecutor executor,  String schemaID, String dateTime, String where, String peer, 
 			ServerRoute sr, String dst, String uuidLocal, String size, 
 			Vector<XmlDoc.Element> assetList, Boolean exclDaRISProc, 
 			Boolean useIndexes, Boolean dbg,
@@ -213,9 +214,9 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 			// when replicated to another peer
 			String rid = asset.value("rid");    
 
-			// If primary, set expected rid on remote peer
-			if (rid==null) rid = uuidLocal + "." + id;
-			dm.add("rid", rid);
+			// If primary, set expected rid on remote peer.
+			String rid2 = SvcReplicateCheck.setRID (id, rid, schemaID, uuidLocal);
+			dm.add("rid", rid2);
 		}
 
 		// Now check if they exist
@@ -231,12 +232,15 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		if (dbg) {
 			log(dateTime, "   nig.replicate.namespace.check : iterate through " + results.size() + " results and build list for move.");
 		}
+		Integer n = null;
 		for (XmlDoc.Element result : results) {
 
 			// Fetch the rid and pull out the id
 			String rid = result.value("@rid");
-			String[] t = rid.split("\\.");
-			String primaryID = t[1];
+			String[] t = rid.split("\\.");			
+			if (n==null) n = t.length;           // They are all the same length
+			String primaryID = t[n-1];
+
 
 			/*
 			System.out.println("rid="+rid);
