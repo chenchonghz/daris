@@ -346,8 +346,11 @@ public class SvcReplicateCheck extends PluginService {
 	static public String setRID (String id, String rid, String schemaID, String uuidLocal) throws Throwable  {
 		if (rid!=null) return rid;
 		if (schemaID==null) {
+			
+			// No numbered schema (primary schema)
 			return uuidLocal + "." + id;
 		} else {
+			// We are in a numbered schema
 			return uuidLocal + "." + schemaID + "." + id;
 		}
 	}
