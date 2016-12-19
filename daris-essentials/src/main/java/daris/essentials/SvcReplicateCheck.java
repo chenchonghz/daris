@@ -24,7 +24,7 @@ public class SvcReplicateCheck extends PluginService {
 		_defn = new Interface();
 		_defn.add(new Interface.Element("peer",StringType.DEFAULT, "Name of peer that objects have been replicated to.", 1, 1));
 		_defn.add(new Interface.Element("where",StringType.DEFAULT, "Query predicate to restrict the selected assets on the local host. If unset, all assets are considered.", 0, 1));
-		_defn.add(new Interface.Element("size",IntegerType.DEFAULT, "Limit the accumulation loop to this number of assets per iteration (if too large, the host may run out of virtual memory).  Defaults to 10000.", 0, 1));
+		_defn.add(new Interface.Element("size",IntegerType.DEFAULT, "Limit the accumulation loop to this number of assets per iteration (if too large, the host may run out of virtual memory).  Defaults to 5000.", 0, 1));
 		_defn.add(new Interface.Element("dst", StringType.DEFAULT, "The destination parent namespace. If supplied (use '/' for root namespace), assets will actually be replicated (one at a time; not efficient). The default is no replication.", 0, 1));
 		_defn.add(new Interface.Element("check-asset", BooleanType.DEFAULT, "Check modification time and size of existing replicas (default false) as well as their existence (hugely slows the process if activated).", 0, 1));
 		_defn.add(new Interface.Element("exclude-daris-proc", BooleanType.DEFAULT, "By default, processed DaRIS DataSets (ones for which (pssd-derivation/processed)='true' AND mf-dicom-series is absent) are included. Set to true to exclude these.", 0, 1));
@@ -72,7 +72,7 @@ public class SvcReplicateCheck extends PluginService {
 		// Get inputs
 		String where = args.value("where");
 		String peer = args.value("peer");
-		String size = args.stringValue("size", "10000");
+		String size = args.stringValue("size", "5000");
 		String dst = args.value("dst");
 		Boolean checkAsset = args.booleanValue("check-asset", false);
 		Boolean exclDaRISProc = args.booleanValue("exclude-daris-proc", false);
