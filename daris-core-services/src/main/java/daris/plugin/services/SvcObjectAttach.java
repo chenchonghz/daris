@@ -141,20 +141,18 @@ public class SvcObjectAttach extends PluginService {
         dm.add("from", new String[] { "relationship", RELATIONSHIP_TYPE }, objectAssetId);
         dm.pop();
         String attachmentAssetId = executor.execute("asset.create", dm.root(), new Inputs(input), null).value("id");
-        if (!rename) {
-            return;
-        }
-
-        /*
-         * set the asset name
-         */
-        dm = new XmlDocMaker("args");
         if (rename) {
-            attachmentName = attachmentAssetId + "_" + attachmentName;
+            /*
+             * set the asset name
+             */
+            dm = new XmlDocMaker("args");
+            if (rename) {
+                attachmentName = attachmentAssetId + "_" + attachmentName;
+            }
+            dm.add("name", attachmentName);
+            dm.add("id", attachmentAssetId);
+            executor.execute("asset.set", dm.root());
         }
-        dm.add("name", attachmentName);
-        dm.add("id", attachmentAssetId);
-        executor.execute("asset.set", dm.root());
         w.add(RELATIONSHIP_TYPE, new String[] { "id", attachmentAssetId, "name", attachmentName });
     }
 

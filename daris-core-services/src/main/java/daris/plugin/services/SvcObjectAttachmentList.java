@@ -44,7 +44,7 @@ public class SvcObjectAttachmentList extends PluginService {
         SimpleEntry<String, String> ids = ServiceUtils.getObjectIdentifiers(executor(), args);
         String id = ids.getKey();
         List<XmlDoc.Element> aaes = executor().execute("asset.get",
-                "<args><id>" + id + "</id><get-related-meta></get-related-meta></args>", null, null)
+                "<args><id>" + id + "</id><get-related-meta>true</get-related-meta></args>", null, null)
                 .elements("asset/related[@type='" + SvcObjectAttach.RELATIONSHIP_TYPE + "']/asset");
         if (aaes != null) {
             for (XmlDoc.Element aae : aaes) {
