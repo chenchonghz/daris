@@ -9,13 +9,13 @@ import arc.mf.client.xml.XmlWriter;
 import arc.mf.object.ObjectMessage;
 import daris.client.model.object.Attachment;
 
-public class ObjectAttachmentAdd extends ObjectMessage<Attachment> {
+public class ObjectAttach extends ObjectMessage<Attachment> {
 
 	private String _cid;
 
 	private LocalFile _input;
 
-	public ObjectAttachmentAdd(String cid, LocalFile f) {
+	public ObjectAttach(String cid, LocalFile f) {
 
 		_cid = cid;
 		_input = f;
@@ -24,7 +24,7 @@ public class ObjectAttachmentAdd extends ObjectMessage<Attachment> {
 	@Override
 	protected void messageServiceArgs(XmlWriter w) {
 
-		w.add("id", _cid);
+		w.add("cid", _cid);
 		w.push("attachment");
 		w.add("name", _input.name());
 		if (_input.description() != null) {
@@ -37,7 +37,7 @@ public class ObjectAttachmentAdd extends ObjectMessage<Attachment> {
 	@Override
 	protected String messageServiceName() {
 
-		return "om.pssd.object.attachment.add";
+		return "daris.object.attach";
 	}
 
 	@Override

@@ -96,18 +96,17 @@ actor.grant :role -type role service-user :type plugin:service :name om.pssd.obj
 # service: om.pssd.object.type
 actor.grant :type plugin:service :name om.pssd.object.type :perm < :access ACCESS :resource -type service * >
 
-# service: om.pssd.object.attachment.add
-actor.grant :role -type role service-user :type plugin:service :name om.pssd.object.attachment.add
+# service: daris.object.attach
+actor.grant :role -type role service-user :type plugin:service :name daris.object.attach
 
-# service: om.pssd.object.attachment.get
-actor.grant :perm < :access ACCESS :resource -type service * > :type plugin:service :name om.pssd.object.attachment.get
+# service: daris.object.attachment.get
+actor.grant :role -type role service-user :type plugin:service :name daris.object.attachment.get
 
-# service: om.pssd.object.attachment.list
-actor.grant :perm < :access ACCESS :resource -type service * > :type plugin:service :name om.pssd.object.attachment.list
-actor.grant :role -type role service-user :type plugin:service :name om.pssd.object.attachment.list
+# service: daris.object.attachment.list
+actor.grant :role -type role service-user :type plugin:service :name daris.object.attachment.list
 
-# service: om.pssd.object.attachment.remove
-actor.grant :role -type role service-user :type plugin:service :name om.pssd.object.attachment.remove
+# service: daris.object.detach
+actor.grant :role -type role service-user :type plugin:service :name daris.object.detach
 
 # service: om.pssd.object.thumbnail.set
 actor.grant :role -type role service-user :type plugin:service :name om.pssd.object.thumbnail.set
