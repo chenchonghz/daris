@@ -16,7 +16,7 @@
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.google.gwt.dev.DevMode"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-war target/daris-portal-1.2.2  -noserver -nostartServer -nosuperDevMode -codeServerPort 9997 -startupUrl http://localhost:8086/daris/DaRIS.html daris.DaRIS"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-war target/daris-portal-1.2.3  -noserver -nostartServer -nosuperDevMode -codeServerPort 9997 -startupUrl http://localhost:8086/daris/DaRIS.html daris.DaRIS"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="daris-portal"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1024m -Djavax.xml.parsers.SAXParserFactory=org.apache.xerces.jaxp.SAXParserFactoryImpl"/>
