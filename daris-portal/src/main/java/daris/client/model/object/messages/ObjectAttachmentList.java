@@ -20,7 +20,7 @@ public class ObjectAttachmentList extends ObjectMessage<List<Attachment>> {
     @Override
     protected void messageServiceArgs(XmlWriter w) {
 
-        w.add("id", _cid);
+        w.add("cid", _cid);
 
     }
 

@@ -36,7 +36,7 @@ public class ObjectDetach extends ObjectMessage<Null> {
     @Override
     protected void messageServiceArgs(XmlWriter w) {
 
-        w.add("id", _cid);
+        w.add("cid", _cid);
         if (_aids != null) {
             for (String aid : _aids) {
                 w.add("aid", aid);
