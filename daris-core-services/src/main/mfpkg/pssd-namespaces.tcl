@@ -87,6 +87,8 @@ proc create_daris_all_namespaces { store } {
 if { [xvalue exists [application.property.exists :property -app daris  daris.namespace.default]]=="true" } {
     # property daris.namespace.default has been set, which indicates the 
     # namespaces have been created by the previous installation.
+    set daris_namespace [xvalue property [application.property.get :property -app daris daris.namespace.default]]
+    create_daris_sub_namespaces ${daris_namespace} 
 } else {
     if { [xvalue exists [asset.namespace.exists :namespace "pssd"]]=="true" } {
         # namespace /pssd pre-exists, just set it as default
