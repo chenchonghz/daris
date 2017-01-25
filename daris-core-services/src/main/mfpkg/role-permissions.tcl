@@ -44,6 +44,7 @@ grantRoleReadAccessServices   daris:pssd.model.user \
       actor.have \
       asset.acl.have \
       asset.content.get \
+      asset.archive.content.* \
       asset.doc.namespace.list \
       asset.doc.type.describe \
       asset.doc.type.list \
