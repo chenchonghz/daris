@@ -347,6 +347,13 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new daris.plugin.services.SvcObjectChildrenCount());
         _services.add(new daris.plugin.services.SvcObjectChildrenList());
         _services.add(new daris.plugin.services.SvcObjectPathFind());
+        _services.add(new daris.plugin.services.SvcProjectRoleUserCandidateAdd());
+        _services.add(new daris.plugin.services.SvcProjectRoleUserCandidateList());
+        _services.add(new daris.plugin.services.SvcProjectRoleUserCandidateRemove());
+        _services.add(new daris.plugin.services.SvcProjectUserAdd());
+        _services.add(new daris.plugin.services.SvcProjectUserList());
+        _services.add(new daris.plugin.services.SvcProjectUserRemove());
+        _services.add(new daris.plugin.services.SvcProjectUserSet());
 
         // MyTardis dataset import
         _services.add(new daris.plugin.experimental.mytardis.services.SvcMyTardisDatasetImport());
