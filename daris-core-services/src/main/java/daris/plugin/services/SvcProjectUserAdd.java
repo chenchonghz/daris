@@ -95,6 +95,11 @@ public class SvcProjectUserAdd extends PluginService {
                  * add new users
                  */
                 addUsers(executor, projectCid, projectDataUse, args.elements("user"), args.elements("role-user"), true);
+
+                /*
+                 * generate system event
+                 */
+                SvcProjectUserSet.generateSystemEvent(executor, projectCid);
                 return false;
             }
         }).execute(executor());

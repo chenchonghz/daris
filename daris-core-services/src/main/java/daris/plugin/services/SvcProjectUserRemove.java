@@ -92,6 +92,10 @@ public class SvcProjectUserRemove extends PluginService {
                         removeRoleUser(executor, rue.value("name"), projectCid);
                     }
                 }
+                /*
+                 * generate system event
+                 */
+                SvcProjectUserSet.generateSystemEvent(executor, projectCid);
                 return false;
             }
         }).execute(executor());

@@ -11,12 +11,15 @@ import arc.mf.plugin.dtype.CiteableIdType;
 import arc.mf.plugin.dtype.EnumType;
 import arc.mf.plugin.dtype.StringType;
 import arc.mf.plugin.dtype.XmlDocType;
+import arc.mf.plugin.event.SystemEventChannel;
 import arc.xml.XmlDoc;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
 import daris.plugin.model.DataUse;
 import daris.plugin.model.ModelRole;
 import daris.plugin.model.ProjectRole;
+import nig.mf.plugin.pssd.PSSDObjectEvent;
+import nig.mf.plugin.pssd.PSSDObjectEvent.Action;
 
 public class SvcProjectUserSet extends PluginService {
 
@@ -114,10 +117,21 @@ public class SvcProjectUserSet extends PluginService {
                  */
                 SvcProjectUserAdd.addUsers(executor, projectCid, projectDataUse, args.elements("user"),
                         args.elements("role-user"), false);
+
+                /*
+                 * generate system event
+                 */
+                generateSystemEvent(executor, projectCid);
+                
                 return false;
             }
         }).execute(executor());
 
+    }
+
+    static void generateSystemEvent(ServiceExecutor executor, String projectCid) throws Throwable {
+        int nbc = SvcObjectChildrenCount.countChildren(executor, projectCid);
+        SystemEventChannel.generate(new PSSDObjectEvent(Action.MODIFY, projectCid, nbc));
     }
 
     private static void checkOneAdmin(ServiceExecutor executor, XmlDoc.Element args) throws Throwable {
