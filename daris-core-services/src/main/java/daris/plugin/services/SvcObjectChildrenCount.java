@@ -49,7 +49,7 @@ public class SvcObjectChildrenCount extends PluginService {
         w.add("nbc", new String[] { "cid", cid }, count);
     }
 
-    public static long countChildren(ServiceExecutor executor, String cid) throws Throwable {
+    public static int countChildren(ServiceExecutor executor, String cid) throws Throwable {
         StringBuilder sb = new StringBuilder();
         if (cid == null) {
             sb.append("model='om.pssd.project'");
@@ -59,7 +59,7 @@ public class SvcObjectChildrenCount extends PluginService {
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("where", sb.toString());
         dm.add("action", "count");
-        return executor.execute("asset.query", dm.root()).longValue("value");
+        return executor.execute("asset.query", dm.root()).intValue("value");
     }
 
     @Override
