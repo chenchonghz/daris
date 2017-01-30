@@ -1432,63 +1432,61 @@ public class SvcObjectFind extends PluginService {
          * etc)
          */
         XmlDoc.Element pe = ae.element("meta/daris:pssd-project");
-        if (pe == null) {
-            return;
-        }
+        if (pe != null) {
 
-        /*
-         * Get, and expand (dereference), the methods that are registered with
-         * this project. Adds a "method" element
-         */
-        Collection<XmlDoc.Element> mes = pe.elements("method");
-        if (mes != null) {
-            for (XmlDoc.Element me : mes) {
-                String methodId = me.value("id");
-                String methodNotes = me.value("notes");
-                String methodName = null;
-                String methodVersion = null;
-                String methodDesc = null;
-                if (methods != null) {
-                    Method m = methods.method(methodId);
-                    if (m != null) {
-                        methodName = m.name();
-                        methodVersion = m.version();
-                        methodDesc = m.description();
+            /*
+             * Get, and expand (dereference), the methods that are registered with
+             * this project. Adds a "method" element
+             */
+            Collection<XmlDoc.Element> mes = pe.elements("method");
+            if (mes != null) {
+                for (XmlDoc.Element me : mes) {
+                    String methodId = me.value("id");
+                    String methodNotes = me.value("notes");
+                    String methodName = null;
+                    String methodVersion = null;
+                    String methodDesc = null;
+                    if (methods != null) {
+                        Method m = methods.method(methodId);
+                        if (m != null) {
+                            methodName = m.name();
+                            methodVersion = m.version();
+                            methodDesc = m.description();
+                        }
                     }
+                    w.push("method");
+                    w.add("id", methodId);
+                    if (methodVersion != null) {
+                        w.add("version", methodVersion);
+                    }
+                    if (methodName != null) {
+                        w.add("name", methodName);
+                    }
+                    if (methodDesc != null) {
+                        w.add("description", methodDesc);
+                    }
+                    if (methodNotes != null) {
+                        w.add("notes", methodNotes);
+                    }
+                    w.pop();
                 }
-                w.push("method");
-                w.add("id", methodId);
-                if (methodVersion != null) {
-                    w.add("version", methodVersion);
-                }
-                if (methodName != null) {
-                    w.add("name", methodName);
-                }
-                if (methodDesc != null) {
-                    w.add("description", methodDesc);
-                }
-                if (methodNotes != null) {
-                    w.add("notes", methodNotes);
-                }
-                w.pop();
+            }
+    
+            /*
+             * Data-use
+             */
+            String dataUse = pe.value("data-use");
+            if (dataUse != null) {
+                w.add("data-use", dataUse);
             }
         }
-
+        
         /*
          * Get the project team members and de-reference role members Now that
          * we have dropped the daris:pssd-project/member meta-data, we should
          * probably drop the presentation of member meta-data (done via roles)
          */
         pmm.describeMembers(w, projectId);
-
-        /*
-         * Data-use
-         */
-        String dataUse = pe.value("data-use");
-        if (dataUse != null) {
-            w.add("data-use", dataUse);
-        }
-
     }
 
 }
