@@ -198,7 +198,6 @@ public class SvcProjectUserAdd extends PluginService {
         dm.add("domain", domain);
         dm.add("user", user);
         dm.add("role", new String[] { "type", "role" }, role);
-        System.out.println(dm.root());
         executor.execute("user.grant", dm.root());
     }
 
