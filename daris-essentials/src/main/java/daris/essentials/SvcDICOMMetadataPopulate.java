@@ -49,8 +49,8 @@ public class SvcDICOMMetadataPopulate extends PluginService {
                 "Set to true to ignore the errors and continue to process the rest. Defaults to true.", 0, 1));
         _defn.add(new Interface.Element("idx", IntegerType.POSITIVE,
                 "This specifies the idx'th file in the DICOM series archive. Defaults to zero.", 0, 1));
-        _defn.add(new Interface.Element("tag", new StringType(Pattern.compile("\\d{8}")), "The DICOM element tag.", 1,
-                Integer.MAX_VALUE));
+        _defn.add(new Interface.Element("tag", new StringType(Pattern.compile("[0-9a-fA-F]{8}")), "The DICOM element tag.", 1,
+                Integer.MAX_VALUE));        
         _defn.add(new Interface.Element("doc-tag", StringType.DEFAULT,
                 "The tag attribute for the daris:dicom-dataset document.", 0, 1));
         _defn.add(new Interface.Element("if-exists", new EnumType(IfExists.values()),
