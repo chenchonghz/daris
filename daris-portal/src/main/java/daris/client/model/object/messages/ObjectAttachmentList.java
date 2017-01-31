@@ -10,53 +10,53 @@ import daris.client.model.object.Attachment;
 
 public class ObjectAttachmentList extends ObjectMessage<List<Attachment>> {
 
-	private String _cid;
+    private String _cid;
 
-	public ObjectAttachmentList(String cid) {
+    public ObjectAttachmentList(String cid) {
 
-		_cid = cid;
-	}
+        _cid = cid;
+    }
 
-	@Override
-	protected void messageServiceArgs(XmlWriter w) {
+    @Override
+    protected void messageServiceArgs(XmlWriter w) {
 
-		w.add("id", _cid);
+        w.add("cid", _cid);
 
-	}
+    }
 
-	@Override
-	protected String messageServiceName() {
+    @Override
+    protected String messageServiceName() {
 
-		return "om.pssd.object.attachment.list";
-	}
+        return "daris.object.attachment.list";
+    }
 
-	@Override
-	protected List<Attachment> instantiate(XmlElement xe) throws Throwable {
+    @Override
+    protected List<Attachment> instantiate(XmlElement xe) throws Throwable {
 
-		if (xe != null) {
-			List<XmlElement> aes = xe.elements("attachment");
-			if (aes != null && !aes.isEmpty()) {
-				List<Attachment> as = new Vector<Attachment>(aes.size());
-				for (XmlElement ae : aes) {
-					as.add(new Attachment(ae.value("@id"), ae.value("name"), ae.value("description"), ae.value("type"),
-							ae.value("type/@ext"), ae.longValue("size", 0)));
-				}
-				return as;
-			}
-		}
-		return null;
-	}
+        if (xe != null) {
+            List<XmlElement> aes = xe.elements("attachment");
+            if (aes != null && !aes.isEmpty()) {
+                List<Attachment> as = new Vector<Attachment>(aes.size());
+                for (XmlElement ae : aes) {
+                    as.add(new Attachment(ae.value("@id"), ae.value("name"), ae.value("description"), ae.value("type"),
+                            ae.value("type/@ext"), ae.longValue("size", 0)));
+                }
+                return as;
+            }
+        }
+        return null;
+    }
 
-	@Override
-	protected String objectTypeName() {
+    @Override
+    protected String objectTypeName() {
 
-		return "attachment";
-	}
+        return "attachment";
+    }
 
-	@Override
-	protected String idToString() {
+    @Override
+    protected String idToString() {
 
-		return _cid;
-	}
+        return _cid;
+    }
 
 }

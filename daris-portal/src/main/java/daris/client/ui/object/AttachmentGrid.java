@@ -29,18 +29,15 @@ import arc.mf.client.util.Action;
 import arc.mf.object.Null;
 import arc.mf.object.ObjectMessageResponse;
 import daris.client.model.object.Attachment;
-import daris.client.model.object.messages.ObjectAttachmentAdd;
-import daris.client.model.object.messages.ObjectAttachmentClear;
+import daris.client.model.object.messages.ObjectAttach;
 import daris.client.model.object.messages.ObjectAttachmentGet;
 import daris.client.model.object.messages.ObjectAttachmentList;
-import daris.client.model.object.messages.ObjectAttachmentRemove;
+import daris.client.model.object.messages.ObjectDetach;
 import daris.client.ui.dti.file.LocalFileSelector;
 
-public class AttachmentGrid extends ListGrid<Attachment>
-        implements DropHandler {
+public class AttachmentGrid extends ListGrid<Attachment> implements DropHandler {
 
-    private static class AttachmentDataSource
-            implements DataSource<ListGridEntry<Attachment>> {
+    private static class AttachmentDataSource implements DataSource<ListGridEntry<Attachment>> {
 
         private String _cid;
 
@@ -65,42 +62,36 @@ public class AttachmentGrid extends ListGrid<Attachment>
         public void load(final Filter f, final long start, final long end,
                 final DataLoadHandler<ListGridEntry<Attachment>> lh) {
 
-            new ObjectAttachmentList(_cid)
-                    .send(new ObjectMessageResponse<List<Attachment>>() {
+            new ObjectAttachmentList(_cid).send(new ObjectMessageResponse<List<Attachment>>() {
 
-                        @Override
-                        public void responded(List<Attachment> as) {
+                @Override
+                public void responded(List<Attachment> as) {
 
-                            if (as != null && !as.isEmpty()) {
-                                List<ListGridEntry<Attachment>> es = new Vector<ListGridEntry<Attachment>>(
-                                        as.size());
-                                for (Attachment a : as) {
-                                    ListGridEntry<Attachment> e = new ListGridEntry<Attachment>(
-                                            a);
-                                    e.set("assetId", a.assetId());
-                                    e.set("name", a.name());
-                                    e.set("extension", a.extension());
-                                    e.set("mimeType", a.mimeType());
-                                    e.set("size", a.humanReadableSize());
-                                    es.add(e);
-                                }
-                                int total = es.size();
-                                int start1 = start < 0 ? 0
-                                        : (start > total ? total : (int) start);
-                                int end1 = end > total ? total : (int) end;
-                                if (start1 < 0 || end1 > total
-                                        || start1 > end) {
-                                    lh.loaded(start, end, total, null, null);
-                                } else {
-                                    es = es.subList(start1, end1);
-                                    lh.loaded(start1, end1, total, es,
-                                            DataLoadAction.REPLACE);
-                                }
-                                return;
-                            }
-                            lh.loaded(0, 0, 0, null, null);
+                    if (as != null && !as.isEmpty()) {
+                        List<ListGridEntry<Attachment>> es = new Vector<ListGridEntry<Attachment>>(as.size());
+                        for (Attachment a : as) {
+                            ListGridEntry<Attachment> e = new ListGridEntry<Attachment>(a);
+                            e.set("assetId", a.assetId());
+                            e.set("name", a.name());
+                            e.set("extension", a.extension());
+                            e.set("mimeType", a.mimeType());
+                            e.set("size", a.humanReadableSize());
+                            es.add(e);
                         }
-                    });
+                        int total = es.size();
+                        int start1 = start < 0 ? 0 : (start > total ? total : (int) start);
+                        int end1 = end > total ? total : (int) end;
+                        if (start1 < 0 || end1 > total || start1 > end) {
+                            lh.loaded(start, end, total, null, null);
+                        } else {
+                            es = es.subList(start1, end1);
+                            lh.loaded(start1, end1, total, es, DataLoadAction.REPLACE);
+                        }
+                        return;
+                    }
+                    lh.loaded(0, 0, 0, null, null);
+                }
+            });
         }
     }
 
@@ -157,18 +148,17 @@ public class AttachmentGrid extends ListGrid<Attachment>
                 LocalFileSelector dlg = new LocalFileSelector(LocalFile.Filter.FILES,
                         new LocalFileSelector.FileSelectionHandler() {
 
-                    @Override
-                    public void selected(LocalFile file) {
-                        new ObjectAttachmentAdd(_cid, file)
-                                .send(new ObjectMessageResponse<Attachment>() {
-
                             @Override
-                            public void responded(Attachment r) {
-                                AttachmentGrid.this.refresh(true);
+                            public void selected(LocalFile file) {
+                                new ObjectAttach(_cid, file).send(new ObjectMessageResponse<Attachment>() {
+
+                                    @Override
+                                    public void responded(Attachment r) {
+                                        AttachmentGrid.this.refresh(true);
+                                    }
+                                });
                             }
                         });
-                    }
-                });
                 dlg.show(window());
             }
         });
@@ -179,14 +169,11 @@ public class AttachmentGrid extends ListGrid<Attachment>
             public void execute() {
                 List<Attachment> selections = AttachmentGrid.this.selections();
                 if (selections != null && !selections.isEmpty()) {
-                    new ObjectAttachmentRemove(_cid, selections)
-                            .send(new ObjectMessageResponse<Boolean>() {
+                    new ObjectDetach(_cid, selections, false).send(new ObjectMessageResponse<Null>() {
                         @Override
-                        public void responded(Boolean r) {
+                        public void responded(Null r) {
 
-                            if (r) {
-                                AttachmentGrid.this.refresh();
-                            }
+                            AttachmentGrid.this.refresh();
                         }
                     });
                 }
@@ -198,8 +185,7 @@ public class AttachmentGrid extends ListGrid<Attachment>
 
             @Override
             public void execute() {
-                new ObjectAttachmentClear(_cid)
-                        .send(new ObjectMessageResponse<Null>() {
+                new ObjectDetach(_cid).send(new ObjectMessageResponse<Null>() {
 
                     @Override
                     public void responded(Null r) {
@@ -232,15 +218,12 @@ public class AttachmentGrid extends ListGrid<Attachment>
         });
         _actionMenu.add(_aeRefresh);
 
-        setRowContextMenuHandler(
-                new ListGridRowContextMenuHandler<Attachment>() {
-                    @Override
-                    public void show(Attachment attachment,
-                            ContextMenuEvent event) {
-                        new ActionMenu(_actionMenu)
-                                .showAt(event.getNativeEvent());
-                    }
-                });
+        setRowContextMenuHandler(new ListGridRowContextMenuHandler<Attachment>() {
+            @Override
+            public void show(Attachment attachment, ContextMenuEvent event) {
+                new ActionMenu(_actionMenu).showAt(event.getNativeEvent());
+            }
+        });
 
         setSelectionHandler(new SelectionHandler<Attachment>() {
 
@@ -248,20 +231,16 @@ public class AttachmentGrid extends ListGrid<Attachment>
             public void selected(Attachment a) {
 
                 List<Attachment> selections = selections();
-                _aeRemove.setEnabled(
-                        selections != null && !selections.isEmpty());
-                _aeDownload.setEnabled(
-                        selections != null && !selections.isEmpty());
+                _aeRemove.setEnabled(selections != null && !selections.isEmpty());
+                _aeDownload.setEnabled(selections != null && !selections.isEmpty());
             }
 
             @Override
             public void deselected(Attachment o) {
 
                 List<Attachment> selections = selections();
-                _aeRemove.setEnabled(
-                        selections != null && !selections.isEmpty());
-                _aeDownload.setEnabled(
-                        selections != null && !selections.isEmpty());
+                _aeRemove.setEnabled(selections != null && !selections.isEmpty());
+                _aeDownload.setEnabled(selections != null && !selections.isEmpty());
             }
         });
 
@@ -296,16 +275,15 @@ public class AttachmentGrid extends ListGrid<Attachment>
         }
         dl.dropped(DropCheck.CAN);
         for (Object object : objects) {
-            new ObjectAttachmentAdd(_cid, (LocalFile) object)
-                    .send(new ObjectMessageResponse<Attachment>() {
-                        @Override
-                        public void responded(Attachment r) {
+            new ObjectAttach(_cid, (LocalFile) object).send(new ObjectMessageResponse<Attachment>() {
+                @Override
+                public void responded(Attachment r) {
 
-                            if (r != null) {
-                                AttachmentGrid.this.refresh();
-                            }
-                        }
-                    });
+                    if (r != null) {
+                        AttachmentGrid.this.refresh();
+                    }
+                }
+            });
         }
     }
 

@@ -13,6 +13,10 @@
 #   description: specifies the schema member host. It is required when installing the package
 #                within non-default schema.
 
+# arg:           namespace
+#   type:        string
+#   description: the default namespace to install to.
+
 # arg:           domain
 #   type:        boolean
 #   default:     false
@@ -105,6 +109,9 @@ source plugin-module-add.tcl
 # Create standard pssd and dicom namespaces.  Exception if matching pssd 
 # and dicom stores do not exist.
 # ============================================================================
+if { [info exists namespace] } {
+    application.property.create :property -app daris -name daris.namespace.default < :value $namespace > :ifexists ignore
+}
 source pssd-namespaces.tcl
 
 # ============================================================================
@@ -279,3 +286,5 @@ asset.import :url archive:javascript.zip \
     :namespace -create yes www/js \
     :label -create yes ${label} :label PUBLISHED \
     :update true
+
+# http.processor.create :url /js :type asset :translate /www/js :authentication < :path /js :domain www-public :user www-public > view www-public
