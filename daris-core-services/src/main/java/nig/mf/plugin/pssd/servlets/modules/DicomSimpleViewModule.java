@@ -198,7 +198,7 @@ public class DicomSimpleViewModule implements Module {
         sb.append("        </div>\n");
         sb.append("      </div>\n");
         sb.append(
-                "      <div class=\"tabContent\" style=\"overflow:scroll;\" id=\"metadata\">\n");
+                "      <div class=\"tabContent\" style=\"height:90vh; overflow:scroll;\" id=\"metadata\">\n");
         sb.append(headerHtml);
         sb.append("      </div>\n");
         sb.append("    </div>\n");
