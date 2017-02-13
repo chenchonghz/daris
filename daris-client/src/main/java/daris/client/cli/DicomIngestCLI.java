@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -139,7 +140,7 @@ public class DicomIngestCLI {
                     cid = args[i + 1];
                     i += 2;
                 } else {
-                    File f = new File(args[i]);
+                    File f = Paths.get(args[i]).toFile();
                     if (!f.exists()) {
                         throw new FileNotFoundException(
                                 "File " + args[i] + " is not found.");

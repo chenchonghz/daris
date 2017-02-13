@@ -1,6 +1,7 @@
 package daris.client.cli;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -24,8 +25,7 @@ public class ArchiveCLI {
          */
         String action = args[0];
         if (!"extract".equals(action) && !"create".equals(action)) {
-            System.err.println("Error: invalid action: " + action
-                    + ". Expects 'extract' or 'create'.");
+            System.err.println("Error: invalid action: " + action + ". Expects 'extract' or 'create'.");
             showUsage();
             System.exit(2);
         }
@@ -44,29 +44,24 @@ public class ArchiveCLI {
          */
         String arcFilePath = quiet ? args[2] : args[1];
         if (!isArchiveFilePath(arcFilePath)) {
-            System.err.println("Error: invalid archive file name: "
-                    + arcFilePath + ". Expects a .zip or .aar file.");
+            System.err.println("Error: invalid archive file name: " + arcFilePath + ". Expects a .zip or .aar file.");
             System.exit(3);
         }
-        File arcFile = new File(arcFilePath);
+        File arcFile = Paths.get(arcFilePath).toFile();
         if ("extract".equals(action)) {
             if (!arcFile.exists()) {
-                System.err.println("Archive file: " + arcFile.getAbsolutePath()
-                        + " does not exist.");
+                System.err.println("Archive file: " + arcFile.getAbsolutePath() + " does not exist.");
                 System.exit(4);
             }
             File outputDir = null;
             if (args.length >= 3) {
-                outputDir = quiet ? new File(args[3]) : new File(args[2]);
+                outputDir = Paths.get(quiet ? args[3] : args[2]).toFile();
                 if (!outputDir.exists()) {
-                    System.err.println("Output directory: "
-                            + outputDir.getAbsolutePath() + " does not exist.");
+                    System.err.println("Output directory: " + outputDir.getAbsolutePath() + " does not exist.");
                     System.exit(5);
                 }
                 if (!outputDir.isDirectory()) {
-                    System.err.println(
-                            "Output directory: " + outputDir.getAbsolutePath()
-                                    + " is not a directory.");
+                    System.err.println("Output directory: " + outputDir.getAbsolutePath() + " is not a directory.");
                     System.exit(6);
                 }
             }
@@ -79,23 +74,19 @@ public class ArchiveCLI {
             }
             Set<File> inputFiles = new TreeSet<File>();
             for (int i = start; i < args.length; i++) {
-                addFiles(inputFiles, new File(args[i]));
+                addFiles(inputFiles, Paths.get(args[i]).toFile());
             }
             if (inputFiles.isEmpty()) {
-                System.err.println(
-                        "No input file is found in the specified directories.");
+                System.err.println("No input file is found in the specified directories.");
                 System.exit(8);
             }
-            createArchive(arcFile, new File(System.getProperty("user.dir")),
-                    inputFiles, quiet);
+            createArchive(arcFile, new File(System.getProperty("user.dir")), inputFiles, quiet);
         }
     }
 
-    private static void extractArchive(File arcFile, File outputDir, boolean quiet)
-            throws Throwable {
+    private static void extractArchive(File arcFile, File outputDir, boolean quiet) throws Throwable {
         Archive.declareSupportForAllTypes();
-        ArchiveInput ai = ArchiveRegistry.createInput(arcFile,
-                new NamedMimeType(getMimeType(arcFile)));
+        ArchiveInput ai = ArchiveRegistry.createInput(arcFile, new NamedMimeType(getMimeType(arcFile)));
         try {
             ArchiveInput.Entry entry = null;
             while ((entry = ai.next()) != null) {
@@ -106,8 +97,7 @@ public class ArchiveCLI {
                 if (ename.startsWith("/")) {
                     ename = ename.substring(1);
                 }
-                File of = outputDir == null ? new File(ename)
-                        : new File(outputDir, ename);
+                File of = outputDir == null ? new File(ename) : new File(outputDir, ename);
                 if (entry.isDirectory()) {
                     of.mkdirs();
                 } else {
@@ -125,17 +115,15 @@ public class ArchiveCLI {
         }
     }
 
-    private static void createArchive(File arcFile, File baseDir,
-            Set<File> inputFiles, boolean quiet) throws Throwable {
+    private static void createArchive(File arcFile, File baseDir, Set<File> inputFiles, boolean quiet)
+            throws Throwable {
         Archive.declareSupportForAllTypes();
-        ArchiveOutput ao = ArchiveRegistry.createOutput(arcFile,
-                getMimeType(arcFile), 6, null);
+        ArchiveOutput ao = ArchiveRegistry.createOutput(arcFile, getMimeType(arcFile), 6, null);
         try {
             for (File inputFile : inputFiles) {
                 String ename = inputFile.getAbsolutePath();
                 String baseDirPath = baseDir.getAbsolutePath();
-                if (ename.startsWith(baseDirPath + File.separator)
-                        || ename.startsWith(baseDirPath + "/")) {
+                if (ename.startsWith(baseDirPath + File.separator) || ename.startsWith(baseDirPath + "/")) {
                     ename = ename.substring(baseDirPath.length());
                 }
                 if (ename.startsWith(File.separator) || ename.startsWith("/")) {
@@ -189,8 +177,7 @@ public class ArchiveCLI {
         } else if ("aar".equalsIgnoreCase(ext)) {
             return "application/arc-archive";
         } else {
-            throw new Exception(
-                    "Unsupported archive type: " + ext.toLowerCase());
+            throw new Exception("Unsupported archive type: " + ext.toLowerCase());
         }
     }
 
@@ -198,24 +185,18 @@ public class ArchiveCLI {
         if (path == null) {
             return false;
         }
-        return path.endsWith(".zip") || path.endsWith(".aar")
-                || path.endsWith(".ZIP") || path.endsWith(".AAR");
+        return path.endsWith(".zip") || path.endsWith(".aar") || path.endsWith(".ZIP") || path.endsWith(".AAR");
     }
 
     private static void showUsage() {
         System.out.println("Usage:");
-        System.out.println(
-                "    daris-archive extract [--quiet] <archive-file> [output-directory]");
-        System.out.println(
-                "    daris-archive create [--quiet] <archive-file> <files/directories>");
+        System.out.println("    daris-archive extract [--quiet] <archive-file> [output-directory]");
+        System.out.println("    daris-archive create [--quiet] <archive-file> <files/directories>");
         System.out.println("Examples:");
         System.out.println("    daris-archive extract book.zip");
-        System.out.println(
-                "    daris-archive extract book.aar /home/wilson/Documents");
-        System.out.println(
-                "    daris-archive create book.zip /home/wilson/Downloads/book");
-        System.out.println(
-                "    daris-archive create book.aar /home/wilson/Downloads/book");
+        System.out.println("    daris-archive extract book.aar /home/wilson/Documents");
+        System.out.println("    daris-archive create book.zip /home/wilson/Downloads/book");
+        System.out.println("    daris-archive create book.aar /home/wilson/Downloads/book");
 
     }
 }

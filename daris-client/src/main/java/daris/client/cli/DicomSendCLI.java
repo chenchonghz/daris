@@ -5,6 +5,7 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -141,7 +142,7 @@ public class DicomSendCLI {
 					}
 					i += 2;
 				} else {
-					File f = new File(args[i]);
+					File f = Paths.get(args[i]).toFile();
 					if (!f.exists()) {
 						throw new FileNotFoundException("File " + args[i] + " is not found.");
 					}

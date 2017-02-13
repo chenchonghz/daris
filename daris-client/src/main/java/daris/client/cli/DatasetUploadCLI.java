@@ -2,6 +2,7 @@ package daris.client.cli;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -92,7 +93,7 @@ public class DatasetUploadCLI extends ServerProcedureCLI {
                     throw new IllegalArgumentException(
                             "More than one --input specified. Expects only one.");
                 }
-                _input = new File(args.get(i + 1));
+                _input = Paths.get(args.get(i + 1)).toFile();
                 if (!_input.exists()) {
                     throw new IllegalArgumentException("Input file: '"
                             + _input.getAbsolutePath() + "' does not exist");
