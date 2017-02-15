@@ -324,13 +324,13 @@ public class ScpSink implements DataSinkImpl {
                     sb.append("/");
                     sb.append("asset_");
                     sb.append(assetId);
+                    if (ext != null) {
+                        sb.append(".");
+                        sb.append(ext);
+                    }
                 } else {
                     // meta==null
                     sb.append(System.currentTimeMillis());
-                }
-                if (ext != null) {
-                    sb.append(".");
-                    sb.append(ext);
                 }
                 transfer(session, in, length, sb.toString(), params.fileMode,
                         existingDirs);

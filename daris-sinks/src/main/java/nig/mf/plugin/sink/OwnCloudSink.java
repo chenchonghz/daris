@@ -199,6 +199,7 @@ public class OwnCloudSink implements DataSinkImpl {
         }
 
         String assetId = meta != null ? meta.value("@id") : null;
+        String assetName = meta != null ? meta.value("name") : null;
         String ext = meta != null ? meta.value("content/type/@ext") : null;
 
         try {
@@ -220,7 +221,10 @@ public class OwnCloudSink implements DataSinkImpl {
                     : ((MultiTransferContext) multiCtx).existingDirectories;
             if (params.decompress && streamMimeType != null && ArchiveRegistry.isAnArchive(streamMimeType)) {
                 // decompress archive
-                if (assetId != null) {
+                if (assetName != null) {
+                    sb.append("/");
+                    sb.append(assetName);                    
+                } else if (assetId != null) {
                     sb.append("/");
                     sb.append("asset_");
                     sb.append(assetId);
@@ -229,14 +233,17 @@ public class OwnCloudSink implements DataSinkImpl {
                         params.chunked, sb.toString(), existingDirs);
             } else {
                 // single file
-                if (assetId != null) {
+                if (assetName != null) {
+                    sb.append("/");
+                    sb.append(assetName);                    
+                } else if (assetId != null) {
                     sb.append("/");
                     sb.append("asset_");
                     sb.append(assetId);
-                }
-                if (ext != null) {
-                    sb.append(".");
-                    sb.append(ext);
+                    if (ext != null) {
+                        sb.append(".");
+                        sb.append(ext);
+                    }
                 }
                 transfer(client, in, length, params.chunked, sb.toString(), existingDirs);
             }
