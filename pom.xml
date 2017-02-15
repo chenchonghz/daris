@@ -23,7 +23,7 @@
 		<daris-essentials.version>1.0.9</daris-essentials.version>
 		<daris-core-services.version>3.3.3</daris-core-services.version>
 		<daris-portal.version>1.2.3</daris-portal.version>
-		<daris-sinks.version>1.0.2</daris-sinks.version>
+		<daris-sinks.version>1.0.3</daris-sinks.version>
 		<daris-transcoders.version>2.0.2</daris-transcoders.version>
 		<daris-analyzers.version>1.0.0</daris-analyzers.version>
 		<daris-client-pvupload.version>1.0.0</daris-client-pvupload.version>
