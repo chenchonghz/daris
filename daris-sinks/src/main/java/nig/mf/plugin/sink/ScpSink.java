@@ -267,6 +267,7 @@ public class ScpSink implements DataSinkImpl {
         }
 
         String assetId = meta != null ? meta.value("@id") : null;
+        String assetName = meta != null ? meta.value("name") : null;
         String ext = meta != null ? meta.value("content/type/@ext") : null;
 
         try {
@@ -291,7 +292,10 @@ public class ScpSink implements DataSinkImpl {
             if (params.decompress && streamMimeType != null
                     && ArchiveRegistry.isAnArchive(streamMimeType)) {
                 // decompress archive
-                if (assetId != null) {
+                if (assetName != null) {
+                    sb.append("/");
+                    sb.append(assetName);                    
+                } else if (assetId != null) {
                     sb.append("/");
                     sb.append("asset_");
                     sb.append(assetId);
@@ -313,7 +317,10 @@ public class ScpSink implements DataSinkImpl {
                 }
             } else {
                 // single file
-                if (assetId != null) {
+                if (assetName != null) {
+                    sb.append("/");
+                    sb.append(assetName);                    
+                } else if (assetId != null) {
                     sb.append("/");
                     sb.append("asset_");
                     sb.append(assetId);
