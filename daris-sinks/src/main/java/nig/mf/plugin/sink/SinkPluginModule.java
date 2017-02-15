@@ -69,7 +69,7 @@ public class SinkPluginModule implements PluginModule {
 
     @Override
     public String version() {
-        return "1.0.2";
+        return "1.0.3";
     }
 
 }
