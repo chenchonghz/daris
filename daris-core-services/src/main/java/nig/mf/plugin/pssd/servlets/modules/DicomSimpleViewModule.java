@@ -193,7 +193,7 @@ public class DicomSimpleViewModule implements Module {
         sb.append(
                 "        <div style=\"vertical-align:middle; text-align:center; width:100%; height:100%;\">\n");
         sb.append(
-                "          <img style=\"max-width:100%; max-height:100%; width:auto; height:100%;\" src=\"")
+                "          <img style=\"max-width:100%; max-height:100%; width:auto; height:90vh;\" src=\"")
                 .append(imageUrl).append("\"/>\n");
         sb.append("        </div>\n");
         sb.append("      </div>\n");
