@@ -1,11 +1,13 @@
-package nig.mf.plugin.pssd.services;
+package daris.plugin.services;
 
 import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.zip.GZIPOutputStream;
@@ -34,42 +36,48 @@ public class SvcCollectionArchiveCreate extends PluginService {
 
     public static final String SERVICE_NAME = "daris.collection.archive.create";
 
-    public static final long GIGABYTE = 1073741824L;
+    public static final long GiB = 1073741824L;
 
     public static enum ArchiveFormat {
-        aar, zip, tgz;
-        public static ArchiveFormat fromString(String s,
-                ArchiveFormat defaultValue) {
+        AAR("application/arc-archive", "aar", Long.MAX_VALUE), ZIP("application/zip", "zip",
+                Long.MAX_VALUE), TGZ("application/x-gzip", "tgz", 8 * GiB - 1);
+        private String _mimeType;
+        private String _ext;
+        private long _maxSize;
+
+        ArchiveFormat(String mimeType, String ext, long maxSize) {
+            _mimeType = mimeType;
+            _ext = ext;
+            _maxSize = maxSize;
+        }
+
+        public static ArchiveFormat fromString(String s, ArchiveFormat defaultValue) {
             if (s != null) {
-                if (s.equalsIgnoreCase(aar.name())) {
-                    return aar;
-                } else if (s.equalsIgnoreCase(zip.name())) {
-                    return zip;
-                } else if (s.equalsIgnoreCase(tgz.name())) {
-                    return tgz;
+                ArchiveFormat[] vs = values();
+                for (ArchiveFormat v : vs) {
+                    if (v.name().equalsIgnoreCase(s)) {
+                        return v;
+                    }
                 }
             }
             return defaultValue;
         }
 
         public String mimeType() {
-            if (this == aar) {
-                return "application/arc-archive";
-            } else if (this == zip) {
-                return "application/zip";
-            } else {
-                return "application/x-gzip";
-            }
+            return _mimeType;
         }
 
         public long maxSize() {
-            if (this == zip) {
-                return GIGABYTE * 4 - 1;
-            } else if (this == tgz) {
-                return GIGABYTE * 8 - 1;
-            } else {
-                return Long.MAX_VALUE;
-            }
+            return _maxSize;
+        }
+
+        public String fileExtension() {
+            return _ext;
+        }
+
+        @Override
+        public String toString() {
+            return name().toLowerCase();
         }
     }
 
@@ -93,32 +101,35 @@ public class SvcCollectionArchiveCreate extends PluginService {
 
     public SvcCollectionArchiveCreate() {
         _defn = new Interface();
-        _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT,
-                "the citeable id of the root/parent object.", 1, 1));
+        _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT, "the citeable id of the root/parent object.", 1,
+                1));
         _defn.add(new Interface.Element("where", StringType.DEFAULT,
-                "the query to filter/find the objects to be included in the archive.",
-                0, 1));
-        _defn.add(new Interface.Element("format",
-                new EnumType(ArchiveFormat.values()),
+                "the query to filter/find the objects to be included in the archive.", 0, 1));
+        _defn.add(new Interface.Element("format", new EnumType(ArchiveFormat.values()),
                 "the archive format. Defaults to aar.", 0, 1));
         _defn.add(new Interface.Element("parts", new EnumType(Parts.values()),
-                "Specifies which parts of the assets to archive. Defaults to 'all'.",
-                0, 1));
+                "Specifies which parts of the assets to archive. Defaults to 'all'.", 0, 1));
         _defn.add(new Interface.Element("decompress", BooleanType.DEFAULT,
-                "Specifies whether or not decompress the content before adding to the archive. Defaults to true.",
-                0, 1));
-        Interface.Element transcode = new Interface.Element("transcode",
-                XmlDocType.DEFAULT,
-                "Transcodes to apply to the matching objects.", 0,
-                Integer.MAX_VALUE);
-        transcode.add(new Interface.Element("from", StringType.DEFAULT,
-                "The mime type of the input asset/object.", 1, 1));
-        transcode.add(new Interface.Element("to", StringType.DEFAULT,
-                "The mime type of the output asset/object.", 1, 1));
+                "Specifies whether or not decompress the content before adding to the archive. Defaults to true.", 0,
+                1));
+        Interface.Element transcode = new Interface.Element("transcode", XmlDocType.DEFAULT,
+                "Transcodes to apply to the matching objects.", 0, Integer.MAX_VALUE);
+        transcode.add(
+                new Interface.Element("from", StringType.DEFAULT, "The mime type of the input asset/object.", 1, 1));
+        transcode.add(
+                new Interface.Element("to", StringType.DEFAULT, "The mime type of the output asset/object.", 1, 1));
         _defn.add(transcode);
-        _defn.add(new Interface.Element("include-attachments",
-                BooleanType.DEFAULT,
+        _defn.add(new Interface.Element("include-attachments", BooleanType.DEFAULT,
                 "Include attachment assets. Defaults to true.", 0, 1));
+
+        Interface.Element layoutPattern = new Interface.Element("layout-pattern", StringType.DEFAULT,
+                "The pattern that defines the directory structure of the output archive. For each object type, only one pattern can be specified.",
+                0, 5);
+        layoutPattern.add(new Interface.Attribute("type",
+                new EnumType(new String[] { "project", "subject", "ex-method", "study", "dataset" }),
+                "The type of the objects the pattern applies to. If not specified, applies to all objects. For each object type, only one pattern can be specified.",
+                0));
+        _defn.add(layoutPattern);
     }
 
     @Override
@@ -137,21 +148,18 @@ public class SvcCollectionArchiveCreate extends PluginService {
     }
 
     @Override
-    public void execute(Element args, Inputs inputs, Outputs outputs,
-            XmlWriter w) throws Throwable {
+    public void execute(Element args, Inputs inputs, Outputs outputs, XmlWriter w) throws Throwable {
         String cid = args.value("cid");
         String where = args.value("where");
-        final boolean includeAttachments = args
-                .booleanValue("include-attachments", true);
-        final ArchiveFormat format = ArchiveFormat
-                .fromString(args.value("format"), ArchiveFormat.zip);
+        final boolean includeAttachments = args.booleanValue("include-attachments", true);
+        final ArchiveFormat format = ArchiveFormat.fromString(args.value("format"), ArchiveFormat.ZIP);
         final Parts parts = Parts.fromString(args.value("parts"), Parts.all);
         final boolean decompress = args.booleanValue("decompress", true);
         final SortedMap<String, String> transcodes = parseTranscodes(args);
+        final Map<String, String> layoutPatterns = parseLayoutPatterns(args);
         StringBuilder sb = new StringBuilder();
         if (parts == Parts.content) {
-            sb.append("((cid='" + cid + "' or cid starts with '" + cid
-                    + "') and asset has content)");
+            sb.append("((cid='" + cid + "' or cid starts with '" + cid + "') and asset has content)");
         } else {
             sb.append("(cid='" + cid + "' or cid starts with '" + cid + "')");
         }
@@ -169,8 +177,7 @@ public class SvcCollectionArchiveCreate extends PluginService {
         dm.add("where", query);
         dm.add("size", "infinity");
         dm.add("action", "get-cid");
-        final List<XmlDoc.Element> cides = executor()
-                .execute("asset.query", dm.root()).elements("cid");
+        final List<XmlDoc.Element> cides = executor().execute("asset.query", dm.root()).elements("cid");
         if (cides == null || cides.isEmpty()) {
             throw new Exception("No object found.");
         }
@@ -185,9 +192,8 @@ public class SvcCollectionArchiveCreate extends PluginService {
         PluginTask.setCurrentThreadActivity("Checking the total content size");
         long totalContentSize = getTotalContentSize(executor(), query);
         if (totalContentSize > format.maxSize()) {
-            throw new Exception("The total content size " + totalContentSize
-                    + " is greater than the maximum size that " + format.name()
-                    + " format archive can handle.");
+            throw new Exception("The total content size " + totalContentSize + " is greater than the maximum size that "
+                    + format.name() + " format archive can handle.");
         }
         PluginTask.clearCurrentThreadActivity();
         PluginTask.checkIfThreadTaskAborted();
@@ -202,25 +208,19 @@ public class SvcCollectionArchiveCreate extends PluginService {
             public void run() {
                 try {
                     int totalObjects = cides.size();
-                    String mimeType = format == ArchiveFormat.tgz
-                            ? "application/x-tar" : format.mimeType();
-                    OutputStream os = format == ArchiveFormat.tgz
-                            ? new GZIPOutputStream(pos) : pos;
+                    String mimeType = format == ArchiveFormat.TGZ ? "application/x-tar" : format.mimeType();
+                    OutputStream os = format == ArchiveFormat.TGZ ? new GZIPOutputStream(pos) : pos;
                     try {
                         PluginTask.threadTaskBeginSetOf(totalObjects);
-                        ArchiveOutput ao = ArchiveRegistry.createOutput(os,
-                                mimeType, 6, null);
+                        ArchiveOutput ao = ArchiveRegistry.createOutput(os, mimeType, 6, null);
                         try {
                             for (XmlDoc.Element cide : cides) {
                                 PluginTask.checkIfThreadTaskAborted();
-                                PluginTask.setCurrentThreadActivity(
-                                        "Processing object " + cide.value());
-                                addToArchive(executor(), cide, parts,
-                                        decompress, transcodes,
-                                        includeAttachments, ao);
+                                PluginTask.setCurrentThreadActivity("Processing object " + cide.value());
+                                addToArchive(executor(), cide, parts, decompress, transcodes, includeAttachments, ao,
+                                        layoutPatterns);
                                 PluginTask.clearCurrentThreadActivity();
-                                PluginTask
-                                        .threadTaskCompletedOneOf(totalObjects);
+                                PluginTask.threadTaskCompletedOneOf(totalObjects);
                             }
                         } finally {
                             ao.close();
@@ -231,7 +231,8 @@ public class SvcCollectionArchiveCreate extends PluginService {
                             os.close();
                         }
                         pos.close();
-                        // NOTE: No need to close pis (If do that, it will cause problem: corrupt archive).
+                        // NOTE: No need to close pis (If do that, it will cause
+                        // problem: corrupt archive).
                     }
                 } catch (Throwable e) {
                     e.printStackTrace(System.out);
@@ -242,8 +243,7 @@ public class SvcCollectionArchiveCreate extends PluginService {
         outputs.output(0).setData(pis, -1, format.mimeType());
     }
 
-    private static SortedMap<String, String> parseTranscodes(Element args)
-            throws Throwable {
+    private static SortedMap<String, String> parseTranscodes(Element args) throws Throwable {
         if (args == null || !args.elementExists("transcode")) {
             return null;
         }
@@ -253,74 +253,98 @@ public class SvcCollectionArchiveCreate extends PluginService {
             String from = te.value("from");
             String to = te.value("to");
             if (map.containsKey(from)) {
-                throw new Exception(
-                        "Multiple inconsistent transcodes for input type: "
-                                + from);
+                throw new IllegalArgumentException("Multiple inconsistent transcodes for input type: " + from);
             }
             map.put(from, to);
         }
         return map;
     }
 
-    private static void addToArchive(ServiceExecutor executor, Element cide,
-            Parts parts, boolean decompress,
-            SortedMap<String, String> transcodes, boolean includeAttachments,
-            ArchiveOutput ao) throws Throwable {
-        XmlDoc.Element ae = executor.execute("asset.get",
-                "<args><id>" + cide.value("@id") + "</id></args>", null, null)
+    private static Map<String, String> parseLayoutPatterns(Element args) throws Throwable {
+        if (args == null || !args.elementExists("layout-pattern")) {
+            return null;
+        }
+
+        List<XmlDoc.Element> pes = args.elements("layout-pattern");
+        Map<String, String> layoutPatterns = new LinkedHashMap<String, String>();
+        for (XmlDoc.Element pe : pes) {
+            String type = pe.value("@type");
+            String pattern = pe.value();
+            if (layoutPatterns.containsKey(type)) {
+                throw new IllegalArgumentException(type == null ? "Multiple layout-patterns specified."
+                        : "Multiple layout-patterns specified for object type: " + type);
+            }
+            if (type == null) {
+                String[] ts = { "project", "subject", "ex-method", "study", "dataset" };
+                for (String t : ts) {
+                    if (layoutPatterns.containsKey(t)) {
+                        throw new IllegalArgumentException("Multiple layout-patterns specified for object type: " + t);
+                    }
+                    layoutPatterns.put(t, pattern);
+                }
+            } else {
+                layoutPatterns.put(type, pattern);
+            }
+        }
+        if (!layoutPatterns.isEmpty()) {
+            return layoutPatterns;
+        } else {
+            return null;
+        }
+    }
+
+    private static void addToArchive(ServiceExecutor executor, Element cide, Parts parts, boolean decompress,
+            SortedMap<String, String> transcodes, boolean includeAttachments, ArchiveOutput ao,
+            Map<String, String> layoutPatterns) throws Throwable {
+        XmlDoc.Element ae = executor.execute("asset.get", "<args><id>" + cide.value("@id") + "</id></args>", null, null)
                 .element("asset");
         String cid = ae.value("cid");
+        String type = ae.value("type");
+        String objectType = ae.value("meta/daris:pssd-object/type");
+        String transcodeToType = (type != null && transcodes != null && transcodes.containsKey(type))
+                ? transcodes.get(type) : null;
+        String layoutPattern = layoutPatterns == null ? null : layoutPatterns.get(objectType);
+        String dirPath = directoryPathFor(executor, ae, decompress, transcodeToType, layoutPattern);
         if (includeAttachments) {
-            Collection<String> attachments = ae
-                    .values("related[@type='attachment']/to");
+            Collection<String> attachments = ae.values("related[@type='attachment']/to");
             if (attachments != null && !attachments.isEmpty()) {
                 for (String attachment : attachments) {
-                    PluginTask.setCurrentThreadActivity("Adding attachment "
-                            + attachment + " of object " + cid);
-                    addAttachmentToArchive(executor, ae, attachment, ao);
+                    PluginTask.setCurrentThreadActivity("Adding attachment " + attachment + " of object " + cid);
+                    addAttachmentToArchive(executor, ae, attachment, ao, dirPath);
                 }
             }
         }
         if (parts != Parts.content) {
-            PluginTask.setCurrentThreadActivity(
-                    "Adding metadata of object " + cid);
-            addMetaToArchive(executor, ae, ao);
+            PluginTask.setCurrentThreadActivity("Adding metadata of object " + cid);
+            addMetaToArchive(executor, ae, ao, dirPath);
         }
         if (parts == Parts.meta || !ae.elementExists("content")) {
             return;
         }
 
-        String type = ae.value("type");
-        if (type != null && transcodes != null && !transcodes.isEmpty()
-                && transcodes.containsKey(type)) {
-            String toType = transcodes.get(type);
-            transcodeContentToArchive(executor, ae, toType, decompress, ao);
+        if (transcodeToType != null) {
+            transcodeContentToArchive(executor, ae, transcodeToType, decompress, ao, dirPath);
         } else {
             String ctype = ae.value("content/type");
             if (ArchiveRegistry.isAnArchive(ctype) && decompress) {
-                PluginTask.setCurrentThreadActivity(
-                        "Extracting content archive of object " + cid);
-                extractContentToArchive(executor, ae, ao);
+                PluginTask.setCurrentThreadActivity("Extracting content archive of object " + cid);
+                extractContentToArchive(executor, ae, ao, dirPath);
             } else {
-                PluginTask.setCurrentThreadActivity(
-                        "Adding content of object " + cid);
-                addContentToArchive(executor, ae, ao);
+                PluginTask.setCurrentThreadActivity("Adding content of object " + cid);
+                addContentToArchive(executor, ae, ao, dirPath);
             }
         }
     }
 
-    private static void addAttachmentToArchive(ServiceExecutor executor,
-            XmlDoc.Element ae, String attachmentAssetId, ArchiveOutput ao)
-                    throws Throwable {
+    private static void addAttachmentToArchive(ServiceExecutor executor, XmlDoc.Element ae, String attachmentAssetId,
+            ArchiveOutput ao, String dirPath) throws Throwable {
         String cid = ae.value("cid");
-        StringBuilder path = new StringBuilder(
-                directoryPathFor(ae, false, null));
+        StringBuilder path = new StringBuilder(dirPath);
         path.append("/");
         path.append(cid);
         path.append(".attachments");
-        XmlDoc.Element aae = executor.execute("asset.get",
-                "<args><id>" + attachmentAssetId + "</id></args>", null, null)
-                .element("asset");
+        XmlDoc.Element aae = executor
+                .execute("asset.get", "<args><id>" + attachmentAssetId + "</id></args>", null, null).element("asset");
         if (!aae.elementExists("content")) {
             return;
         }
@@ -342,13 +366,11 @@ public class SvcCollectionArchiveCreate extends PluginService {
         String assetId = aae.value("@id");
         String ctype = aae.value("content/type");
         long csize = aae.longValue("content/size");
-        addAssetContentToArchive(executor, assetId, ctype, csize, entryName,
-                ao);
+        addAssetContentToArchive(executor, assetId, ctype, csize, entryName, ao);
     }
 
-    private static void transcodeContentToArchive(ServiceExecutor executor,
-            XmlDoc.Element ae, String toType, boolean decompress,
-            ArchiveOutput ao) throws Throwable {
+    private static void transcodeContentToArchive(ServiceExecutor executor, XmlDoc.Element ae, String toType,
+            boolean decompress, ArchiveOutput ao, String dirPath) throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("id", ae.value("@id"));
         dm.add("atype", "aar");
@@ -359,7 +381,6 @@ public class SvcCollectionArchiveCreate extends PluginService {
         PluginService.Outputs outputs = new PluginService.Outputs(1);
         executor.execute("asset.transcode", dm.root(), null, outputs);
         PluginService.Output output = outputs.output(0);
-        String dirPath = directoryPathFor(ae, false, toType);
         if (decompress) {
             extractServiceOutputToArchive(output, dirPath, ao);
         } else {
@@ -379,8 +400,7 @@ public class SvcCollectionArchiveCreate extends PluginService {
                 entryName.append(ext);
             }
             try {
-                ao.add(output.mimeType(), entryName.toString(), output.stream(),
-                        output.length());
+                ao.add(output.mimeType(), entryName.toString(), output.stream(), output.length());
             } finally {
                 output.stream().close();
                 output.close();
@@ -388,15 +408,14 @@ public class SvcCollectionArchiveCreate extends PluginService {
         }
     }
 
-    private static void addContentToArchive(ServiceExecutor executor,
-            Element ae, ArchiveOutput ao) throws Throwable {
+    private static void addContentToArchive(ServiceExecutor executor, Element ae, ArchiveOutput ao, String dirPath)
+            throws Throwable {
         String ctype = ae.value("content/type");
         String ext = ae.value("content/type/@ext");
         long csize = ae.longValue("content/size");
         /*
          * generate parent directory path
          */
-        String dirPath = directoryPathFor(ae, false, null);
         String fileName = ae.value("meta/daris:pssd-filename/original");
         /*
          * generate file name
@@ -415,19 +434,16 @@ public class SvcCollectionArchiveCreate extends PluginService {
         /*
          * 
          */
-        addAssetContentToArchive(executor, assetId, ctype, csize, entryName,
-                ao);
+        addAssetContentToArchive(executor, assetId, ctype, csize, entryName, ao);
     }
 
-    private static void addAssetContentToArchive(ServiceExecutor executor,
-            String assetId, String ctype, long csize, String entryName,
-            ArchiveOutput ao) throws Throwable {
+    private static void addAssetContentToArchive(ServiceExecutor executor, String assetId, String ctype, long csize,
+            String entryName, ArchiveOutput ao) throws Throwable {
         /*
          * retrieve the content (InputStream)
          */
         PluginService.Outputs outputs = new PluginService.Outputs(1);
-        executor.execute("asset.content.get",
-                "<args><id>" + assetId + "</id></args>", null, outputs);
+        executor.execute("asset.content.get", "<args><id>" + assetId + "</id></args>", null, outputs);
         PluginService.Output output = outputs.output(0);
         /*
          * add to the archive
@@ -440,59 +456,53 @@ public class SvcCollectionArchiveCreate extends PluginService {
         }
     }
 
-    private static String getTypeExtension(ServiceExecutor executor,
-            String type) throws Throwable {
-        return executor
-                .execute("type.describe",
-                        "<args><type>" + type + "</type></args>", null, null)
+    private static String getTypeExtension(ServiceExecutor executor, String type) throws Throwable {
+        return executor.execute("type.describe", "<args><type>" + type + "</type></args>", null, null)
                 .value("type/extension");
     }
 
-    private static String directoryPathFor(XmlDoc.Element ae,
-            boolean decompress, String transcodeToType) throws Throwable {
-        String cid = ae.value("cid");
-        StringBuilder sb = new StringBuilder();
-        sb.append(CiteableIdUtil.getProjectId(cid));
-        if (CiteableIdUtil.isProjectId(cid)) {
+    private static String directoryPathFor(ServiceExecutor executor, XmlDoc.Element ae, boolean decompress,
+            String transcodeToType, String layoutPattern) throws Throwable {
+        if (layoutPattern == null) {
+            String cid = ae.value("cid");
+            StringBuilder sb = new StringBuilder();
+            sb.append(CiteableIdUtil.getProjectId(cid));
+            if (CiteableIdUtil.isProjectId(cid)) {
+                return sb.toString();
+            }
+            sb.append("/");
+            sb.append(CiteableIdUtil.getSubjectId(cid));
+            if (CiteableIdUtil.isSubjectId(cid) || CiteableIdUtil.isExMethodId(cid)) {
+                return sb.toString();
+            }
+            sb.append("/");
+            sb.append(CiteableIdUtil.getStudyId(cid));
+            if (CiteableIdUtil.isStudyId(cid)) {
+                return sb.toString();
+            }
+            sb.append("/");
+            sb.append(cid);
+            String type = ae.value("type");
+            String ctype = ae.value("content/type");
+            if (ArchiveRegistry.isAnArchive(ctype) && decompress && transcodeToType == null) {
+                sb.append("/").append(type.replace('/', '_'));
+            }
+            if (transcodeToType != null) {
+                sb.append("/").append(transcodeToType.replace('/', '_'));
+            }
             return sb.toString();
-        }
-        sb.append("/");
-        sb.append(CiteableIdUtil.getSubjectId(cid));
-        if (CiteableIdUtil.isSubjectId(cid)
-                || CiteableIdUtil.isExMethodId(cid)) {
-            return sb.toString();
-        }
-        sb.append("/");
-        sb.append(CiteableIdUtil.getStudyId(cid));
-        if (CiteableIdUtil.isStudyId(cid)) {
-            return sb.toString();
-        }
-        sb.append("/");
-        sb.append(cid);
-        String type = ae.value("type");
-        String ctype = ae.value("content/type");
-        if (!decompress || ctype == null
-                || !ArchiveRegistry.isAnArchive(ctype)) {
-            return sb.toString();
-        }
-        sb.append("/");
-        if (transcodeToType != null) {
-            sb.append(transcodeToType.replace('/', '_'));
         } else {
-            sb.append(type.replace('/', '_'));
+            return SvcAssetPathGenerate.generatePath(executor, ae, layoutPattern);
         }
-        return sb.toString();
     }
 
-    private static void extractContentToArchive(ServiceExecutor executor,
-            Element ae, ArchiveOutput ao) throws Throwable {
-        String dirPath = directoryPathFor(ae, true, null);
+    private static void extractContentToArchive(ServiceExecutor executor, Element ae, ArchiveOutput ao, String dirPath)
+            throws Throwable {
         /*
          * retrieve the content (InputStream)
          */
         PluginService.Outputs outputs = new PluginService.Outputs(1);
-        executor.execute("asset.content.get",
-                "<args><id>" + ae.value("@id") + "</id></args>", null, outputs);
+        executor.execute("asset.content.get", "<args><id>" + ae.value("@id") + "</id></args>", null, outputs);
         PluginService.Output output = outputs.output(0);
         /*
          * extract the content archive
@@ -500,21 +510,17 @@ public class SvcCollectionArchiveCreate extends PluginService {
         extractServiceOutputToArchive(output, dirPath, ao);
     }
 
-    private static void extractServiceOutputToArchive(
-            PluginService.Output output, String dirPath, ArchiveOutput ao)
-                    throws Throwable {
+    private static void extractServiceOutputToArchive(PluginService.Output output, String dirPath, ArchiveOutput ao)
+            throws Throwable {
         try {
-            ArchiveInput ai = ArchiveRegistry.createInput(
-                    new SizedInputStream(output.stream(), output.length()),
+            ArchiveInput ai = ArchiveRegistry.createInput(new SizedInputStream(output.stream(), output.length()),
                     new NamedMimeType(output.mimeType()));
             try {
                 ArchiveInput.Entry entry = null;
                 while ((entry = ai.next()) != null) {
                     try {
                         if (!entry.isDirectory()) {
-                            ao.add(entry.mimeType(),
-                                    dirPath + "/" + entry.name(),
-                                    entry.stream());
+                            ao.add(entry.mimeType(), dirPath + "/" + entry.name(), entry.stream());
                         }
                     } finally {
                         ai.closeEntry();
@@ -529,16 +535,13 @@ public class SvcCollectionArchiveCreate extends PluginService {
         }
     }
 
-    private static void addMetaToArchive(ServiceExecutor executor, Element ae,
-            ArchiveOutput ao) throws Throwable {
+    private static void addMetaToArchive(ServiceExecutor executor, Element ae, ArchiveOutput ao, String dirPath)
+            throws Throwable {
         String cid = ae.value("cid");
-        String entryName = directoryPathFor(ae, false, null) + "/" + cid
-                + ".meta.xml";
+        String entryName = dirPath + "/" + cid + ".meta.xml";
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("id", cid);
-        XmlDoc.Element oe = executor
-                .execute("om.pssd.object.describe", dm.root())
-                .element("object");
+        XmlDoc.Element oe = executor.execute("om.pssd.object.describe", dm.root()).element("object");
         byte[] bytes = oe.toString().getBytes("UTF-8");
         ByteArrayInputStream is = new ByteArrayInputStream(bytes);
         try {
@@ -548,8 +551,7 @@ public class SvcCollectionArchiveCreate extends PluginService {
         }
     }
 
-    private static long getTotalContentSize(ServiceExecutor executor,
-            String where) throws Throwable {
+    private static long getTotalContentSize(ServiceExecutor executor, String where) throws Throwable {
 
         XmlDocMaker dm = new XmlDocMaker("args");
         dm.add("where", where);

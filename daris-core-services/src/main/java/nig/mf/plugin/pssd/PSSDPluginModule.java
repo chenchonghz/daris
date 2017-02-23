@@ -1,5 +1,6 @@
 package nig.mf.plugin.pssd;
 
+import daris.plugin.services.*;
 import java.util.Collection;
 import java.util.Vector;
 
@@ -9,10 +10,6 @@ import arc.mf.plugin.dicom.DicomAssetEngineRegistry;
 import arc.mf.plugin.event.FilterRegistry;
 import arc.mf.plugin.http.HttpServlet;
 import arc.mf.plugin.http.HttpServletPluginModule;
-import daris.plugin.services.SvcObjectAttach;
-import daris.plugin.services.SvcObjectAttachmentGet;
-import daris.plugin.services.SvcObjectAttachmentList;
-import daris.plugin.services.SvcObjectDetach;
 import nig.mf.plugin.pssd.announcement.events.PSSDAnnouncementEvent;
 import nig.mf.plugin.pssd.announcement.events.PSSDAnnouncementEventFilterFactory;
 import nig.mf.plugin.pssd.dicom.NIGDicomAssetEngineFactory;
@@ -39,6 +36,7 @@ public class PSSDPluginModule implements HttpServletPluginModule {
 
         _services = new Vector<PluginService>();
 
+        _services.add(new SvcAssetPathGenerate());
         _services.add(new SvcExMethodOrdinalSet());
         _services.add(new SvcAnnouncementCreate());
         _services.add(new SvcAnnouncementDescribe());
