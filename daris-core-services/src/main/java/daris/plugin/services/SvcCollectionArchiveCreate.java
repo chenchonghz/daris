@@ -513,9 +513,10 @@ public class SvcCollectionArchiveCreate extends PluginService {
     private static void extractServiceOutputToArchive(PluginService.Output output, String dirPath, ArchiveOutput ao)
             throws Throwable {
         try {
-            ArchiveInput ai = ArchiveRegistry.createInput(new SizedInputStream(output.stream(), output.length()),
-                    new NamedMimeType(output.mimeType()));
+            ArchiveInput ai = null;
             try {
+                ai = ArchiveRegistry.createInput(new SizedInputStream(output.stream(), output.length()),
+                        new NamedMimeType(output.mimeType()));
                 ArchiveInput.Entry entry = null;
                 while ((entry = ai.next()) != null) {
                     try {
@@ -524,10 +525,20 @@ public class SvcCollectionArchiveCreate extends PluginService {
                         }
                     } finally {
                         ai.closeEntry();
+                        // DEBUG
+                        if (entry.stream() != null) {
+                            try {
+                                entry.stream().close();
+                            } catch (Throwable e) {
+                                e.printStackTrace(System.err);
+                            }
+                        }
                     }
                 }
             } finally {
-                ai.close();
+                if (ai != null) {
+                    ai.close();
+                }
             }
         } finally {
             output.stream().close();
