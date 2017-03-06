@@ -22,6 +22,7 @@ import arc.mf.plugin.ServiceExecutor;
 import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.CiteableIdType;
 import arc.mf.plugin.dtype.EnumType;
+import arc.mf.plugin.dtype.IntegerType;
 import arc.mf.plugin.dtype.StringType;
 import arc.mf.plugin.dtype.XmlDocType;
 import arc.mime.NamedMimeType;
@@ -37,6 +38,8 @@ public class SvcCollectionArchiveCreate extends PluginService {
     public static final String SERVICE_NAME = "daris.collection.archive.create";
 
     public static final long GiB = 1073741824L;
+
+    public static final int DEFAULT_COMPRESSION_LEVEL = 0;
 
     public static enum ArchiveFormat {
         AAR("application/arc-archive", "aar", Long.MAX_VALUE), ZIP("application/zip", "zip",
@@ -107,6 +110,10 @@ public class SvcCollectionArchiveCreate extends PluginService {
                 "the query to filter/find the objects to be included in the archive.", 0, 1));
         _defn.add(new Interface.Element("format", new EnumType(ArchiveFormat.values()),
                 "the archive format. Defaults to aar.", 0, 1));
+        _defn.add(new Interface.Element("clevel", new IntegerType(0, 9),
+                "the compression level (0 ~ 9). Set to 0 for fastest/no compression; 9 for slowest/best compression. Defaults to "
+                        + DEFAULT_COMPRESSION_LEVEL + ".",
+                0, 1));
         _defn.add(new Interface.Element("parts", new EnumType(Parts.values()),
                 "Specifies which parts of the assets to archive. Defaults to 'all'.", 0, 1));
         _defn.add(new Interface.Element("decompress", BooleanType.DEFAULT,
@@ -153,6 +160,7 @@ public class SvcCollectionArchiveCreate extends PluginService {
         String where = args.value("where");
         final boolean includeAttachments = args.booleanValue("include-attachments", true);
         final ArchiveFormat format = ArchiveFormat.fromString(args.value("format"), ArchiveFormat.ZIP);
+        final int clevel = args.intValue("clevel", DEFAULT_COMPRESSION_LEVEL);
         final Parts parts = Parts.fromString(args.value("parts"), Parts.all);
         final boolean decompress = args.booleanValue("decompress", true);
         final SortedMap<String, String> transcodes = parseTranscodes(args);
@@ -212,7 +220,7 @@ public class SvcCollectionArchiveCreate extends PluginService {
                     OutputStream os = format == ArchiveFormat.TGZ ? new GZIPOutputStream(pos) : pos;
                     try {
                         PluginTask.threadTaskBeginSetOf(totalObjects);
-                        ArchiveOutput ao = ArchiveRegistry.createOutput(os, mimeType, 6, null);
+                        ArchiveOutput ao = ArchiveRegistry.createOutput(os, mimeType, clevel, null);
                         try {
                             for (XmlDoc.Element cide : cides) {
                                 PluginTask.checkIfThreadTaskAborted();
