@@ -88,10 +88,7 @@ public class DicomSimpleViewModule implements Module {
         sb.append("<head>\n");
         sb.append("<title>DaRIS Simple DICOM Viewer</title>\n");
         sb.append("<style type=\"text/css\">\n");
-        sb.append("html, body { font-size:11px; font-family:Arial,Sans-Serif; width:100%; height:100%; margin:0; padding:0; }\n");
-        sb.append("div#container { display:flex; flex-flow:column; height:100%; }\n");
-        sb.append("div#content { flex: 1 1 auto; overflow:hidden; }\n");
-        sb.append("div#footer  { flex: 0 1 30px; }\n");
+        sb.append("html, body { font-size:11px; font-family:Arial,Sans-Serif; width:100%; height:100%; margin:0; padding:0; overflow:hidden; }\n");
         sb.append("ul#tabs { list-style-type: none; margin: 10px 0 0 0; padding: 0 0 0.3em 0; }\n");
         sb.append("ul#tabs li { display: inline; }\n");
         sb.append("ul#tabs li a { color: #42454a; background-color: #dedbde; border: 1px solid #c9c3ba; border-bottom: none; border-radius:5px 5px 0 0; padding:0.3em; text-decoration: none; }\n");
@@ -153,8 +150,8 @@ public class DicomSimpleViewModule implements Module {
         sb.append("</script>\n");
         sb.append("</head>\n");
         sb.append("<body onload=\"init()\">\n");
-        sb.append("  <div id=\"container\">\n");
-        sb.append("    <div id=\"content\">\n");
+        sb.append("  <table style=\"width:100%; height:100%; position:absolute; top:0; bottom:0; left:0; right:0;\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n");
+        sb.append("    <tr><td style=\"height:100%;\">\n");
         sb.append("      <ul id=\"tabs\">\n");
         sb.append("        <li><a href=\"#image\">&nbsp;DICOM Image&nbsp;</a></li>\n");
         sb.append("        <li><a href=\"#metadata\">&nbsp;Metadata Header&nbsp;</a></li>\n");
@@ -167,11 +164,11 @@ public class DicomSimpleViewModule implements Module {
         sb.append("      <div class=\"tabContent\" style=\"height:90vh; overflow:scroll;\" id=\"metadata\">\n");
         sb.append(headerHtml);
         sb.append("      </div>\n");
-        sb.append("    </div>\n");
-        sb.append("  <div id=\"footer\"  style=\"vertical-align:middle; text-align:center;\">\n");
+        sb.append("    </td></tr>\n");
+        sb.append("    <tr><td style=\"height:28px;\" align=\"center\">\n");
         addButtons(sessionKey, sb, id, idx, size, frame, nbFrames);
-        sb.append("  </div>\n");
-        sb.append("</div>\n");
+        sb.append("    </td></tr>\n");
+        sb.append("</table>\n");
         sb.append("</body>\n");
         sb.append("</html>\n");
         // @formatter:on
