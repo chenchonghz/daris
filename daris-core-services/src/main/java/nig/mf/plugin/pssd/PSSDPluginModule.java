@@ -1,6 +1,5 @@
 package nig.mf.plugin.pssd;
 
-import daris.plugin.services.*;
 import java.util.Collection;
 import java.util.Vector;
 
@@ -36,7 +35,8 @@ public class PSSDPluginModule implements HttpServletPluginModule {
 
         _services = new Vector<PluginService>();
 
-        _services.add(new SvcAssetPathGenerate());
+        _services.add(new daris.plugin.services.SvcAssetContentExists());
+        _services.add(new daris.plugin.services.SvcAssetPathGenerate());
         _services.add(new SvcExMethodOrdinalSet());
         _services.add(new SvcAnnouncementCreate());
         _services.add(new SvcAnnouncementDescribe());
@@ -190,8 +190,8 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcCollectionMembers());
         _services.add(new SvcCollectionMemberList());
         _services.add(new SvcCollectionMemberCount());
-        _services.add(new SvcCollectionArchiveCreate());
-        _services.add(new SvcCollectionContentSizeSum());
+        _services.add(new daris.plugin.services.SvcCollectionArchiveCreate());
+        _services.add(new daris.plugin.services.SvcCollectionContentSizeSum());
         _services.add(new SvcCollectionTranscodeList());
         _services.add(new SvcCollectionTypeList());
         _services.add(new SvcObjectCidChange());
@@ -212,10 +212,10 @@ public class PSSDPluginModule implements HttpServletPluginModule {
 
         _services.add(new SvcObjectsDestroyHard());
 
-        _services.add(new SvcObjectAttach());
-        _services.add(new SvcObjectAttachmentGet());
-        _services.add(new SvcObjectAttachmentList());
-        _services.add(new SvcObjectDetach());
+        _services.add(new daris.plugin.services.SvcObjectAttach());
+        _services.add(new daris.plugin.services.SvcObjectAttachmentGet());
+        _services.add(new daris.plugin.services.SvcObjectAttachmentList());
+        _services.add(new daris.plugin.services.SvcObjectDetach());
 
         _services.add(new SvcObjectCSVExport());
         _services.add(new SvcObjectDownload());
@@ -301,7 +301,8 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcDicomSRGet());
         _services.add(new SvcDicomSRExport());
         //
-        _services.add(new SvcCollectionDicomDatasetCount());
+        _services.add(new daris.plugin.services.SvcCollectionDatasetCount());
+        _services.add(new daris.plugin.services.SvcCollectionDicomDatasetCount());
         _services.add(new SvcDICOMUploadNotify());
         //
         _services.add(new SvcDICOMNormalizeHeader());

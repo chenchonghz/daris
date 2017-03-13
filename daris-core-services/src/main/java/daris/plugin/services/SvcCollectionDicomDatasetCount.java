@@ -1,4 +1,4 @@
-package nig.mf.plugin.pssd.services;
+package daris.plugin.services;
 
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.ServiceExecutor;
