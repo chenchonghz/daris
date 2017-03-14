@@ -288,8 +288,8 @@ public class CiteableIdUtil extends nig.mf.pssd.CiteableIdUtil {
 			// This number was an allocated CID with an asset. Try again
 			id++;
 
-			// Remove when secure
-			if (id == 1000) {
+			// Remove when secure - this is terrible code... [nebk]
+			if (id == 1000000) {
 				throw new Exception("CID child finder appears to be in an infinite loop");
 			}
 		}
