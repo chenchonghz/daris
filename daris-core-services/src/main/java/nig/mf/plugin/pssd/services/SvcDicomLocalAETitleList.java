@@ -40,8 +40,8 @@ public class SvcDicomLocalAETitleList extends PluginService {
         Collection<String> svcTitles = executor().execute("network.describe",
                 "<args><type>dicom</type></args>", null, null).values(
                 "service/arg[@name='dicom.title']");
-        Collection<String> dcmUsers = executor().execute("user.list",
-                "<args><domain>dicom</domain></args>", null, null)
+        Collection<String> dcmUsers = executor().execute("authentication.user.list",
+                "<args><domain>dicom</domain><size>infinity</size></args>", null, null)
                 .values("user");
         Set<String> titles = new TreeSet<String>();
         if (svcTitles != null) {

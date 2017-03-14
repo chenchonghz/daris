@@ -1,4 +1,4 @@
-package nig.mf.plugin.pssd.services;
+package daris.plugin.services;
 
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.ServiceExecutor;
@@ -17,10 +17,8 @@ public class SvcCollectionContentSizeSum extends PluginService {
 
     public SvcCollectionContentSizeSum() {
         _defn = new Interface();
-        _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT,
-                "The citeable id of the root/parent object."));
-        _defn.add(new Interface.Element("include-attachments",
-                BooleanType.DEFAULT,
+        _defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT, "The citeable id of the root/parent object."));
+        _defn.add(new Interface.Element("include-attachments", BooleanType.DEFAULT,
                 "Include the attachment assets. Defaults to true.", 0, 1));
         _defn.add(new Interface.Element("where", StringType.DEFAULT,
                 "the query to filter/find the objects to be included.", 0, 1));
@@ -42,22 +40,18 @@ public class SvcCollectionContentSizeSum extends PluginService {
     }
 
     @Override
-    public void execute(Element args, Inputs i, Outputs o, XmlWriter w)
-            throws Throwable {
+    public void execute(Element args, Inputs i, Outputs o, XmlWriter w) throws Throwable {
         String cid = args.value("cid");
         String where = args.value("where");
-        boolean includeAttachments = args.booleanValue("include-attachments",
-                true);
-        long totalSize = sumContentSize(executor(), cid, where,
-                includeAttachments);
+        boolean includeAttachments = args.booleanValue("include-attachments", true);
+        long totalSize = sumContentSize(executor(), cid, where, includeAttachments);
         w.add("size", totalSize);
     }
 
-    public static long sumContentSize(ServiceExecutor executor, String cid,
-            String where, boolean includeAttachments) throws Throwable {
+    public static long sumContentSize(ServiceExecutor executor, String cid, String where, boolean includeAttachments)
+            throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
-        StringBuilder sb1 = new StringBuilder(
-                "(cid='" + cid + "' or cid starts with '" + cid + "')");
+        StringBuilder sb1 = new StringBuilder("(cid='" + cid + "' or cid starts with '" + cid + "')");
         if (where != null) {
             sb1.append(" and (");
             sb1.append(where);
@@ -77,8 +71,7 @@ public class SvcCollectionContentSizeSum extends PluginService {
         }
         dm.add("action", "sum");
         dm.add("xpath", "content/size");
-        long totalSize = executor.execute("asset.query", dm.root())
-                .longValue("value");
+        long totalSize = executor.execute("asset.query", dm.root()).longValue("value", 0);
         return totalSize;
     }
 
