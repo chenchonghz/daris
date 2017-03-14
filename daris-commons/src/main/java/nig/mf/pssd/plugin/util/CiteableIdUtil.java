@@ -289,8 +289,9 @@ public class CiteableIdUtil extends nig.mf.pssd.CiteableIdUtil {
 			id++;
 
 			// Remove when secure - this is terrible code... [nebk]
-			if (id == 1000000) {
-				throw new Exception("CID child finder appears to be in an infinite loop");
+			int lim = 1000000;
+			if (id == lim) {
+				throw new Exception("CID child finder appears to be in an infinite loop after " + lim  + " CID checks");
 			}
 		}
 	}
