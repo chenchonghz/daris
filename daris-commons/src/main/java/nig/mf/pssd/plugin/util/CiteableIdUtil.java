@@ -266,6 +266,8 @@ public class CiteableIdUtil extends nig.mf.pssd.CiteableIdUtil {
 	 */
 	public static String getFirstAvailableCid(ServiceExecutor executor, String pid, long id) throws Throwable {
 
+		// TODO - improve this function, maybe by batching up, or getting a service to tell us
+		// the last allocated CID.
 		if (id <= 0)
 			throw new Exception("First CID child number must be positive");
 
