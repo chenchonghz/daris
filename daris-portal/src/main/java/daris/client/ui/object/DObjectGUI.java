@@ -347,7 +347,7 @@ public class DObjectGUI implements ObjectGUI {
                 menu.add(aeDownloadContent);
             }
             
-            if (!ro.isProject()) {
+//            if (!ro.isProject()) {
                 /*
                  * Download as archive
                  */
@@ -369,7 +369,7 @@ public class DObjectGUI implements ObjectGUI {
                                 new CollectionShareForm(ro).showDialog(w);
                             }
                         }));
-            }
+//            }
             /*
              * add to shopping cart
              */
