@@ -20,7 +20,7 @@ public enum ArchiveFormat {
 
     public long maxSize() {
         if (this == zip) {
-            return 4294967295L; // 4GB - 1
+            return Long.MAX_VALUE; // 4GB - 1
         } else if (this == tgz) {
             return 8589934592L; // 8GB - 1;
         } else {
