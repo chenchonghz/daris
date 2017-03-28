@@ -17,6 +17,7 @@ public class SvcLicenceUsage extends PluginService {
 
 	public static final String LICENCE_USAGE_ASSET_NAME = "LicenceUsage";
 	public static final String LICENCE_USAGE_DOCTYPE =  "daris:LicenceUsage";
+	public static final String MAX_VERSIONS = "10";    // Number of versions of asset
 
 
 	private Interface _defn;
@@ -114,6 +115,7 @@ public class SvcLicenceUsage extends PluginService {
 				// Update
 				XmlDocMaker dm = new XmlDocMaker("args");
 				dm.add("id", id);
+				dm.add("max-versions", MAX_VERSIONS);
 				dm.push("meta");
 				removeAttribute(meta, "id");
 				dm.add(meta);
@@ -124,6 +126,7 @@ public class SvcLicenceUsage extends PluginService {
 			max = nUsed;
 			XmlDocMaker dm = new XmlDocMaker("args");
 			dm.add("id", id);
+			dm.add("max-versions", MAX_VERSIONS);
 			dm.push("meta");
 			dm.push(LICENCE_USAGE_DOCTYPE);
 			dm.add("max-used", new String[]{"date", date}, max);
