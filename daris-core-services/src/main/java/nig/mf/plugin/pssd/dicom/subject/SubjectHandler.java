@@ -275,7 +275,6 @@ public class SubjectHandler {
 	private static String findSubjectFromDICOMMeta (ServiceExecutor executor, String findSubjectMethod,
 			String projectCID, StudyMetadata studyMeta, String aet) throws Throwable {
 
-		DicomLog.info("Entering findSubjectFromDICOMMeta"); 
 		DicomLog.info("project CID = " + projectCID);;
 
 		// See if we can find the subject 
@@ -303,7 +302,6 @@ public class SubjectHandler {
 				}
 			}
 		}
-		DicomLog.info("Found Subject CID = " + subjectCID);;
 		return subjectCID;
 	}
 
@@ -336,7 +334,6 @@ public class SubjectHandler {
 			query += makeSexQuery(studyMeta);
 			query += makeDOBQuery (studyMeta);
 		}
-		DicomLog.info("query="+query);
 		//
 		dm.add("where", query);
 		dm.add("size", "infinity");

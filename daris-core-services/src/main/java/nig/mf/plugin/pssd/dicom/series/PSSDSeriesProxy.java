@@ -29,9 +29,6 @@ public class PSSDSeriesProxy extends SeriesProxy {
 
 	public PSSDSeriesProxy(PSSDStudyProxy study,int id,SeriesMetadata sm) throws Throwable {
 		super(sm.UID(), id);
-    	String dateTime = DateUtil.todaysTime();
-        DicomLog.info("Creating PSSD Series proxy at " + dateTime);
-
 		_study = study;
 		_sm = sm;
 		_createdSeries = false;
@@ -175,11 +172,7 @@ public class PSSDSeriesProxy extends SeriesProxy {
 				dm.add("type","dicom/series");
 				dm.add("processed", processed);
 				dm.add("fillin", false);
-		    	String dateTime2 = DateUtil.todaysTime();
-		        DicomLog.info("Calling om.pssd.dataset.derivation.create at " + dateTime2 + " for UID" + _sm.UID());
 				XmlDoc.Element r = executor.execute("om.pssd.dataset.derivation.create",dm.root(),ins,null);
-		    	String dateTime3 = DateUtil.todaysTime();
-		        DicomLog.info("Finished calling om.pssd.dataset.derivation.create at " + dateTime3 + " for UID" + _sm.UID());
 				_series = r.value("id");
 				_createdSeries = true;
 				
@@ -191,12 +184,8 @@ public class PSSDSeriesProxy extends SeriesProxy {
 					// Don't fail the DICOM server if this service fails for some reason
 				}
 			} else {
-		    	String dateTime2 = DateUtil.todaysTime();
-		        DicomLog.info("Calling om.pssd.dataset.derivation.update at " + dateTime2 + " for UID" + _sm.UID());
 				dm.add("id",_series);
 				executor.execute("om.pssd.dataset.derivation.update",dm.root(),ins,null);
-		    	String dateTime3 = DateUtil.todaysTime();
-		        DicomLog.info("Finished calling om.pssd.dataset.derivation.update at " + dateTime3 + " for UID" + _sm.UID());
 			}
 		} finally {
 			is.close();
