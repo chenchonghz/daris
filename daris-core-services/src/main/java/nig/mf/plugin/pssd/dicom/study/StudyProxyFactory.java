@@ -241,9 +241,13 @@ public class StudyProxyFactory {
                     // if it exists on the Subject, or fall back on configured
                     // domain-specific meta-data
                     // given by pssd-dicom-ingest document type
-                    DicomLog.info("Trying to find subject in project " + cid);
+    		    	String dateTime1 = DateUtil.todaysTime();
+                    DicomLog.info("Trying to find subject in project " + cid + " at " + dateTime1);
+                    	
                     cms = SubjectHandler.findSubjectByDetail(executor,
                             ic.findSubjectMethod(), studyMeta, cid);
+    		    	String dateTime2 = DateUtil.todaysTime();
+                    DicomLog.info("Finished trying to find subject in project " + cid + " at " + dateTime2);
 
                     // We didn't find the Subject, so let's make a new one
                     if (cms == null) {
@@ -261,6 +265,9 @@ public class StudyProxyFactory {
                         cid = cms.cid();
                         DicomLog.info("Found existing subject " + cid);
                     }
+    		    	String dateTime3 = DateUtil.todaysTime();
+                    DicomLog.info("Completed subject handling at" + dateTime3);
+
 
                     // We successfully found or auto-created the subject. We
                     // have replaced 'cid' (which was a project object)
