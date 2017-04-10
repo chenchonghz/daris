@@ -1,3 +1,19 @@
+#=====================================
+# Type: daris:dicom-application-entity
+#======================================
+asset.doc.type.update :type daris:dicom-application-entity \
+	:create true \
+	:label "DICOM Application Entity" \
+    :description "Document type for DICOM application entity." \
+    :definition < \
+    	:element -name title -type string  -min-occurs 1 -max-occurs 1 -index true < :description "The AE title." > \
+    	:element -name host  -type string  -min-occurs 1 -max-occurs 1 -index true < :description "Host name or IP address." > \
+	    :element -name port  -type integer -min-occurs 1 -max-occurs 1 -index true -default 104 -min 0 -max 65535 < :description "Port number." >  \
+	    :element -name ssl   -type boolean -min-occurs 0 -max-occurs 1 -index true -default false < :description "secured with TLS/SSL?" > \
+	    :element -name description -type string -min-occurs 0 -max-occurs 1 -index true < :description "Description about the AE." > \
+	>
+
+
 
 #=====================================
 # Type: pssd-dicom-server-registry
