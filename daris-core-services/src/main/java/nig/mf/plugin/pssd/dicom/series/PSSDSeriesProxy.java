@@ -5,8 +5,10 @@ import java.io.FileInputStream;
 
 import nig.mf.plugin.pssd.dicom.DICOMMetaUtil;
 import nig.mf.plugin.pssd.dicom.DicomElements;
+import nig.mf.plugin.pssd.dicom.DicomLog;
 import nig.mf.plugin.pssd.dicom.study.PSSDStudyProxy;
 import nig.mf.plugin.pssd.dicom.study.StudyMetadata;
+import nig.util.DateUtil;
 import arc.mf.plugin.PluginService;
 import arc.mf.plugin.ServiceExecutor;
 import arc.mf.plugin.dicom.SeriesProxy;
@@ -25,9 +27,8 @@ public class PSSDSeriesProxy extends SeriesProxy {
 	private StudyMetadata _studyMeta;
 
 
-	public PSSDSeriesProxy(PSSDStudyProxy study,int id,SeriesMetadata sm) {
+	public PSSDSeriesProxy(PSSDStudyProxy study,int id,SeriesMetadata sm) throws Throwable {
 		super(sm.UID(), id);
-
 		_study = study;
 		_sm = sm;
 		_createdSeries = false;
@@ -41,7 +42,10 @@ public class PSSDSeriesProxy extends SeriesProxy {
 	 *  
 	 */
 	public long createOrUpdateAsset(ServiceExecutor executor, long study, File data, String mimeType, int imin,int imax,int size) throws Throwable {
-		String sid = _study.id();
+    	String dateTime = DateUtil.todaysTime();
+        DicomLog.info("Enter  PSSD Series.createOrUpdateAsset at " + dateTime + " for UID = " + _sm.UID());
+
+        String sid = _study.id();
 		
 		// Drop the SR modality if non-human and configured for dropping
 		if (dropDoseReport (executor, sid, _sm.modality(), _study.dropDoseReports())) {

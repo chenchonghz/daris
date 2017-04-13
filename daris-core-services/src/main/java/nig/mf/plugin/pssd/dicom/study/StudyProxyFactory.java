@@ -120,8 +120,7 @@ public class StudyProxyFactory {
 
             // Fall through to next engine, if any
             if (cms == null) {
-                System.out.println(
-                        "StudyProxyFactor::createPSSDStudy: cid_step is null");
+                DicomLog.info("StudyProxyFactor::createPSSDStudy: cid_step is null");
                 DicomLog.warn("No subject is found. Fall through to next available engine.");
                 return null;
             }
@@ -241,7 +240,6 @@ public class StudyProxyFactory {
                     // if it exists on the Subject, or fall back on configured
                     // domain-specific meta-data
                     // given by pssd-dicom-ingest document type
-                    DicomLog.info("Trying to find subject in project " + cid);
                     cms = SubjectHandler.findSubjectByDetail(executor,
                             ic.findSubjectMethod(), studyMeta, cid);
 
@@ -505,7 +503,7 @@ public class StudyProxyFactory {
             }
         }
         if (matchedCID != null) {
-            System.out.println("         Matched Project " + matchedCID
+            DicomLog.info("         Matched Project " + matchedCID
                     + " with DICOM data");
             return new CIDAndMethodStep(matchedCID, null);
         } else {
@@ -544,8 +542,7 @@ public class StudyProxyFactory {
                 return null;
 
             String fullName = pn.fullName();
-            System.out.println(
-                    "StudyProxyFactory::extractID:Full Name = " + fullName);
+            DicomLog.info("StudyProxyFactory::extractID:Full Name = " + fullName);
             // Hopefully they don't set both of these...
             if (ignoreAfterLastDelim != null)
                 fullName = nig.mf.pssd.CiteableIdUtil
@@ -567,8 +564,7 @@ public class StudyProxyFactory {
             if (pn == null)
                 return null;
             String lastName = pn.last(); // Last names should be ok
-            System.out.println(
-                    "StudyProxyFactory::extractID:Last Name = " + lastName);
+            DicomLog.info("StudyProxyFactory::extractID:Last Name = " + lastName);
             // Hopefully they don't set both of these...
             if (ignoreAfterLastDelim != null)
                 lastName = nig.mf.pssd.CiteableIdUtil
@@ -591,8 +587,7 @@ public class StudyProxyFactory {
                 return null;
             String firstName = pn.first(); // May be a combination of first and
                                            // middle
-            System.out.println(
-                    "StudyProxyFactory::extractID:First Name = " + firstName);
+            DicomLog.info("StudyProxyFactory::extractID:First Name = " + firstName);
             // Hopefully they don't set both of these...
             if (ignoreAfterLastDelim != null)
                 firstName = nig.mf.pssd.CiteableIdUtil
@@ -628,8 +623,7 @@ public class StudyProxyFactory {
             if (id == null)
                 return null;
 
-            System.out
-                    .println("StudyProxyFactory::extractID:Patient ID = " + id);
+            DicomLog.info("StudyProxyFactory::extractID:Patient ID = " + id);
             // Hopefully they don't set both of these...
             if (ignoreAfterLastDelim != null)
                 id = nig.mf.pssd.CiteableIdUtil.removeAfterLastDelim(id,
@@ -648,7 +642,7 @@ public class StudyProxyFactory {
             if (id == null)
                 return null;
 
-            System.out.println("StudyProxyFactory::extractID:Study ID = " + id);
+            DicomLog.info("StudyProxyFactory::extractID:Study ID = " + id);
             // Hopefully they don't set both of these...
             if (ignoreAfterLastDelim != null)
                 id = nig.mf.pssd.CiteableIdUtil.removeAfterLastDelim(id,
@@ -668,7 +662,7 @@ public class StudyProxyFactory {
             if (id == null)
                 return null;
 
-            System.out.println(
+            DicomLog.info(
                     "StudyProxyFactory::extractID:Referring Physician = " + id);
             // Hopefully they don't set both of these...
             if (ignoreAfterLastDelim != null)
@@ -688,8 +682,7 @@ public class StudyProxyFactory {
             if (id == null)
                 return null;
 
-            System.out.println(
-                    "StudyProxyFactory::extractID:Referring Physician = " + id);
+            DicomLog.info("StudyProxyFactory::extractID:Referring Physician = " + id);
             // Hopefully they don't set both of these...
             if (ignoreAfterLastDelim != null)
                 id = nig.mf.pssd.CiteableIdUtil.removeAfterLastDelim(id,
@@ -708,8 +701,7 @@ public class StudyProxyFactory {
             if (id == null)
                 return null;
 
-            System.out.println(
-                    "StudyProxyFactory::extractID:Performing Physician = "
+            DicomLog.info("StudyProxyFactory::extractID:Performing Physician = "
                             + id);
             // Hopefully they don't set both of these...
             if (ignoreAfterLastDelim != null)

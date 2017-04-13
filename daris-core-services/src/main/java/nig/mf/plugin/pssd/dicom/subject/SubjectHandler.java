@@ -6,6 +6,7 @@ import java.util.Date;
 
 import nig.mf.dicom.plugin.util.DICOMPatient;
 import nig.mf.plugin.pssd.dicom.DicomIngestControls;
+import nig.mf.plugin.pssd.dicom.DicomLog;
 import nig.mf.plugin.pssd.dicom.study.CIDAndMethodStep;
 import nig.mf.plugin.pssd.dicom.study.StudyMetadata;
 import nig.mf.plugin.pssd.util.MailHandler;
@@ -61,7 +62,7 @@ public class SubjectHandler {
 			//
 			String[] sids  = PSSDUtil.createSubject (executor, projectCid, subjectCid, null, name, fillin);
 			String sid = sids[0];
-			if (sid!=null) System.out.println("       Subject " + sid + " auto created");
+			if (sid!=null) DicomLog.info("       Subject " + sid + " auto created");
 			return sid;
 		} catch (Throwable t) {
 			if (projectCid != null) {
@@ -72,7 +73,7 @@ public class SubjectHandler {
 				} else {
 					msg = "Auto-creation of a Subject with citable identifier '" + subjectCid + "' \n failed with message: " + t.getMessage() + "\n The process will fall through to the standard Mediaflux DICOM data model engine if configured."; 
 				}
-				System.out.println(msgSubject + " because " + msg);
+				DicomLog.info(msgSubject + " because " + msg);
 				MailHandler.sendAdminMessage(executor, projectCid, msgSubject, msg);
 			}
 			return null;
@@ -111,19 +112,19 @@ public class SubjectHandler {
 		String subjectCID = findSubjectFromDICOMMeta (executor, findSubjectMethod, projectCID, 
 				studyMeta, aet);
 		if (subjectCID!=null) {
-			System.out.println("         Subject " + subjectCID + " found");
+			DicomLog.info("Subject " + subjectCID + " found from DICOM meta-data");
 			return new CIDAndMethodStep(subjectCID, null);
 		}
 
 		// If we didn't find it mf-dicom-patient we can now try with Projects and meta-data
 		// configured with pssd-dicom-ingest/subject/find=true and specified domain-specific meta-data
-		System.out.println("         Subject not found - search in domain meta-data");
+		DicomLog.info("Subject not found - search in domain meta-data");
 		subjectCID = findSubjectFromDomainMeta (executor, projectCID, studyMeta, aet);
 		if (subjectCID!=null) {
-			System.out.println("         Subject " + subjectCID + " found");
+			DicomLog.info("Subject " + subjectCID + " found from domain meta-data");
 			return new CIDAndMethodStep(subjectCID, null);
 		} else {
-			System.out.println("         Subject not found");
+			DicomLog.info("Subject not found");
 		}
 		//
 		return null;
@@ -247,7 +248,7 @@ public class SubjectHandler {
 		// the DICOM name credential
 		XmlDocMaker dm = new XmlDocMaker("args");
 		String query = "cid starts with '" + projectCID + "' and model='om.pssd.subject'";
-		
+
 		// If the name is null we can't match
 		DicomPersonName pn = studyMeta.patientName();
 		if (pn==null) return null;
@@ -273,6 +274,8 @@ public class SubjectHandler {
 
 	private static String findSubjectFromDICOMMeta (ServiceExecutor executor, String findSubjectMethod,
 			String projectCID, StudyMetadata studyMeta, String aet) throws Throwable {
+
+		DicomLog.info("project CID = " + projectCID);;
 
 		// See if we can find the subject 
 		String subjectCID = null;
@@ -316,30 +319,72 @@ public class SubjectHandler {
 			String projectCID, StudyMetadata studyMeta) throws Throwable {
 
 		XmlDocMaker dm = new XmlDocMaker("args");
-		String query = "model='om.pssd.subject' and cid starts with '" + projectCID + "'" +
-				" and mf-dicom-patient has value";
+		String query = "model='om.pssd.subject' and cid starts with '" + projectCID + "'";
+		if (findSubjectMethod.equalsIgnoreCase("id")) {
+			query += " and xpath(mf-dicom-patient/id)='"+studyMeta.patientID()+"'";
+		} else if (findSubjectMethod.equalsIgnoreCase("name")) {
+			query += makeNameQuery(studyMeta);
+		} else if (findSubjectMethod.equalsIgnoreCase("name+")) {
+			query += makeNameQuery(studyMeta);
+			query += makeSexQuery(studyMeta);
+			query += makeDOBQuery (studyMeta);
+		} else if (findSubjectMethod.equalsIgnoreCase("all")) {
+			query += " and xpath(mf-dicom-patient/id)='"+studyMeta.patientID()+"'";
+			query += makeNameQuery(studyMeta);
+			query += makeSexQuery(studyMeta);
+			query += makeDOBQuery (studyMeta);
+		}
+		//
 		dm.add("where", query);
 		dm.add("size", "infinity");
 		dm.add("pdist", 0);         // Local server only
-		dm.add("action", "get-meta");
+		dm.add("action", "get-cid");
 		XmlDoc.Element r = executor.execute("asset.query", dm.root());
 		if (r==null) return null;
-
-		// Now look at each mf-dicom-patient record and try to match the patient credentials
-		// Ideally there should only be one, but operational errors could result in multiples
-		Collection<XmlDoc.Element> patients = r.elements("asset"); 
-		if (patients!=null) {
-			for (XmlDoc.Element patient : patients) {
-				XmlDoc.Element oldPatientMeta = patient.element("meta/mf-dicom-patient");
-				if (oldPatientMeta!=null) {
-					if (matchDICOMDetail (findSubjectMethod, oldPatientMeta, studyMeta)) {
-						return patient.value("cid");
-					}
-				}
-			}
+		Collection<String> cids = r.values("cid");
+		if (cids==null) return null;
+		if (cids.size()==1) {
+			return r.value("cid");
+		} else {
+			throw new Exception ("Found multiple subjects with the specified DICOM meta-data - cannot handle");
 		}
-		return null;
 	}
+
+	private static String makeNameQuery (StudyMetadata studyMeta) throws Throwable {
+		DicomPersonName dpn = studyMeta.patientName();
+		String first = dpn.first();
+		String last = dpn.last();
+		String query = "";
+		if (first!=null && last!=null) {
+			query += " and (xpath(mf-dicom-patient/name[@type='first'])='"+first+"' and " +
+					"xpath(mf-dicom-patient/name[@type='last'])='"+last+"')";
+		} else if (first!=null && last==null) {
+			query += " and xpath(mf-dicom-patient/name[@type='first'])='"+first+"')";
+		} else if (first==null && last!=null) {
+			query += " and xpath(mf-dicom-patient/name[@type='last'])='"+last+"')";
+		}
+		return query;
+	}
+	
+	private static String makeSexQuery (StudyMetadata studyMeta) throws Throwable {
+		String sex = studyMeta.patientSex();
+		String query = "";
+		if (sex!=null) {
+			query += " and xpath(mf-dicom-patient/sex)='"+sex+"'";
+		}
+		return query;
+	}
+
+	private static String makeDOBQuery (StudyMetadata studyMeta) throws Throwable {
+		Date dob = studyMeta.patientDateOfBirth();
+		String query = "";
+		if (dob!=null) {
+			String sdob = DateUtil.formatDate (dob, "dd-MMM-yyyy");
+			query += " and xpath(mf-dicom-patient/dob)='"+sdob+"'";
+		}
+		return query;
+	}
+
 
 
 	public static void addSubjectDICOMMetaData (ServiceExecutor executor, DicomIngestControls ic, String subject, StudyMetadata sm) throws Throwable {
@@ -367,11 +412,11 @@ public class SubjectHandler {
 				String method = ic.findSubjectMethod();
 				if (method==null) method = "name+";
 				if (matchDICOMDetail (method, patient, sm)) {
-					System.out.println("        Matched mf-dicom-patient");
+					DicomLog.info("        Matched mf-dicom-patient");
 					return;
 				}
 			}
-			System.out.println("        Failed to match mf-dicom-patient");
+			DicomLog.info("        Failed to match mf-dicom-patient");
 		}
 
 		// Prepare meta-data 
@@ -390,6 +435,7 @@ public class SubjectHandler {
 			addName (dm, name.first(), "first");
 			addName (dm, name.middle(), "middle");
 			addName (dm, name.last(), "last");
+			addName (dm, name.fullName(), "full");
 		}
 		dm.pop();
 
