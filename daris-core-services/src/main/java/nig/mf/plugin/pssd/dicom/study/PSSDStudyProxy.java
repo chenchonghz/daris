@@ -167,8 +167,11 @@ public class PSSDStudyProxy extends StudyProxy {
 
 		XmlDocMaker dm = new XmlDocMaker("args");
 		dm.add("cid",_study);
-
-		executor.execute("om.pssd.object.destroy",dm.root());
+		try {
+		    executor.execute("om.pssd.object.destroy",dm.root());
+		} catch(Throwable e){
+		    e.printStackTrace();
+		}
 
 		_createdStudy = false;
 	}

@@ -103,8 +103,13 @@ public class PSSDSeriesProxy extends SeriesProxy {
 
 		// ds.add(new XmlDoc.Element("idx",String.valueOf(idx)));
 		dm.add("uid",_sm.UID());
-		dm.add("id",_sm.id());
-
+		if(_sm.id()==null){
+		    // set id to 1 if not found in the header. This is what PSS engine does. 
+		    dm.add("id", 1);
+		} else {
+		    dm.add("id", _sm.id());
+		}
+		
 		if ( desc != null ) {
 			dm.add("description", desc);
 		}
