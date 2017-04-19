@@ -202,7 +202,11 @@ public class SvcStudyFind extends PluginService {
 		// Iterate over subjects
 		for (String key : keySet) {
 			XmlDoc.Element meta = AssetUtil.getAsset(executor(), key, null);
-			DICOMPatient dp = new DICOMPatient(meta.element("asset/meta/mf-dicom-patient"));
+			XmlDoc.Element mdp = meta.element("asset/meta/mf-dicom-patient");
+			if (mdp==null) {
+				meta.element("asset/meta/mf-dicom-patient-encrypted");
+			}
+			DICOMPatient dp = new DICOMPatient(mdp);
 			//
 			w.push("subject", new String[]{"name", dp.getFullName(), "id", key});
 			msg += ":subject " + dp.getFullName() + "\n";

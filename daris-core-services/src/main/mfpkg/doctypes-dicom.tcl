@@ -88,7 +88,11 @@ asset.doc.type.update \
       < \
         :description "If true, indicates that the DICOM data for this project should be anonymized. Intended when the DICOM server has NOT been configured for direct anonymization (applies to all projects); use in conjuuction with om.pssd.dicom.anonymize" \
       > \
-      :element -name "find" -type "boolean" -min-occurs "0" -max-occurs "1" \
+       :element -name "encrypt-patient" -type "boolean" -min-occurs "0" -max-occurs "1" \
+      < \
+        :description "If set, over-rides the DICOM server setting regarding whether it writes to mf-dicom-patient or mf-dicom-patient-encrypted (control nig.dicom.write.mf-dicom-patient)." \
+      > \
+     :element -name "find" -type "boolean" -min-occurs "0" -max-occurs "1" \
       < \
         :description "When true, and CID is extracted, look for the Project by configured name. The name is extracted from the specified DICOM element and compared with the given name." \
       > \

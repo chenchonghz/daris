@@ -81,6 +81,8 @@ public class SvcMyTardisDatasetImport extends PluginService {
 
 		_defn.add(new Interface.Element("async", BooleanType.DEFAULT,
 				"Run the service asynchronously. Defaults to true.", 0, 1));
+		_defn.add(new Interface.Element("encrypt-patient", BooleanType.DEFAULT,
+						"Encrypt patient meta-data in mf-dicom-patient-encrypted, else use mf-dicom-patient. Defaults to true.", 0, 1));
 	}
 
 	@Override
@@ -118,6 +120,7 @@ public class SvcMyTardisDatasetImport extends PluginService {
 
 		final PluginService.Input input = inputs.input(0);
 		final boolean async = args.booleanValue("async", true);
+		final boolean encrypt = args.booleanValue("encrypt-patient", true);
 		final boolean datasetExists = datasetExists(executor(), projectCid, datasetUri);
 
 		if (datasetExists && !dicomIngest) {
@@ -151,7 +154,8 @@ public class SvcMyTardisDatasetImport extends PluginService {
 				public void run() {
 					try {
 						importMyTardisDataset(executor(), projectCid, expId, expTitle, expDescription, expUri,
-								datasetId, datasetDescription, instrument, datasetUri, dir, datasetExists, dicomIngest);
+								datasetId, datasetDescription, instrument, datasetUri, dir, datasetExists, dicomIngest,
+								encrypt);
 					} catch (Throwable e) {
 						e.printStackTrace(System.out);
 					}
@@ -159,15 +163,15 @@ public class SvcMyTardisDatasetImport extends PluginService {
 			});
 		} else {
 			importMyTardisDataset(executor(), projectCid, expId, expTitle, expDescription, expUri, datasetId,
-					datasetDescription, instrument, datasetUri, dir, datasetExists, dicomIngest);
+					datasetDescription, instrument, datasetUri, dir, datasetExists, dicomIngest, encrypt);
 		}
 
 	}
 
 	private static void importMyTardisDataset(ServiceExecutor executor, String projectCid, String expId,
 			String expTitle, String expDescription, String expUri, String datasetId, String datasetDescription,
-			String instrument, String datasetUri, File dir, boolean datasetExists, boolean dicomIngest)
-					throws Throwable {
+			String instrument, String datasetUri, File dir, boolean datasetExists, boolean dicomIngest, 
+			boolean encrypt) throws Throwable {
 		try {
 			String subjectCid = findOrCreateSubject(executor, projectCid, expId, expTitle, expDescription, expUri,
 					datasetId, datasetDescription, instrument, datasetUri);
@@ -188,7 +192,7 @@ public class SvcMyTardisDatasetImport extends PluginService {
 					} finally {
 						ao.close();
 					}
-					ingestDicomData(executor, studyCid, dicomArchive);
+					ingestDicomData(executor, studyCid, dicomArchive, encrypt);
 				} catch (Throwable e) {
 					// NOTE: DO NOT terminate if there is dicom ingest error.
 					e.printStackTrace(System.out);
@@ -266,13 +270,17 @@ public class SvcMyTardisDatasetImport extends PluginService {
 		}
 	}
 
-	private static void ingestDicomData(ServiceExecutor executor, String studyCid, File dicomArchive) throws Throwable {
+	private static void ingestDicomData(ServiceExecutor executor, String studyCid, File dicomArchive, boolean encryptPatient) throws Throwable {
 		XmlDocMaker dm = new XmlDocMaker("args");
 		dm.add("engine", "nig.dicom");
 		dm.add("arg", new String[] { "name", "nig.dicom.id.ignore-non-digits" }, "true");
 		dm.add("arg", new String[] { "name", "nig.dicom.subject.create" }, "true");
 		dm.add("arg", new String[] { "name", "nig.dicom.id.citable" }, studyCid);
 		dm.add("arg", new String[] { "name", "nig.dicom.write.mf-dicom-patient" }, true);
+		if (encryptPatient) {
+			dm.add("arg", new String[] {"name", "nig.dicom.encrypt.patient.metadata"}, true);
+
+		}
 		dm.add("wait", true);
 		dm.add("type", AAR_MIME_TYPE);
 		PluginService.Input input = new PluginService.Input(PluginTask.deleteOnCloseInputStream(dicomArchive),

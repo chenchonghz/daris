@@ -307,14 +307,13 @@ public class MBCPETCTDICOMRetrieve {
         XmlStringWriter w = new XmlStringWriter();
         if (ops.lastName != null) {
             // Find patient DICOM assets
-            String lastNameQuery = "xpath(mf-dicom-patient/name[@type='last'])=ignore-case('"
-                    + ops.lastName + "')";
-
+            String lastNameQuery = "(xpath(mf-dicom-patient/name[@type='last'])=ignore-case('"+ops.lastName + "') or " +
+                                   "xpath(mf-dicom-patient-encrypted/name[@type='last'])=ignore-case('"+ops.lastName + "'))";
             query += " and " + lastNameQuery;
             if (ops.firstName != null) {
-                String firstNameQuery = "xpath(mf-dicom-patient/name[@type='first'])=ignore-case('"
-                        + ops.firstName + "')";
-                query += " and " + firstNameQuery;
+                String firstNameQuery = "(xpath(mf-dicom-patient/name[@type='first'])=ignore-case('"+ops.firstName + "') or " +
+                                         "xpath(mf-dicom-patient-encrypted/name[@type='first'])=ignore-case('"+ops.firstName + "'))";
+                 query += " and " + firstNameQuery;
             }
             w.add("where", query);
             XmlDoc.Element r = cxn.execute("asset.query", w.document());

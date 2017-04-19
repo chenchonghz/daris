@@ -178,6 +178,7 @@ public class SvcStudyRetrofit extends PluginService {
 				// Copy  mf-dicom-patient 
 				Vector<String> dt = new Vector<String>();
 				dt.add("mf-dicom-patient");
+				dt.add("mf-dicom-patient-encrypted");
 				AssetUtil.copyMetaData(executor(), dt, dicomPatientID, sCID, false, "pssd.private", null);
 
 				// Set domain-specific meta-data
@@ -264,8 +265,9 @@ public class SvcStudyRetrofit extends PluginService {
 		// container.  So create it with the bits we need.
 		XmlDoc.Element t = AssetUtil.getAsset(executor, null, dicomPatientID);
 		XmlDoc.Element mfDICOMPatient = t.element("asset/meta/mf-dicom-patient");
-		
-		System.out.println("mf-dicom-patient=" + mfDICOMPatient);
+		if (mfDICOMPatient==null) {
+			mfDICOMPatient = t.element("asset/meta/mf-dicom-patient-encrypted");
+		}
 		if (mfDICOMPatient==null) return null;
 
 		StudyMetadata studyMeta = StudyMetadata.createFrom(mfDICOMPatient.value("id"), mfDICOMPatient.value("sex"),
@@ -301,7 +303,9 @@ public class SvcStudyRetrofit extends PluginService {
 		// This is a bit clumsy as this framework was premised on holding the DICOM Study meta-data
 		// in the StudyMeta container.  However, this is not available to us, so we just have to
 		// fish things out of mf-dicom-study and mf-dicom-patient
-		XmlDoc.Element patientMeta = AssetUtil.getAsset(executor, null, patientID).element("asset/meta/mf-dicom-patient");
+		XmlDoc.Element asset = AssetUtil.getAsset(executor, null, patientID);
+		XmlDoc.Element patientMeta = asset.element("asset/meta/mf-dicom-patient");
+		if (patientMeta==null) patientMeta = asset.element("asset/meta/mf-dicom-patient-encrypted");
 		XmlDocMaker dm = new XmlDocMaker("args");
 		dm.add("id", sCID);
 		dm.push("dicom");
@@ -695,8 +699,16 @@ public class SvcStudyRetrofit extends PluginService {
 		doc.add("id", dicomPatientAssetId);
 		doc.add("pdist", 0);       // FOrce local
 		XmlDoc.Element r2 = executor().execute("asset.get", doc.root());
-		String firstName = r2.value("asset/meta/mf-dicom-patient/name[@type='first']");
-		String lastName = r2.value("asset/meta/mf-dicom-patient/name[@type='last']");
+		XmlDoc.Element patientMeta = r2.element("asset/meta/mf-dicom-patient");
+		if (patientMeta==null) {
+			patientMeta = r2.element("asset/meta/mf-dicom-patient-encrypted");
+		}
+		if (patientMeta == null) {
+			throw new Exception("Patient name is null.");
+		}
+
+		String firstName = patientMeta.value("name[@type='first']");
+		String lastName = patientMeta.value("name[@type='last']");
 
 		String[] name = null;
 		if (firstName != null && lastName != null) {

@@ -39,6 +39,7 @@ public class DicomIngestCLI {
         String mfSid = null;
         String cid = null;
         boolean anonymize = false;
+        Boolean encryptPatient = false;
         String metaSetService = null;
         List<File> dcmFiles = new ArrayList<File>();
         try {
@@ -125,6 +126,9 @@ public class DicomIngestCLI {
                 } else if (args[i].equals("--anonymize")) {
                     anonymize = true;
                     i++;
+                } else if (args[i].equals("--encrypt-patient")) {
+                    encryptPatient = true;
+                    i++;
                 } else if (args[i].equals("--meta-set-service")) {
                     if (metaSetService != null) {
                         throw new Exception(
@@ -193,7 +197,7 @@ public class DicomIngestCLI {
                 } else {
                     cxn.reconnect(mfSid);
                 }
-                ingestDicomFiles(cxn, cid, anonymize, metaSetService, dcmFiles);
+                ingestDicomFiles(cxn, cid, anonymize, encryptPatient, metaSetService, dcmFiles);
             } finally {
                 cxn.closeAndDiscard();
             }
@@ -242,13 +246,15 @@ public class DicomIngestCLI {
         System.out.println(
                 "    --anonymize                      Anonymize PatientName element(0010,0010) if set.");
         System.out.println(
+                "    --encrypt-patient                Encrpyt patient meta-data using mf-dicom-patient-encrypted instead of mf-dicom-patient.");
+        System.out.println(
                 "    --meta-set-service <service>     The service to map dicom header elements to domain specific meta-data. This argument is optional.");
         System.out.println(
                 "    --help                           Display help information.");
     }
 
     private static void ingestDicomFiles(ServerClient.Connection cxn,
-            String cid, boolean anonymize, String metaSetService,
+            String cid, boolean anonymize, boolean encryptPatient, String metaSetService,
             final List<File> dcmFiles) throws Throwable {
 
         // I think you can't supply the id and prefix for the default PSS
@@ -273,6 +279,12 @@ public class DicomIngestCLI {
         w.add("arg",
                 new String[] { "name", "nig.dicom.write.mf-dicom-patient" },
                 true);
+        if (encryptPatient) {
+            w.add("arg",
+                    new String[] { "name", "nig.dicom.use.encrypted.patient" },
+                    true);
+          	
+        }
         w.add("wait", true);
         w.add("type", MIME_TYPE_AAR);
         Archive.declareSupportForAllTypes();

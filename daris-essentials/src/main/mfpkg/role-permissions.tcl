@@ -36,6 +36,7 @@ grant_role_doc_access daris:basic-user { \
     mf-document \
     mf-image \
     mf-dicom-patient \
+    mf-dicom-patient-encrypted \
     mf-dicom-subject \
     mf-dicom-prefs \
     mf-dicom-project \
@@ -129,7 +130,8 @@ grant_role_service_access daris:essentials.administrator { dicom.* nig.* } ADMIN
 #     DICOM server. Like basic-user, it's really a layer undeneath PSSD and 
 #     could go in its own package if we needed to.
 # ============================================================================
-grant_role_doc_access dicom-ingest { mf-dicom-patient mf-dicom-series } { ACCESS }
+grant_role_doc_access dicom-ingest { mf-dicom-patient mf-dicom-patient-encrypted mf-dicom-series } { ACCESS }
+grant_role_doc_access dicom-ingest { mf-dicom-patient mf-dicom-patient-encrypted mf-dicom-series } { PUBLISH }
 grant_role_doc_access dicom-ingest { mf-dicom-subject } { PUBLISH }
 grant_role_service_access dicom-ingest { asset.exists asset.get asset.doc.type.exists server.uuid } ACCESS 
 grant_role_service_access dicom-ingest { mail.send notification.generate } MODIFY 

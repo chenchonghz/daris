@@ -102,7 +102,7 @@ public class SubjectHandler {
 		XmlDoc.Element r = executor.execute("user.self.describe");
 		String  aet = r.value("user/@user").toUpperCase();
 
-		// First we look for mf-dicom-patient (either directly if we know the
+		// First we look for mf-dicom-patient or mf-dicom-patient-encrypted (either directly if we know the
 		// project ID or for projects configured with pssd-dicom-ingest/subject/find=true)
 		DicomPersonName pn = studyMeta.patientName();
 		String pns = null;
@@ -116,8 +116,9 @@ public class SubjectHandler {
 			return new CIDAndMethodStep(subjectCID, null);
 		}
 
-		// If we didn't find it mf-dicom-patient we can now try with Projects and meta-data
-		// configured with pssd-dicom-ingest/subject/find=true and specified domain-specific meta-data
+		// If we didn't find it mf-dicom-patient or mf-dicom-patient-encrypted we can now try 
+		// with Projects and meta-data configured with pssd-dicom-ingest/subject/find=true and 
+		// specified domain-specific meta-data
 		DicomLog.info("Subject not found - search in domain meta-data");
 		subjectCID = findSubjectFromDomainMeta (executor, projectCID, studyMeta, aet);
 		if (subjectCID!=null) {
@@ -233,7 +234,7 @@ public class SubjectHandler {
 
 
 	/** 
-	 * For the given project find the Subject  by DICOM meta-data mf-dicom-patient
+	 * For the given project find the Subject by domain-specific meta-data
 	 * 
 	 * @param executor
 	 * @param namePaths - the XPATHS of the name fields to search in
@@ -321,7 +322,7 @@ public class SubjectHandler {
 		XmlDocMaker dm = new XmlDocMaker("args");
 		String query = "model='om.pssd.subject' and cid starts with '" + projectCID + "'";
 		if (findSubjectMethod.equalsIgnoreCase("id")) {
-			query += " and xpath(mf-dicom-patient/id)='"+studyMeta.patientID()+"'";
+			query += makeIDQuery (studyMeta);
 		} else if (findSubjectMethod.equalsIgnoreCase("name")) {
 			query += makeNameQuery(studyMeta);
 		} else if (findSubjectMethod.equalsIgnoreCase("name+")) {
@@ -329,7 +330,7 @@ public class SubjectHandler {
 			query += makeSexQuery(studyMeta);
 			query += makeDOBQuery (studyMeta);
 		} else if (findSubjectMethod.equalsIgnoreCase("all")) {
-			query += " and xpath(mf-dicom-patient/id)='"+studyMeta.patientID()+"'";
+			query += makeIDQuery (studyMeta);
 			query += makeNameQuery(studyMeta);
 			query += makeSexQuery(studyMeta);
 			query += makeDOBQuery (studyMeta);
@@ -350,27 +351,48 @@ public class SubjectHandler {
 		}
 	}
 
+	private static String makeIDQuery (StudyMetadata studyMeta) throws Throwable {
+		String id = studyMeta.patientID();
+		String query = "";
+		if (id!=null) {
+			query += " and (xpath(mf-dicom-patient/id)='"+id+"'";
+			query += " or xpath(mf-dicom-patient-encrypted/id)='"+id+"')";
+		}
+		return query;
+	}
+
+
 	private static String makeNameQuery (StudyMetadata studyMeta) throws Throwable {
 		DicomPersonName dpn = studyMeta.patientName();
 		String first = dpn.first();
 		String last = dpn.last();
 		String query = "";
 		if (first!=null && last!=null) {
-			query += " and (xpath(mf-dicom-patient/name[@type='first'])='"+first+"' and " +
+			query += " and (";
+			query += "(xpath(mf-dicom-patient/name[@type='first'])='"+first+"' and " +
 					"xpath(mf-dicom-patient/name[@type='last'])='"+last+"')";
+			query += " or ";
+			query += "(xpath(mf-dicom-patient-encrypted/name[@type='first'])='"+first+"' and " +
+					"xpath(mf-dicom-patient-encrypted/name[@type='last'])='"+last+"')";
+			query += ")";
 		} else if (first!=null && last==null) {
-			query += " and xpath(mf-dicom-patient/name[@type='first'])='"+first+"')";
+			query += " and ";
+			query += "(xpath(mf-dicom-patient/name[@type='first'])='"+first+"' or " +
+					"xpath(mf-dicom-patient-encrypted/name[@type='first'])='"+first+"')";
 		} else if (first==null && last!=null) {
-			query += " and xpath(mf-dicom-patient/name[@type='last'])='"+last+"')";
+			query += " and ";
+			query += "(xpath(mf-dicom-patient/name[@type='last'])='"+last+"' or " +
+					"xpath(mf-dicom-patient-encrypted/name[@type='last'])='"+last+"')";
 		}
 		return query;
 	}
-	
+
 	private static String makeSexQuery (StudyMetadata studyMeta) throws Throwable {
 		String sex = studyMeta.patientSex();
 		String query = "";
 		if (sex!=null) {
-			query += " and xpath(mf-dicom-patient/sex)='"+sex+"'";
+			query += " and (xpath(mf-dicom-patient/sex)='"+sex+"'" +
+					" or xpath(mf-dicom-patient-encrypted/sex)='"+sex+"')";
 		}
 		return query;
 	}
@@ -380,7 +402,8 @@ public class SubjectHandler {
 		String query = "";
 		if (dob!=null) {
 			String sdob = DateUtil.formatDate (dob, "dd-MMM-yyyy");
-			query += " and xpath(mf-dicom-patient/dob)='"+sdob+"'";
+			query += " and (xpath(mf-dicom-patient/dob)='"+sdob+"'" +
+					" or xpath(mf-dicom-patient-encrypted/dob)='"+sdob+"')";
 		}
 		return query;
 	}
@@ -391,13 +414,33 @@ public class SubjectHandler {
 		// Bug out if nothing to do
 		if (!sm.havePatientDetails()) return;
 
+		// DICOM server controls
+		Boolean useEncrypted = ic.useEncryptedPatient();
+		DicomLog.info("Write encrypted patient meta-data (server control)"+useEncrypted);
+
+		String method = ic.findSubjectMethod();
+
+		// There may also be project meta-data over-riding DICOM server controls
+		String project = CiteableIdUtil.getParentId(subject);
+		XmlDoc.Element pMeta = AssetUtil.getAsset(executor, project, null);
+		Boolean encryptPatient = false;
+		if (pMeta!=null) encryptPatient = pMeta.booleanValue("asset/meta/daris:pssd-dicom-ingest/project/encrypt-patient");
+		DicomLog.info("Write encrypted patient meta-data (project metadata)"+encryptPatient);
+		if (encryptPatient!=null) {		
+			// Over-ride server control
+			useEncrypted = encryptPatient;
+		}
+
 		// Retrieve meta-data on PSSD Subject object
-		XmlDocMaker dm = new XmlDocMaker("args");
-		dm.add("cid", subject);
-		XmlDoc.Element r = executor.execute("asset.get",dm.root());
+		XmlDoc.Element r = AssetUtil.getAsset(executor, subject, null);
 
 		// There may be multiples - this audit trail can be useful
-		Collection<XmlDoc.Element> patients = r.elements("asset/meta/mf-dicom-patient");
+		Collection<XmlDoc.Element> patients = null;
+		if (useEncrypted) {
+			patients = r.elements("asset/meta/mf-dicom-patient-encrypted");
+		} else {
+			patients = r.elements("asset/meta/mf-dicom-patient");
+		}
 
 		// Fetch patient meta from DICOM
 		String id = sm.patientID();
@@ -405,14 +448,18 @@ public class SubjectHandler {
 		Date dob = sm.patientDateOfBirth();
 		DicomPersonName name = sm.patientName();
 
+
 		// Now add mf-dicom-patient
 		if (patients!=null) {
 			// See if we can find pre-existing record matching on all patient meta-data details
 			for (XmlDoc.Element patient : patients) {	
-				String method = ic.findSubjectMethod();
 				if (method==null) method = "name+";
 				if (matchDICOMDetail (method, patient, sm)) {
-					DicomLog.info("        Matched mf-dicom-patient");
+					if (useEncrypted) {
+						DicomLog.info("Matched mf-dicom-patient-encrypted");
+					} else {
+						DicomLog.info("Matched mf-dicom-patient");
+					}
 					return;
 				}
 			}
@@ -420,10 +467,14 @@ public class SubjectHandler {
 		}
 
 		// Prepare meta-data 
-		dm = new XmlDocMaker("args");
+		XmlDocMaker dm = new XmlDocMaker("args");
 		dm.add("cid", subject);
 		dm.push("meta", new String[]{"action","add"});
-		dm.push("mf-dicom-patient", new String[]{"ns", "pssd.private"});
+		if (useEncrypted) {
+			dm.push("mf-dicom-patient-encrypted", new String[]{"ns", "pssd.private"});
+		} else {
+			dm.push("mf-dicom-patient", new String[]{"ns", "pssd.private"});
+		}
 
 		if (id!=null) dm.add("id", id);      
 		if (sex!=null) dm.add("sex", sex);
@@ -447,7 +498,7 @@ public class SubjectHandler {
 	/**
 	 * This function compares pre-existing patient meta-data with new and sends 
 	 * an email as configured if there are discrepancies (a sanity check)
-	 * This is different behaviour to matching meta-data for pre-finding
+	 * This is different behaviour to matching meta-data for subject finding
 	 * subjects
 	 * 
 	 * @param executor
@@ -455,7 +506,7 @@ public class SubjectHandler {
 	 * @param sm
 	 * @throws Throwable
 	 */
-	public static void compareSubjectDICOMMetaData (ServiceExecutor executor, String subject, StudyMetadata sm) throws Throwable {
+	public static void compareSubjectDICOMMetaData (ServiceExecutor executor, String subject, StudyMetadata sm, Boolean useEncrypted) throws Throwable {
 
 		// Bug out if nothing to do
 		if (!sm.havePatientDetails()) return;
@@ -466,7 +517,13 @@ public class SubjectHandler {
 		XmlDoc.Element r = executor.execute("asset.get",dm.root());
 
 		// There may be multiples - this audit trail can be useful
-		Collection<XmlDoc.Element> patients = r.elements("asset/meta/mf-dicom-patient");
+
+		Collection<XmlDoc.Element> patients = null;
+		if (useEncrypted) {
+			patients = r.elements("asset/meta/mf-dicom-patient-encrypted");
+		} else {
+			patients = r.elements("asset/meta/mf-dicom-patient");
+		}
 
 		// Prepare meta-data 
 		dm = new XmlDocMaker("args");
@@ -479,7 +536,7 @@ public class SubjectHandler {
 		Date dob = sm.patientDateOfBirth();
 		DicomPersonName name = sm.patientName();
 
-		// Now add mf-dicom-patient
+		// Now add mf-dicom-patient or mf-dicom-patient-encrypted
 		if (patients==null || patients.size()==0) {
 			return;
 		} else {
@@ -508,7 +565,11 @@ public class SubjectHandler {
 				dm.add("async", true);
 				dm.add("use-notification",new String[]{"category", "dicom-upload"}, true);
 				dm.add("message", msg);
-				dm.add("subject", "Subject " + subject + " - inconsistent existing and new DICOM meta-data");
+				if (useEncrypted) {
+					dm.add("subject", "Subject " + subject + " - inconsistent existing and new DICOM meta-data in mf-dicom-patient-encrypted");
+				} else {
+					dm.add("subject", "Subject " + subject + " - inconsistent existing and new DICOM meta-data in mf-dicom-patient");
+				}
 				executor.execute("om.pssd.project.mail.send", dm.root());
 			}
 		}
@@ -652,7 +713,7 @@ public class SubjectHandler {
 			try {
 				executor.execute(subjectMetaService, dm.root());
 			} catch (Throwable t) {
-				System.out.println(subjectMetaService + " failed with " + t.getMessage());
+				DicomLog.info(subjectMetaService + " failed with " + t.getMessage());
 				// Do nothing
 			}
 		}

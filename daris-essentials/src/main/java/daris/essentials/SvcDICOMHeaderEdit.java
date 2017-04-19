@@ -111,7 +111,7 @@ public class SvcDICOMHeaderEdit extends PluginService {
 		}
 		//
 		if (patients==null && studies==null && series==null && where==null) {
-			throw new Exception("Only one of 'where' and 'patient/study/series' must be suipplied");
+			throw new Exception("Only one of 'where' and 'patient/study/series' must be supplied");
 		}
 		//
 		String group = args.value("group");

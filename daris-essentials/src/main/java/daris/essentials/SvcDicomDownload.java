@@ -169,6 +169,7 @@ public class SvcDicomDownload extends PluginService {
             id = ae.value("@id");
         }
         if (!ae.elementExists("meta/mf-dicom-patient")
+        		&& !ae.elementExists("meta/mf-dicom-patient-encrypted")
                 && !ae.elementExists("meta/mf-dicom-study")
                 && !ae.elementExists("meta/mf-dicom-series")
                 && !"om.pssd.subject".equals(ae.value("model"))) {
@@ -192,9 +193,9 @@ public class SvcDicomDownload extends PluginService {
             } else if (cid != null) {
                 addPssdDicomStudy(executor(), datasetIds, cid);
             }
-        } else if (ae.elementExists("meta/mf-dicom-patient")) {
+        } else if (ae.elementExists("meta/mf-dicom-patient") || ae.elementExists("meta/mf-dicom-patient-encrypted") ) {
             if (ae.elementExists("related[@type='has']/to")) {
-                addDicomPaitent(executor(), datasetIds, ae);
+                addDicomPatient(executor(), datasetIds, ae);
             } else if (cid != null) {
                 addPssdDicomSubject(executor(), datasetIds, cid);
             }
@@ -268,7 +269,7 @@ public class SvcDicomDownload extends PluginService {
         return SERVICE_NAME;
     }
 
-    private static void addDicomPaitent(ServiceExecutor executor,
+    private static void addDicomPatient(ServiceExecutor executor,
             Set<String> datasetIds, XmlDoc.Element patientAsset)
             throws Throwable {
         Collection<String> studyIds = patientAsset

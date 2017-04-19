@@ -170,7 +170,7 @@ public class DICOMModelUtil {
 
 		// Find related Patients
 		XmlDocMaker dm = new XmlDocMaker("args");
-		String query = "mf-dicom-patient has value and (related to{had-by} (id=" + projectAsset + "))";
+		String query = "(mf-dicom-patient has value or mf-dicom-patient-encrypted has value) and (related to{had-by} (id=" + projectAsset + "))";
 		//
 		dm.add("size", "infinity");
 		dm.add("pdist", 0);           // local query
@@ -428,7 +428,7 @@ public class DICOMModelUtil {
 	 */
 	public static String findPatientsFromStudy (ServiceExecutor executor, String study) throws Throwable {
 		XmlDocMaker dm = new XmlDocMaker("args");
-		String query = "mf-dicom-patient has value and (related to{'has'} (id=" + study + "))";
+		String query = "(mf-dicom-patient has value or mf-dicom-patient-encrypted has value) and (related to{'has'} (id=" + study + "))";
 		dm.add("where", query);
 		dm.add("pdist", 0);
 		XmlDoc.Element r = executor.execute("asset.query", dm.root());

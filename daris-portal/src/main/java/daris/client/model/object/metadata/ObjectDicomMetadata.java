@@ -20,6 +20,7 @@ public class ObjectDicomMetadata {
         case subject:
             _docs.add(new MetadataDocumentRef("mf-dicom-subject"));
             _docs.add(new MetadataDocumentRef("mf-dicom-patient"));
+            _docs.add(new MetadataDocumentRef("mf-dicom-patient-encrypted"));
             break;
         case study:
             _docs.add(new MetadataDocumentRef("mf-dicom-study"));

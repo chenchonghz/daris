@@ -374,10 +374,12 @@ public class MBCPETCTDownload {
 			// ID not given, could be old DICOM or new PSSD archive
 			query = "(" + nameSpaceQuery(MF_NAMESPACE) + " or " + nameSpaceQuery(MF_PSSD_NAMESPACE) + ")";
 		}
-		String lastNameQuery = "xpath(mf-dicom-patient/name[@type='last'])=ignore-case('" + ops.lastName + "')";
+        String lastNameQuery = "(xpath(mf-dicom-patient/name[@type='last'])=ignore-case('"+ops.lastName + "') or " +
+                                "xpath(mf-dicom-patient-encrypted/name[@type='last'])=ignore-case('"+ops.lastName + "'))";
 		query += " and " + lastNameQuery;
 		if (ops.firstName!=null) {
-			String firstNameQuery = "xpath(mf-dicom-patient/name[@type='first'])=ignore-case('" + ops.firstName + "')";
+            String firstNameQuery = "(xpath(mf-dicom-patient/name[@type='first'])=ignore-case('"+ops.firstName + "') or " +
+                                     "xpath(mf-dicom-patient-encrypted/name[@type='first'])=ignore-case('"+ops.firstName + "'))";
 			query += " and " + firstNameQuery;
 		}
 		w.add("where", query);

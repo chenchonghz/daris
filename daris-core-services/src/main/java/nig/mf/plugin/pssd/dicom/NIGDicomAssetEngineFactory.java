@@ -57,7 +57,9 @@ public class NIGDicomAssetEngineFactory implements DicomAssetEngineFactory {
         args.put("nig.dicom.subject.meta.set-service",
                 "Service to populate domain-specific meta-data on Subject objects.");
         args.put("nig.dicom.write.mf-dicom-patient",
-                "Instructs the server to populate document mf-dicom-patient on all Subjects (sets in private meta-data)");
+                "Instructs the server to populate document mf-dicom-patient (or possibly mf-dicom-patient-encrypted - see nig.dicom.use.encrypted.patient)  on all Subjects (sets in private meta-data)");
+        args.put("nig.dicom.encrypt.patient.metadata",
+                "Instructs the server to populate document mf-dicom-patient-encrypted rather than mf-dicom-patient (if it is being written according to nig.dicom.write.mf-dicom-patient");
         args.put("nig.dicom.modality.ignore",
                 "Ignore the DICOM modality in the data and Method and just create the next Study under the next available empty Method step");
         args.put("nig.dicom.dose-reports.drop",

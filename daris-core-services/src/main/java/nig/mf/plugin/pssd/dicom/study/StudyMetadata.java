@@ -251,7 +251,7 @@ public class StudyMetadata {
         if (_patientLength > 0.0)
             dm.add("size", _patientLength);
 
-        // These ones are in mf-dicom-patient
+        // These ones are in mf-dicom-patient or mf-dicom-patient-encrypted
         if (_patientID != null)
             dm.add("id", _patientID);
         // Space separated first, middle, last

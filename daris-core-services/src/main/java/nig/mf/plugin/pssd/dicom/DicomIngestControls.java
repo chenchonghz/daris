@@ -77,7 +77,8 @@ public class DicomIngestControls {
 	private Boolean   _autoSubjectCreate;
 	private Boolean   _cloneFirstSubject; 
 	private String    _subjectMetaService;
-	private Boolean   _ignoreModality; 
+	private Boolean   _ignoreModality;
+	private Boolean   _useEncryptedPatient;
 	
 	// Controls set subject name from DICOM Patient Name or ID
 	private Boolean   _setSubjectNameFromFirst;         // Set from first name
@@ -116,6 +117,7 @@ public class DicomIngestControls {
 		_projectSelector = null;
 		_writeDICOMPatient = false;
 		_dropDoseReports = false;
+		_useEncryptedPatient = false;
 	}
 
 	
@@ -187,6 +189,9 @@ public class DicomIngestControls {
 	}
 	public Boolean dropSR () {
 		return _dropDoseReports;
+	}
+	public Boolean useEncryptedPatient () {
+		return _useEncryptedPatient;
 	}
 
 	/**
@@ -361,7 +366,7 @@ public class DicomIngestControls {
 		// Place constraints on certain users so that they can only access certain projects
 		_projectSelector = (String)args.get("nig.dicom.project.selector");
 		
-		// Tell the server to write mf-dicom-patient on the Subject
+		// Tell the server to write mf-dicom-patient or mf-dicom-patient-encrypted on the Subject
 		String writePatient = (String)args.get("nig.dicom.write.mf-dicom-patient");
 		if ( writePatient != null ) {
 			if ( writePatient.equalsIgnoreCase("true") ) {
@@ -370,6 +375,18 @@ public class DicomIngestControls {
 				_writeDICOMPatient = false;
 			} else {
 				throw new ExInvalidSetting("nig.dicom.write.mf-dicom-patient","expected one of [true,false] - found: " + writePatient);
+			}
+		}	
+		
+		// Use mf-dicom-patient-encrypted instead of mf-dicom-patient
+		String useEncrypted  = (String)args.get("nig.dicom.encrypt.patient.metadata");
+		if ( useEncrypted != null ) {
+			if ( useEncrypted.equalsIgnoreCase("true") ) {
+				_useEncryptedPatient = true;
+			} else if ( writePatient.equalsIgnoreCase("false") ) {
+				_useEncryptedPatient = false;
+			} else {
+				throw new ExInvalidSetting("nig.dicom.encrypt.patient.metadata","expected one of [true,false] - found: " + useEncrypted);
 			}
 		}	
 		
@@ -386,7 +403,6 @@ public class DicomIngestControls {
 			} else {
 				throw new ExInvalidSetting("nig.dicom.dose-reports.drop","expected one of [true,false] - found: " + dropDoseReports);
 			}
-
 		}
 	}
 }

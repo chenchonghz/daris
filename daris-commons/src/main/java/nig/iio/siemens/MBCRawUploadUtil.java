@@ -152,26 +152,28 @@ public class MBCRawUploadUtil {
 		XmlStringWriter w = new XmlStringWriter();
 
 		// Make a query for a PSSD subject or a DICOM patient
-		String query = null;
+		String query = null;	
 		if (cid!=null) {
-			// DICOM data model; don't needs to qualify with namespace
+			// PSSD data model; don't needs to qualify with namespace
 			query = "model='om.pssd.subject' and cid starts with '" + cid + "'";	
 			w.add("action", "get-cid");
 		} else {
-			// PSSD Data model
+			// DICOM Data model
 			query = nameSpaceQuery(DICOMNameSpace);
 		}
-		query += " and mf-dicom-patient has value";
+		query += " and (mf-dicom-patient has value or mf-dicom-patient-encrypted has value)";
 
 		// Populate the rest of the query
 		boolean proceed = false;
 		if (method==SUBJECT_FIND_METHOD.NAME || method==SUBJECT_FIND_METHOD.NAME_ID) {
 			if (lastName!=null) {
 				// The first name may be empty (e.g. the phantom)
-				String lastNameQuery = "xpath(mf-dicom-patient/name[@type='last'])=ignore-case('" + lastName + "')";
+                String lastNameQuery = "(xpath(mf-dicom-patient/name[@type='last'])=ignore-case('"+lastName + "') or " +
+                                       "xpath(mf-dicom-patient-encrypted/name[@type='last'])=ignore-case('"+lastName + "'))";
 				query += " and " + lastNameQuery;
 				if (firstName!=null) {
-					String firstNameQuery = "xpath(mf-dicom-patient/name[@type='first'])=ignore-case('" + firstName + "')";
+	                String firstNameQuery = "(xpath(mf-dicom-patient/name[@type='first'])=ignore-case('"+firstName + "') or " + 
+	                "xpath(mf-dicom-patient-encrypted/name[@type='first'])=ignore-case('"+firstName + "'))";
 					query +=  " and " + firstNameQuery;
 				}
 				proceed = true;
@@ -181,7 +183,8 @@ public class MBCRawUploadUtil {
 		if (method==SUBJECT_FIND_METHOD.ID || method==SUBJECT_FIND_METHOD.NAME_ID) {
 			// Patient ID is optional
 			if (patientID!=null) {
-				query += " and xpath(mf-dicom-patient/id)=ignore-case('" + patientID + "')";
+				query += " and (xpath(mf-dicom-patient/id)=ignore-case('" + patientID + "') or " +
+				         "      xpath(mf-dicom-patient-encrypted/id)=ignore-case('" + patientID + "'))";
 			}
 			proceed = true;
 		}

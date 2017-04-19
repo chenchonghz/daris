@@ -251,15 +251,22 @@ public class SvcDICOMStudyFind extends PluginService {
 		dm.add("id", patientAssetID);
 		XmlDoc.Element r = executor.execute("asset.get", dm.root());
 		if (r==null) return "not-found";
-		String firstName = r.value("asset/meta/mf-dicom-patient/name[@type='first']");
-		String lastName = r.value("asset/meta/mf-dicom-patient/name[@type='last']");
+		//
+		XmlDoc.Element patientMeta = r.element("asset/meta/mf-dicom-patient");
+		if (patientMeta==null) patientMeta = r.element("asset/meta/mf-dicom-patient-encrypted");
+		String firstName = null;
+		String lastName = null;
 		String name = null;
-		if (firstName!=null) name = firstName;
-		if (lastName!=null) {
-			if (name==null) {
-				name = lastName;
-			} else{
-				name += " " + lastName;
+		if (patientMeta!=null) {
+			firstName = patientMeta.value("name[@type='first']");
+			lastName = patientMeta.value("name[@type='last']");
+			if (firstName!=null) name = firstName;
+			if (lastName!=null) {
+				if (name==null) {
+					name = lastName;
+				} else{
+					name += " " + lastName;
+				}
 			}
 		}
 		if (name==null) name = "not-found";
@@ -271,7 +278,7 @@ public class SvcDICOMStudyFind extends PluginService {
 		Long s =Long.parseLong(sizeInBytes);
 		dm.add("size", new String[]{"units", "bytes"}, s);
 		if (s > 10000L && s <= 10000000L) {
-		    s = s / 1000L;
+			s = s / 1000L;
 			dm.add("size", new String[]{"units", "KBytes"}, s);
 		} else if (s > 10000000L && s <= 10000000000L) {
 			s = s / 1000000L;
