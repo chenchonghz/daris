@@ -40,6 +40,7 @@ grantRoleReadAccessServices   daris:pssd.model.user \
     { om.pssd.* \
       daris.* \
       nig.* \
+      application.property.* \
       asset.model.* \
       actor.have \
       asset.acl.have \
