@@ -30,7 +30,9 @@ public class SinkList extends ObjectMessage<List<SinkRef>> {
         if (ses != null && !ses.isEmpty()) {
             List<SinkRef> sinks = new ArrayList<SinkRef>(ses.size());
             for (XmlElement se : ses) {
-                sinks.add(new SinkRef(Sink.instantiate(se)));
+                if (isSinkSupported(se)) {
+                    sinks.add(new SinkRef(Sink.instantiate(se)));
+                }
             }
             return sinks;
         }
@@ -45,6 +47,11 @@ public class SinkList extends ObjectMessage<List<SinkRef>> {
     @Override
     protected String idToString() {
         return null;
+    }
+
+    private static boolean isSinkSupported(XmlElement se) {
+        String type = se.value("destination/type");
+        return "scp".equals(type) || "webdav".equals(type) || "owncloud".equals(type) || "file-system".equals(type);
     }
 
 }

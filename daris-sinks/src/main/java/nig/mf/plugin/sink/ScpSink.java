@@ -104,9 +104,8 @@ public class ScpSink implements DataSinkImpl {
         public final boolean decompress;
         public final String fileMode;
 
-        Params(String host, int port, String hostKey, String user,
-                String password, String privateKey, String passphrase,
-                String directory, boolean decompress, String fileMode) {
+        Params(String host, int port, String hostKey, String user, String password, String privateKey,
+                String passphrase, String directory, boolean decompress, String fileMode) {
             this.host = host;
             this.port = port;
             this.hostKey = hostKey;
@@ -124,21 +123,17 @@ public class ScpSink implements DataSinkImpl {
         }
 
         public UserDetails userDetails() {
-            return new UserDetails(user, password, privateKey, passphrase,
-                    null);
+            return new UserDetails(user, password, privateKey, passphrase, null);
         }
 
-        public static Params parse(Map<String, String> params)
-                throws Throwable {
+        public static Params parse(Map<String, String> params) throws Throwable {
             if (params == null || params.isEmpty()) {
-                throw new IllegalArgumentException(
-                        "Sink parameters cannot be null or empty.");
+                throw new IllegalArgumentException("Sink parameters cannot be null or empty.");
             }
 
             String host = params.get(ParamDefn.HOST.paramName());
             if (host == null) {
-                throw new IllegalArgumentException("Missing sink parameter: "
-                        + ParamDefn.HOST.paramName());
+                throw new IllegalArgumentException("Missing sink parameter: " + ParamDefn.HOST.paramName());
             }
 
             String p = params.get(ParamDefn.PORT.paramName());
@@ -152,22 +147,18 @@ public class ScpSink implements DataSinkImpl {
 
             String user = params.get(ParamDefn.USER.paramName());
             if (user == null) {
-                throw new IllegalArgumentException("Missing sink parameter: "
-                        + ParamDefn.USER.paramName());
+                throw new IllegalArgumentException("Missing sink parameter: " + ParamDefn.USER.paramName());
             }
 
             String password = params.get(ParamDefn.PASSWORD.paramName());
             String privateKey = params.get(ParamDefn.PRIVATE_KEY.paramName());
             if (password == null && privateKey == null) {
-                throw new IllegalArgumentException("Missing sink parameter: "
-                        + ParamDefn.PASSWORD.paramName() + " or "
-                        + ParamDefn.PRIVATE_KEY.paramName()
-                        + ". Expecting at least one. Found none.");
+                throw new IllegalArgumentException("Missing sink parameter: " + ParamDefn.PASSWORD.paramName() + " or "
+                        + ParamDefn.PRIVATE_KEY.paramName() + ". Expecting at least one. Found none.");
             }
             String passphrase = params.get(ParamDefn.PASSPHRASE.paramName());
             if (passphrase != null && privateKey == null) {
-                throw new IllegalArgumentException(
-                        "passphrase for private-key is given but the private-key is null.");
+                throw new IllegalArgumentException("passphrase for private-key is given but the private-key is null.");
             }
 
             String directory = params.get(ParamDefn.DIRECTORY.paramName());
@@ -179,8 +170,8 @@ public class ScpSink implements DataSinkImpl {
             if (fileMode == null) {
                 fileMode = DEFAULT_FILE_MODE;
             }
-            return new Params(host, port, hostKey, user, password, privateKey,
-                    passphrase, directory, decompress, fileMode);
+            return new Params(host, port, hostKey, user, password, privateKey, passphrase, directory, decompress,
+                    fileMode);
         }
     }
 
@@ -197,8 +188,7 @@ public class ScpSink implements DataSinkImpl {
             this.id = count.incrementAndGet();
             this.connection = connection;
             this.session = session;
-            this.existingDirectories = Collections
-                    .newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+            this.existingDirectories = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
         }
 
         public int hashCode() {
@@ -206,8 +196,7 @@ public class ScpSink implements DataSinkImpl {
         }
 
         public boolean equals(Object o) {
-            return o != null && (o instanceof MultiTransferContext)
-                    && this.id == ((MultiTransferContext) o).id;
+            return o != null && (o instanceof MultiTransferContext) && this.id == ((MultiTransferContext) o).id;
         }
 
     }
@@ -215,8 +204,7 @@ public class ScpSink implements DataSinkImpl {
     private Set<MultiTransferContext> _mctxs;
 
     public ScpSink() {
-        _mctxs = Collections.newSetFromMap(
-                new ConcurrentHashMap<MultiTransferContext, Boolean>());
+        _mctxs = Collections.newSetFromMap(new ConcurrentHashMap<MultiTransferContext, Boolean>());
     }
 
     @Override
@@ -226,14 +214,12 @@ public class ScpSink implements DataSinkImpl {
     }
 
     @Override
-    public Object beginMultiple(Map<String, String> parameters)
-            throws Throwable {
+    public Object beginMultiple(Map<String, String> parameters) throws Throwable {
 
         Params params = Params.parse(parameters);
         ServerDetails serverDetails = params.serverDetails();
         Connection conn = Ssh.get().getConnection(serverDetails);
-        Session session = conn.connect(params.userDetails(),
-                serverDetails.hostKey() != null);
+        Session session = conn.connect(params.userDetails(), serverDetails.hostKey() != null);
         MultiTransferContext mctx = new MultiTransferContext(conn, session);
         _mctxs.add(mctx);
         return mctx;
@@ -247,19 +233,16 @@ public class ScpSink implements DataSinkImpl {
 
     @Override
     public void consume(java.lang.Object multiCtx, java.lang.String path,
-            java.util.Map<java.lang.String, java.lang.String> parameters,
-            XmlDoc.Element userMeta, XmlDoc.Element meta, LongInputStream in,
-            java.lang.String appMimeType, java.lang.String streamMimeType,
-            long length) throws Throwable {
-        // System.out.println("path: " + path);
-        // System.out.println("userMeta: " + userMeta);
-        // System.out.println("meta: " + meta);
-        // System.out.println("appMimeType: " + appMimeType);
-        // System.out.println("streamMimeType: " + streamMimeType);
-        Connection conn = multiCtx == null ? null
-                : ((MultiTransferContext) multiCtx).connection;
-        Session session = multiCtx == null ? null
-                : ((MultiTransferContext) multiCtx).session;
+            java.util.Map<java.lang.String, java.lang.String> parameters, XmlDoc.Element userMeta, XmlDoc.Element meta,
+            LongInputStream in, java.lang.String appMimeType, java.lang.String streamMimeType, long length)
+            throws Throwable {
+//         System.out.println("path: " + path);
+//         System.out.println("userMeta: " + userMeta);
+//         System.out.println("meta: " + meta);
+//         System.out.println("appMimeType: " + appMimeType);
+//         System.out.println("streamMimeType: " + streamMimeType);
+        Connection conn = multiCtx == null ? null : ((MultiTransferContext) multiCtx).connection;
+        Session session = multiCtx == null ? null : ((MultiTransferContext) multiCtx).session;
         Params params = Params.parse(parameters);
         if (multiCtx == null) {
             conn = Ssh.get().getConnection(params.serverDetails());
@@ -286,40 +269,35 @@ public class ScpSink implements DataSinkImpl {
             }
 
             Set<String> existingDirs = multiCtx == null
-                    ? Collections.newSetFromMap(
-                            new ConcurrentHashMap<String, Boolean>())
+                    ? Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>())
                     : ((MultiTransferContext) multiCtx).existingDirectories;
-            if (params.decompress && streamMimeType != null
-                    && ArchiveRegistry.isAnArchive(streamMimeType)) {
+            if (params.decompress && streamMimeType != null && ArchiveRegistry.isAnArchive(streamMimeType)) {
                 // decompress archive
                 if (assetName != null) {
                     sb.append("/");
-                    sb.append(assetName);                    
+                    sb.append(assetName);
                 } else if (assetId != null) {
                     sb.append("/");
                     sb.append("asset_");
                     sb.append(assetId);
                 }
-                if (RemoteArchiveExtractor.canExtract(session,
-                        streamMimeType)) {
+                if (RemoteArchiveExtractor.canExtract(session, streamMimeType)) {
                     sb.append("/");
                     sb.append(PathUtil.getRandomFileName(8));
                     sb.append(".tmp");
                     String remotePath = sb.toString();
-                    transfer(session, in, length, remotePath, params.fileMode,
-                            existingDirs);
+                    transfer(session, in, length, remotePath, params.fileMode, existingDirs);
                     RemoteArchiveExtractor.extract(session, remotePath);
                 } else {
                     extractAndTransfer(session, sb.toString(),
-                            ArchiveRegistry.createInput(in,
-                                    new NamedMimeType(streamMimeType)),
-                            params.fileMode, existingDirs);
+                            ArchiveRegistry.createInput(in, new NamedMimeType(streamMimeType)), params.fileMode,
+                            existingDirs);
                 }
             } else {
                 // single file
                 if (assetName != null) {
                     sb.append("/");
-                    sb.append(assetName);                    
+                    sb.append(assetName);
                 } else if (assetId != null) {
                     sb.append("/");
                     sb.append("asset_");
@@ -330,10 +308,11 @@ public class ScpSink implements DataSinkImpl {
                     }
                 } else {
                     // meta==null
-                    sb.append(System.currentTimeMillis());
+                    if (path == null) {
+                        sb.append(System.currentTimeMillis());
+                    }
                 }
-                transfer(session, in, length, sb.toString(), params.fileMode,
-                        existingDirs);
+                transfer(session, in, length, sb.toString(), params.fileMode, existingDirs);
             }
         } finally {
             if (multiCtx == null) {
@@ -347,9 +326,8 @@ public class ScpSink implements DataSinkImpl {
         }
     }
 
-    private static void extractAndTransfer(Session session, String baseDir,
-            ArchiveInput ai, String fileMode, Set<String> existingDirs)
-                    throws Throwable {
+    private static void extractAndTransfer(Session session, String baseDir, ArchiveInput ai, String fileMode,
+            Set<String> existingDirs) throws Throwable {
 
         ArchiveInput.Entry entry = null;
         try {
@@ -359,8 +337,7 @@ public class ScpSink implements DataSinkImpl {
                     session.mkdir(remotePath, true, "0755");
                     existingDirs.add(remotePath);
                 } else {
-                    transfer(session, entry.stream(), entry.size(), remotePath,
-                            fileMode, existingDirs);
+                    transfer(session, entry.stream(), entry.size(), remotePath, fileMode, existingDirs);
                 }
             }
         } finally {
@@ -369,9 +346,8 @@ public class ScpSink implements DataSinkImpl {
 
     }
 
-    private static void transfer(final Session session, InputStream in,
-            long length, final String remoteFilePath, String fileMode,
-            Set<String> existingDirs) throws Throwable {
+    private static void transfer(final Session session, InputStream in, long length, final String remoteFilePath,
+            String fileMode, Set<String> existingDirs) throws Throwable {
 
         String remoteDirPath = PathUtil.getParentDirectory(remoteFilePath);
         if (existingDirs == null || !existingDirs.contains(remoteDirPath)) {
@@ -385,8 +361,7 @@ public class ScpSink implements DataSinkImpl {
         }
         if (length < 0) {
             File tf = PluginTask.createTemporaryFile();
-            OutputStream tfos = new BufferedOutputStream(
-                    new FileOutputStream(tf));
+            OutputStream tfos = new BufferedOutputStream(new FileOutputStream(tf));
             try {
                 StreamCopy.copy(in, tfos);
             } finally {
@@ -427,8 +402,7 @@ public class ScpSink implements DataSinkImpl {
     }
 
     @Override
-    public Map<String, ParameterDefinition> parameterDefinitions()
-            throws Throwable {
+    public Map<String, ParameterDefinition> parameterDefinitions() throws Throwable {
         return ParamDefn.definitions();
     }
 
