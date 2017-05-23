@@ -1,4 +1,25 @@
 #=====================================
+# Type: daris:dicom-pixel-data-checksum
+#======================================
+asset.doc.type.update :type daris:dicom-pixel-data-checksum \
+	:create true \
+	:label "Checksum for DICOM Pixel Data" \
+    :description "Checksums for pixel data of DICOM file in a dicom/series asset." \
+    :definition < \
+    	:element -name object -type document -min-occurs 1 -max-occurs infinity -index true < \
+    		:description "The DICOM file object." \
+    		:attribute -name idx -type integer -min-occurs 1 -index true < :description "The idx'th file of the DICOM series asset. Starts from zero." > \
+    		:attribute -name uid -type string -min-occurs 1 -index true < :description "SOPInstanceUID(0008,0018)." > \
+    		:attribute -name big-endian -type boolean -min-occurs 1 -index true < :description "Is big-endian or little-endian?" > \
+    		:element -name pixel-data -type document -min-occurs 1 -max-occurs 1 -index true < \
+    			:attribute -name tag -type string -min-occurs 1 -index true < :description "Tag of the PixelData element." > \
+    			:attribute -name vr -type enumeration -enumerated-values OW,OB -min-occurs 1 -index true < :description "Value representation of the PixelData element: OW or OB." > \
+	    		:attribute -name vl -type long -min-occurs 1 -index true < :description "Value length of the PixelData element." > \
+	    		:element -name csum -type string -min-occurs 1 -max-occurs 4 -index true < \
+	    		    :description "The checksum string for pixel data of the DICOM file object." \
+	    		    :attribute -name type -type enumeration -enumerated-values crc32,md5,sha1,sha256 -min-occurs 1 -index true < :description "The checksum algorithm." > > > > >
+
+#=====================================
 # Type: daris:dicom-application-entity
 #======================================
 asset.doc.type.update :type daris:dicom-application-entity \

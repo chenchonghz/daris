@@ -21,7 +21,7 @@
 		<daris-commons.version>1.0.6</daris-commons.version>
 		<daris-dcmtools.version>1.0.3</daris-dcmtools.version>
 		<daris-essentials.version>1.1.0</daris-essentials.version>
-		<daris-core-services.version>3.3.7</daris-core-services.version>
+		<daris-core-services.version>3.3.8</daris-core-services.version>
 		<daris-portal.version>1.2.5</daris-portal.version>
 		<daris-sinks.version>1.0.5</daris-sinks.version>
 		<daris-transcoders.version>2.0.2</daris-transcoders.version>
