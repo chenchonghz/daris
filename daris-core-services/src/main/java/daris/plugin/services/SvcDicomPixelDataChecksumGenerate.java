@@ -146,14 +146,18 @@ public class SvcDicomPixelDataChecksumGenerate extends PluginService {
         w.pop();
     }
 
-    private static void savePixelDataChecksum(ServiceExecutor executor, String id, long idx, PixelDataChecksum info)
+    private static void savePixelDataChecksum(ServiceExecutor executor, XmlDoc.Element args, PixelDataChecksum info)
             throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
         XmlDocWriter w = new XmlDocWriter(dm);
-        w.add("id", id);
+        if (args.elementExists("id")) {
+            w.add("id", args.value("id"));
+        } else {
+            w.add("cid", args.value("cid"));
+        }
         w.push("meta");
         w.push(DOC_TYPE);
-        savePixelDataChecksum(idx, info, w);
+        savePixelDataChecksum(args.longValue("idx", 0), info, w);
         w.pop();
         w.pop();
         executor.execute("asset.set", dm.root());
@@ -209,9 +213,8 @@ public class SvcDicomPixelDataChecksumGenerate extends PluginService {
             }
             pixelDataInfo = getPixelDataChecksum(executor(), args);
             boolean save = args.booleanValue("save", false);
-            long idx = args.longValue("idx", 0);
             if (save) {
-                savePixelDataChecksum(executor(), id, idx, pixelDataInfo);
+                savePixelDataChecksum(executor(), args, pixelDataInfo);
             }
         } else {
             if (id != null || cid != null) {
