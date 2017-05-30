@@ -154,19 +154,21 @@ public class SvcReplicateSync extends PluginService {
 				for (XmlDoc.Element el : elements) {
 					String id = el.value();
 					String rid = el.value("@rid");
+					String name = el.value("@name");
 					XmlDocMaker dm = new XmlDocMaker("args");
 					dm.add("members", false);
 					dm.add("atomic", true);
 					dm.add("id", id);
 					executor.execute(sr, "asset.destroy", dm.root());
 					PluginTask.checkIfThreadTaskAborted();
-					if (!count) w.add("id", new String[]{"rid", rid, "destroyed", "true"}, id);
+					if (!count) w.add("id", new String[]{"name", name, "rid", rid, "destroyed", "true"}, id);
 				}
 			} else {
 				for (XmlDoc.Element el : elements) {
 					String id = el.value();
 					String rid = el.value("@rid");
-					if (!count) w.add("id", new String[]{"rid", rid, "destroyed", "false"}, id);
+					String name = el.value("@name");
+					if (!count) w.add("id", new String[]{"name", name, "rid", rid, "destroyed", "false"}, id);
 				}
 			}
 		}
@@ -247,6 +249,7 @@ public class SvcReplicateSync extends PluginService {
 		dm.add("xpath", "id");
 		dm.add("xpath", "rid");
 		dm.add("xpath", "type");
+		dm.add("xpath", "name");
 		XmlDoc.Element r = executor.execute(srPeer, "asset.query", dm.root());
 		if (dbg) {
 			//			log (dateTime, "   nig.replicate.sycnhronize: asset.query on peer took " + duration(time));
@@ -298,6 +301,7 @@ public class SvcReplicateSync extends PluginService {
 				String idOnPeer = t.get(0).value();
 				String rid = t.get(1).value();
 				String type = t.get(2).value();
+				String name = t.get(3).value();
 				nExtra++;
 
 
@@ -306,15 +310,15 @@ public class SvcReplicateSync extends PluginService {
 					destroyOther.add("id",  new String[]{"rid", rid}, idOnPeer);
 				} else {
 					if (type.equals("dicom/patient")) {
-						destroyDICOMPatient.add("id", new String[]{"rid", rid}, idOnPeer);
+						destroyDICOMPatient.add("id", new String[]{"name", name, "rid", rid}, idOnPeer);
 					} else if (type.equals("dicom/study") ||
 							type.equals("siemens-raw-petct/study")) {         // Type, not as document type (so no daris:)
-						destroyDICOMStudy.add("id", new String[]{"rid", rid}, idOnPeer);
+						destroyDICOMStudy.add("id", new String[]{"name", name, "rid", rid}, idOnPeer);
 					} else if (type.equals("dicom/series") ||
 							type.equals("siemens-raw-petct/series")) {
-						destroyDICOMSeries.add("id", new String[]{"rid", rid}, idOnPeer);
+						destroyDICOMSeries.add("id", new String[]{"name", name, "rid", rid}, idOnPeer);
 					} else {
-						destroyOther.add("id", new String[]{"rid", rid}, idOnPeer);
+						destroyOther.add("id", new String[]{"name", name, "rid", rid}, idOnPeer);
 					}
 				}
 				if (dbg) {
