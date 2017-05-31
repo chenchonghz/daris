@@ -125,40 +125,45 @@ public class SvcReplicateCheck extends PluginService {
 			for (String id : assetIDs) {
 				// Check for abort
 				PluginTask.checkIfThreadTaskAborted();
+				
+				// Somebody may have destroyed the asset since we made the list
+				// so check it's still there
+				if (AssetUtil.exists(executor(), id, false)) {
 
-				// Print out stuff
-				if (dbg) {
-					int rem = c % repInc; 
-					if (c==1 || rem==1) {
-						log(dateTime, "nig.replicate.check: replicating asset # " + c);
+					// Print out stuff
+					if (dbg) {
+						int rem = c % repInc; 
+						if (c==1 || rem==1) {
+							log(dateTime, "nig.replicate.check: replicating asset # " + c);
+						}
 					}
-				}
 
-				// Replicate
-				XmlDocMaker dm = new XmlDocMaker("args");
-				dm.add("id", id);
-				dm.add("cmode", "push");
-				dm.add("dst", dst);
-				dm.push("peer");
-				dm.add("name", peer);
-				dm.pop();
-				dm.add("related", "0");
-				dm.add("update-doc-types", false);
-				dm.add("update-models", false);
-				dm.add("allow-move", true);
-				if (includeDestroyed) dm.add("include-destroyed", true);
+					// Replicate
+					XmlDocMaker dm = new XmlDocMaker("args");
+					dm.add("id", id);
+					dm.add("cmode", "push");
+					dm.add("dst", dst);
+					dm.push("peer");
+					dm.add("name", peer);
+					dm.pop();
+					dm.add("related", "0");
+					dm.add("update-doc-types", false);
+					dm.add("update-models", false);
+					dm.add("allow-move", true);
+					if (includeDestroyed) dm.add("include-destroyed", true);
 
-				try {
-					executor().execute("asset.replicate.to", dm.root());
-					nRep++;
-				} catch (Throwable t) {
-					if (throwOnFail) {
-						throw new Exception(t);
-					} else {
-						log(dateTime, "Failed to send asset " + id + " with error " + t.getMessage());
+					try {
+						executor().execute("asset.replicate.to", dm.root());
+						nRep++;
+					} catch (Throwable t) {
+						if (throwOnFail) {
+							throw new Exception(t);
+						} else {
+							log(dateTime, "Failed to send asset " + id + " with error " + t.getMessage());
+						}
 					}
+					c++;
 				}
-				c++;
 			}
 			w.add("total-replicated", nRep);
 			if (dbg) {
@@ -346,7 +351,7 @@ public class SvcReplicateCheck extends PluginService {
 	static public String setRID (String id, String rid, String schemaID, String uuidLocal) throws Throwable  {
 		if (rid!=null) return rid;
 		if (schemaID==null) {
-			
+
 			// No numbered schema (primary schema)
 			return uuidLocal + "." + id;
 		} else {
