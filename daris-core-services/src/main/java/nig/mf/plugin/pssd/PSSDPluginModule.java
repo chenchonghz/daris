@@ -186,6 +186,11 @@ public class PSSDPluginModule implements HttpServletPluginModule {
 
         //
         _services.add(new SvcDataObjectCreate());
+        
+        _services.add(new daris.plugin.services.SvcDownloaderGet());
+        _services.add(new daris.plugin.services.SvcDownloaderManifestGenerate());
+        _services.add(new daris.plugin.services.SvcDownloaderPut());
+        
         _services.add(new SvcObjectMetaCopy());
         _services.add(new SvcCollectionMembers());
         _services.add(new SvcCollectionMemberList());
@@ -238,6 +243,9 @@ public class PSSDPluginModule implements HttpServletPluginModule {
         _services.add(new SvcObjectTagList());
         _services.add(new SvcObjectTagRemove());
         _services.add(new SvcObjectTagRemoveAll());
+        
+        _services.add(new daris.plugin.services.SvcServerAddressPublicGet());
+        _services.add(new daris.plugin.services.SvcServerAddressPublicSet());
 
         _services.add(new SvcStudyTypeCreate());
         _services.add(new SvcStudyTypeDestroy());
