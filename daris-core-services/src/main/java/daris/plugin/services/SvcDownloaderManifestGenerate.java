@@ -47,6 +47,9 @@ public class SvcDownloaderManifestGenerate extends PluginService {
         defn.add(new Interface.Element("cid", CiteableIdType.DEFAULT, "Asset cid.", 0, Integer.MAX_VALUE));
         defn.add(new Interface.Element("parts", new EnumType(new String[] { "content", "meta", "all" }),
                 "Asset parts to download. Defaults to content.", 0, 1));
+        defn.add(new Interface.Element("output-pattern", StringType.DEFAULT,
+                "The expression used to generate the output path. The format of the expression is Asset Path Language (APL).",
+                0, 1));
         defn.add(new Interface.Element("unarchive", BooleanType.DEFAULT,
                 "Unarchive asset archive content while downloading. Defaults to false.", 0, 1));
 
@@ -190,6 +193,9 @@ public class SvcDownloaderManifestGenerate extends PluginService {
         }
         if (args.elementExists("parts")) {
             dm.add(args.element("parts"));
+        }
+        if (args.elementExists("output-pattern")) {
+            dm.add(args.element("output-pattern"));
         }
         if (args.elementExists("unarchive")) {
             dm.add(args.element("unarchive"));
