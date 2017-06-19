@@ -105,7 +105,7 @@ public class SvcDownloaderManifestGenerate extends PluginService {
         token.add(new Interface.Element("description", StringType.DEFAULT, "An arbitrary description for the token.", 0,
                 1));
 
-        token.add(new Interface.Element("password", PasswordType.DEFAULT, "Password for the token."));
+        token.add(new Interface.Element("password", PasswordType.DEFAULT, "Password for the token.", 0, 1));
 
         defn.add(token);
 
