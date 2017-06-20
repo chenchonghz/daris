@@ -157,6 +157,17 @@ public class PathUtils {
         }
         return path;
     }
+    
+    public static String getFileExtension(String path){
+        if (path != null) {
+            String name = getLastComponent(path);
+            int idx = name.lastIndexOf('.');
+            if (idx > 0) {
+                return path.substring(idx + 1);
+            }
+        }
+        return null;
+    }
 
     public static void main(String[] args) throws Throwable {
         List<String> parents = getParents("/a/b/c/d", false);
