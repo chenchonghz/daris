@@ -226,7 +226,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		XmlDoc.Element r2 = executor.execute(sr, "asset.exists", dm.root());
 		if (r2==null) return more;
 		Collection<XmlDoc.Element> results = r2.elements("exists");
-
+		if (results==null) return more;
 
 		// Now check each replicated asset to see if its namespace is as expected.
 		if (dbg) {
