@@ -15,7 +15,7 @@ import com.pixelmed.dicom.TagFromName;
  * file.
  * 
  * @see <a
- *      href="http://sourceforge.net/apps/mediawiki/gdcm/index.php?title=SIEMENS_CSA_Header">About
+ *      href="http://nipy.org/nibabel/dicom/siemens_csa.html">About
  *      Siemens CSA Header</a>
  * @author Wilson Liu
  * 

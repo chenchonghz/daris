@@ -275,7 +275,7 @@ public class DObjectGUI implements ObjectGUI {
                                     new DObjectRef(IDUtil.getParentId(ro.id()),
                                             ro.proute(), false, false, -1),
                                     ro, w)));
-        } else {
+        } else if(ro.isRepository()||ro.isProject()||ro.isExMethod()) { //TODO
             menu.add(new ActionInterfaceEntry(ICON_CREATE,
                     new DObjectCreateAction(ro, w)));
         }
