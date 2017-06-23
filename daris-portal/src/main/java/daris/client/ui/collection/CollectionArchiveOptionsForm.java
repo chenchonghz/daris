@@ -26,11 +26,11 @@ import arc.mf.session.ServiceResponseHandler;
 import arc.mf.session.Session;
 import daris.client.model.collection.archive.ArchiveFormat;
 import daris.client.model.collection.archive.ArchiveOptions;
-import daris.client.model.collection.archive.Parts;
 import daris.client.model.collection.messages.CollectionTranscodeList;
 import daris.client.model.dataset.DataSet;
 import daris.client.model.object.DObject;
 import daris.client.model.object.DObjectRef;
+import daris.client.model.object.Parts;
 import daris.client.ui.widget.LoadingMessage;
 
 public class CollectionArchiveOptionsForm extends ValidatedInterfaceComponent {
