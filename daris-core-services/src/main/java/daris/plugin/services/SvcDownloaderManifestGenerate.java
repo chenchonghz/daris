@@ -211,8 +211,10 @@ public class SvcDownloaderManifestGenerate extends PluginService {
         dm.add("app", DOWNLOADER_APP);
         dm.add("tag", TAG);
         if (!tokenArgs.elementExists("role")) {
-            String actor = executor.execute("actor.self.describe").value("actor/@name");
-            dm.add("role", new String[] { "type", "user" }, actor);
+            XmlDoc.Element re = executor.execute("actor.self.describe");
+            String actorName = re.value("actor/@name");
+            String actorType = re.value("actor/@type");
+            dm.add("role", new String[] { "type", actorType }, actorName);
             dm.add("role", new String[] { "type", "role" }, "user");
         }
         List<XmlDoc.Element> elements = tokenArgs.elements();

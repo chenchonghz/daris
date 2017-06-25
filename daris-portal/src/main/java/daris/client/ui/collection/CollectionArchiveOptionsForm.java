@@ -59,38 +59,26 @@ public class CollectionArchiveOptionsForm extends ValidatedInterfaceComponent {
 
     private void updateForm() {
         XmlStringWriter w = new XmlStringWriter();
-        w.push("service",
-                new String[] { "name", "daris.collection.content.size.sum" });
+        w.push("service", new String[] { "name", "daris.collection.content.size.sum" });
         w.add("cid", _obj.id());
         w.add("include-attachments", _options.includeAttachments());
         w.pop();
-        w.push("service",
-                new String[] { "name", "daris.collection.transcode.list" });
+        w.push("service", new String[] { "name", "daris.collection.transcode.list" });
         w.add("cid", _obj.id());
         w.pop();
-        Session.execute("service.execute", w.document(),
-                new ServiceResponseHandler() {
+        Session.execute("service.execute", w.document(), new ServiceResponseHandler() {
 
-                    @Override
-                    public void processResponse(XmlElement xe,
-                            List<Output> outputs) throws Throwable {
-                        long size = xe.longValue(
-                                "reply[@service='daris.collection.content.size.sum']/response/size");
-                        Map<String, List<String>> transcodes = null;
-                        XmlElement re = xe.element(
-                                "reply[@service='daris.collection.transcode.list']/response");
-                        if (re.element("transcode") != null) {
-                            transcodes = CollectionTranscodeList
-                                    .instantiateAvailableTranscodes(re);
-                        }
-                        updateForm(ArchiveFormat.availableFormatsForSize(size),
-                                transcodes);
-                    }
-                });
+            @Override
+            public void processResponse(XmlElement xe, List<Output> outputs) throws Throwable {
+                long size = xe.longValue("reply[@service='daris.collection.content.size.sum']/response/size");
+                Map<String, List<String>> availableTranscodes = CollectionTranscodeList.instantiateAvailableTranscodes(
+                        xe.elements("reply[@service='daris.collection.transcode.list']/response/transcode"));
+                updateForm(ArchiveFormat.availableFormatsForSize(size), availableTranscodes);
+            }
+        });
     }
 
-    private void updateForm(List<ArchiveFormat> formats,
-            Map<String, List<String>> transcodes) {
+    private void updateForm(List<ArchiveFormat> formats, Map<String, List<String>> transcodes) {
         if (_form != null) {
             removeMustBeValid(_form);
         }
@@ -104,9 +92,8 @@ public class CollectionArchiveOptionsForm extends ValidatedInterfaceComponent {
         /*
          * parts
          */
-        Field<Parts> partsField = new Field<Parts>(new FieldDefinition("Parts",
-                "parts", new EnumerationType<Parts>(Parts.values()), null, null,
-                1, 1));
+        Field<Parts> partsField = new Field<Parts>(
+                new FieldDefinition("Parts", "parts", new EnumerationType<Parts>(Parts.values()), null, null, 1, 1));
         partsField.setInitialValue(_options.parts());
         partsField.addListener(new FormItemListener<Parts>() {
 
@@ -116,8 +103,7 @@ public class CollectionArchiveOptionsForm extends ValidatedInterfaceComponent {
             }
 
             @Override
-            public void itemPropertyChanged(FormItem<Parts> f,
-                    Property property) {
+            public void itemPropertyChanged(FormItem<Parts> f, Property property) {
 
             }
         });
@@ -126,9 +112,8 @@ public class CollectionArchiveOptionsForm extends ValidatedInterfaceComponent {
         /*
          * include attachments?
          */
-        Field<Boolean> includeAttachmentsField = new Field<Boolean>(
-                new FieldDefinition("Include attchments", "include-attachments",
-                        BooleanType.DEFAULT_TRUE_FALSE, null, null, 1, 1));
+        Field<Boolean> includeAttachmentsField = new Field<Boolean>(new FieldDefinition("Include attchments",
+                "include-attachments", BooleanType.DEFAULT_TRUE_FALSE, null, null, 1, 1));
         includeAttachmentsField.setInitialValue(_options.includeAttachments());
         includeAttachmentsField.addListener(new FormItemListener<Boolean>() {
 
@@ -138,8 +123,7 @@ public class CollectionArchiveOptionsForm extends ValidatedInterfaceComponent {
             }
 
             @Override
-            public void itemPropertyChanged(FormItem<Boolean> f,
-                    Property property) {
+            public void itemPropertyChanged(FormItem<Boolean> f, Property property) {
 
             }
         });
@@ -149,10 +133,8 @@ public class CollectionArchiveOptionsForm extends ValidatedInterfaceComponent {
          * decompress
          */
         final Field<Boolean> decompressField = new Field<Boolean>(
-                new FieldDefinition("Decompress", "decompress",
-                        BooleanType.DEFAULT_TRUE_FALSE,
-                        "Decompress/Unarchive the content archive before adding to the result archive.",
-                        null, 1, 1));
+                new FieldDefinition("Decompress", "decompress", BooleanType.DEFAULT_TRUE_FALSE,
+                        "Decompress/Unarchive the content archive before adding to the result archive.", null, 1, 1));
         decompressField.setInitialValue(_options.decompress());
         decompressField.addListener(new FormItemListener<Boolean>() {
 
@@ -162,8 +144,7 @@ public class CollectionArchiveOptionsForm extends ValidatedInterfaceComponent {
             }
 
             @Override
-            public void itemPropertyChanged(FormItem<Boolean> f,
-                    Property property) {
+            public void itemPropertyChanged(FormItem<Boolean> f, Property property) {
 
             }
         });
@@ -175,9 +156,7 @@ public class CollectionArchiveOptionsForm extends ValidatedInterfaceComponent {
                     DataSet d = (DataSet) o;
                     if (d.data() != null) {
                         String ext = d.data().extension();
-                        if (!("zip".equalsIgnoreCase(ext)
-                                || "jar".equalsIgnoreCase(ext)
-                                || "aar".equalsIgnoreCase(ext)
+                        if (!("zip".equalsIgnoreCase(ext) || "jar".equalsIgnoreCase(ext) || "aar".equalsIgnoreCase(ext)
                                 || "tar".equalsIgnoreCase(ext))) {
                             _options.setDecompress(false);
                             decompressField.setValue(false);
@@ -194,30 +173,24 @@ public class CollectionArchiveOptionsForm extends ValidatedInterfaceComponent {
          */
         _options.setArchiveFormat(formats.get(0));
         if (!_obj.isDataSet() || _options.decompress()) {
-            Field<ArchiveFormat> archiveFormatField = new Field<ArchiveFormat>(
-                    new FieldDefinition("Archive format", "format",
-                            new EnumerationType<ArchiveFormat>(formats), null,
-                            null, 1, 1));
-            if (_options.archiveFormat() == null
-                    || !formats.contains(_options.archiveFormat())) {
+            Field<ArchiveFormat> archiveFormatField = new Field<ArchiveFormat>(new FieldDefinition("Archive format",
+                    "format", new EnumerationType<ArchiveFormat>(formats), null, null, 1, 1));
+            if (_options.archiveFormat() == null || !formats.contains(_options.archiveFormat())) {
                 _options.setArchiveFormat(formats.get(0));
             }
             archiveFormatField.setInitialValue(_options.archiveFormat());
-            archiveFormatField
-                    .addListener(new FormItemListener<ArchiveFormat>() {
+            archiveFormatField.addListener(new FormItemListener<ArchiveFormat>() {
 
-                        @Override
-                        public void itemValueChanged(
-                                FormItem<ArchiveFormat> f) {
-                            _options.setArchiveFormat(f.value());
-                        }
+                @Override
+                public void itemValueChanged(FormItem<ArchiveFormat> f) {
+                    _options.setArchiveFormat(f.value());
+                }
 
-                        @Override
-                        public void itemPropertyChanged(
-                                FormItem<ArchiveFormat> f, Property property) {
+                @Override
+                public void itemPropertyChanged(FormItem<ArchiveFormat> f, Property property) {
 
-                        }
-                    });
+                }
+            });
             _form.add(archiveFormatField);
         }
 
@@ -230,8 +203,7 @@ public class CollectionArchiveOptionsForm extends ValidatedInterfaceComponent {
                 List<String> tos = new ArrayList<String>();
                 tos.add("none");
                 tos.addAll(transcodes.get(from));
-                Field<String> tf = new Field<String>(new FieldDefinition(
-                        "Transcode from: " + from + " to", from,
+                Field<String> tf = new Field<String>(new FieldDefinition("Transcode from: " + from + " to", from,
                         new EnumerationType<String>(tos), null, null, 0, 1));
                 tf.setInitialValue(_options.transcodeFor(from));
                 tf.addListener(new FormItemListener<String>() {
@@ -246,8 +218,7 @@ public class CollectionArchiveOptionsForm extends ValidatedInterfaceComponent {
                     }
 
                     @Override
-                    public void itemPropertyChanged(FormItem<String> f,
-                            Property property) {
+                    public void itemPropertyChanged(FormItem<String> f, Property property) {
 
                     }
                 });

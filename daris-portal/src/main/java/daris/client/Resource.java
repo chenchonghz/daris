@@ -146,11 +146,14 @@ public interface Resource extends ClientBundle {
     @Source("resource/24download.png")
     ImageResource download24();
 
-    @Source("resource/16download_small.gif")
-    ImageResource downloadSmall16();
-    
     @Source("resource/16download_big.png")
     ImageResource downloadBig16();
+
+    @Source("resource/16download_black.png")
+    ImageResource downloadBlack16();
+
+    @Source("resource/16download_small.gif")
+    ImageResource downloadSmall16();
 
     @Source("resource/10edit.png")
     ImageResource edit10();
@@ -304,6 +307,12 @@ public interface Resource extends ClientBundle {
 
     @Source("resource/16left_hover.png")
     ImageResource leftHover16();
+
+    @Source("resource/16link.png")
+    ImageResource link16();
+
+    @Source("resource/16link_bold.png")
+    ImageResource linkBold16();
 
     @Source("resource/16load.png")
     ImageResource load16();
