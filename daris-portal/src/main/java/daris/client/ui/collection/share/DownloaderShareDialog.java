@@ -39,7 +39,7 @@ public class DownloaderShareDialog implements AsynchronousAction {
         dp.setModal(false);
         dp.setActionEnabled(true);
         dp.setOwner(owner);
-        dp.setSize(700, 500);
+        dp.setSize(800, 600);
         Dialog.postDialog(dp).show();
 
     }

@@ -26,7 +26,7 @@ public class DownloaderGetDialog {
         DialogProperties dp = new DialogProperties(Type.ACTION, "Get downloader app",
                 new DownloaderSettingsForm(_obj, _settings));
         dp.setModal(true);
-        dp.setSize(600, 500);
+        dp.setSize(800, 600);
         dp.setButtonAction(new AsynchronousAction() {
 
             @Override

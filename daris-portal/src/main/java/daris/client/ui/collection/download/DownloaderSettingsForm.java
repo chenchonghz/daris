@@ -96,7 +96,7 @@ public class DownloaderSettingsForm extends ValidatedInterfaceComponent {
         }
         _form = new Form(FormEditMode.UPDATE);
         _form.setShowHelp(false);
-        _form.setShowDescriptions(false);
+        _form.setShowDescriptions(true);
         _form.setMargin(30);
         _form.setBooleanAs(BooleanAs.CHECKBOX);
         _form.fitToParent();
@@ -109,7 +109,8 @@ public class DownloaderSettingsForm extends ValidatedInterfaceComponent {
          * parts
          */
         Field<Parts> partsField = new Field<Parts>(
-                new FieldDefinition("Parts", "parts", new EnumerationType<Parts>(Parts.values()), null, null, 0, 1));
+                new FieldDefinition("Parts", "parts", new EnumerationType<Parts>(Parts.values()),
+                        "Specifies which parts of the assets to download.", null, 0, 1));
         partsField.setInitialValue(_settings.parts());
         partsField.addListener(new FormItemListener<Parts>() {
 
@@ -129,7 +130,7 @@ public class DownloaderSettingsForm extends ValidatedInterfaceComponent {
          * unarchive
          */
         Field<Boolean> unarchiveField = new Field<Boolean>(new FieldDefinition("Unarchive", "unarchive",
-                BooleanType.DEFAULT_TRUE_FALSE, "Unarchive the content archive before while downloading.", null, 0, 1));
+                BooleanType.DEFAULT_TRUE_FALSE, "Unarchive the content archive while downloading.", null, 0, 1));
         unarchiveField.setInitialValue(_settings.unarchive());
         unarchiveField.addListener(new FormItemListener<Boolean>() {
 
@@ -154,8 +155,9 @@ public class DownloaderSettingsForm extends ValidatedInterfaceComponent {
                 List<String> tos = new ArrayList<String>();
                 tos.add("none");
                 tos.addAll(availableTranscodes.get(from));
-                Field<String> tf = new Field<String>(new FieldDefinition("Transcode from: " + from + " to", from,
-                        new EnumerationType<String>(tos), null, null, 0, 1));
+                Field<String> tf = new Field<String>(
+                        new FieldDefinition("Transcode from: " + from + " to", from, new EnumerationType<String>(tos),
+                                "Convert " + from + " data to specified mime type.", null, 0, 1));
                 tf.setInitialValue(_settings.transcodeFor(from));
                 tf.addListener(new FormItemListener<String>() {
 
@@ -193,7 +195,8 @@ public class DownloaderSettingsForm extends ValidatedInterfaceComponent {
                     values.add(value);
                 }
                 Field<OutputPattern> outputPatternField = new Field<OutputPattern>(new FieldDefinition("Output Pattern",
-                        "output-pattern", new EnumerationType<OutputPattern>(values), null, null, 0, 1));
+                        "output-pattern", new EnumerationType<OutputPattern>(values), "The output file path pattern.",
+                        null, 0, 1));
                 outputPatternField.setInitialValue(firstAvailable, false);
                 outputPatternField.addListener(new FormItemListener<OutputPattern>() {
 
@@ -211,8 +214,9 @@ public class DownloaderSettingsForm extends ValidatedInterfaceComponent {
             }
         }
 
-        Field<Boolean> generateTokenField = new Field<Boolean>(new FieldDefinition("Generate Identity Token",
-                "generate-token", BooleanType.DEFAULT_TRUE_FALSE, "Generate secure identity token.", null, 0, 1));
+        Field<Boolean> generateTokenField = new Field<Boolean>(
+                new FieldDefinition("Generate Identity Token", "generate-token", BooleanType.DEFAULT_TRUE_FALSE,
+                        "Check to generate secure identity token.", null, 0, 1));
         generateTokenField.setInitialValue(_settings.generateToken(), false);
         generateTokenField.addListener(new FormItemListener<Boolean>() {
 
@@ -231,7 +235,7 @@ public class DownloaderSettingsForm extends ValidatedInterfaceComponent {
 
         if (_settings.generateToken()) {
             FieldGroup fg = new FieldGroup(
-                    new FieldDefinition("Token", "token", DocType.DEFAULT, "Identity token.", null, 0, 1));
+                    new FieldDefinition("Token", "token", DocType.DEFAULT, null, "Identity token.", 0, 1));
 
             final Field<Boolean> encrypt = new Field<Boolean>(new FieldDefinition("Encrypt Token", "encrypt",
                     BooleanType.DEFAULT_TRUE_FALSE, "Encrypt token with password.", null, 0, 1));
@@ -310,7 +314,7 @@ public class DownloaderSettingsForm extends ValidatedInterfaceComponent {
         }
 
         Field<TargetPlatform> platformField = new Field<TargetPlatform>(
-                new FieldDefinition("Platform", "platform", TargetPlatform.asEnumerationType(),
+                new FieldDefinition("Target Platform", "platform", TargetPlatform.asEnumerationType(),
                         "The target platform to run the downloader application.", null, 0, 1));
         platformField.setValue(_settings.targetPlatform(), false);
         platformField.addListener(new FormItemListener<TargetPlatform>() {
