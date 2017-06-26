@@ -3,6 +3,8 @@ package daris.client.model.collection.archive;
 import java.util.Map;
 import java.util.TreeMap;
 
+import daris.client.model.object.Parts;
+
 public class ArchiveOptions {
 
     private Parts _parts;

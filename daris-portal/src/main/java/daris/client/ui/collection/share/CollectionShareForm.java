@@ -1,4 +1,4 @@
-package daris.client.ui.collection;
+package daris.client.ui.collection.share;
 
 import java.util.Date;
 import java.util.List;
@@ -37,6 +37,7 @@ import daris.client.model.dataset.DataSet;
 import daris.client.model.object.DObject;
 import daris.client.model.object.DObjectRef;
 import daris.client.model.user.Self;
+import daris.client.ui.collection.CollectionArchiveOptionsForm;
 
 public class CollectionShareForm extends CollectionArchiveOptionsForm
         implements AsynchronousAction {

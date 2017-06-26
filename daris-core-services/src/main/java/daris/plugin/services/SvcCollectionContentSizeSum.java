@@ -6,6 +6,7 @@ import arc.mf.plugin.dtype.BooleanType;
 import arc.mf.plugin.dtype.CiteableIdType;
 import arc.mf.plugin.dtype.StringType;
 import arc.xml.XmlDoc.Element;
+import arc.xml.XmlDoc;
 import arc.xml.XmlDocMaker;
 import arc.xml.XmlWriter;
 
@@ -44,12 +45,14 @@ public class SvcCollectionContentSizeSum extends PluginService {
         String cid = args.value("cid");
         String where = args.value("where");
         boolean includeAttachments = args.booleanValue("include-attachments", true);
-        long totalSize = sumContentSize(executor(), cid, where, includeAttachments);
-        w.add("size", totalSize);
+        XmlDoc.Element ve = sumContentSize(executor(), cid, where, includeAttachments);
+        int nbAssets = ve.intValue("@nbe", 0);
+        long totalSize = ve.longValue();
+        w.add("size", new String[] { "nbe", Integer.toString(nbAssets) }, totalSize);
     }
 
-    public static long sumContentSize(ServiceExecutor executor, String cid, String where, boolean includeAttachments)
-            throws Throwable {
+    public static XmlDoc.Element sumContentSize(ServiceExecutor executor, String cid, String where,
+            boolean includeAttachments) throws Throwable {
         XmlDocMaker dm = new XmlDocMaker("args");
         StringBuilder sb1 = new StringBuilder("(cid='" + cid + "' or cid starts with '" + cid + "')");
         if (where != null) {
@@ -71,8 +74,7 @@ public class SvcCollectionContentSizeSum extends PluginService {
         }
         dm.add("action", "sum");
         dm.add("xpath", "content/size");
-        long totalSize = executor.execute("asset.query", dm.root()).longValue("value", 0);
-        return totalSize;
+        return executor.execute("asset.query", dm.root()).element("value");
     }
 
     @Override

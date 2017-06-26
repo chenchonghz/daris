@@ -12,8 +12,8 @@ import arc.mf.object.Null;
 import arc.mf.object.ObjectMessage;
 import daris.client.model.collection.archive.ArchiveFormat;
 import daris.client.model.collection.archive.ArchiveOptions;
-import daris.client.model.collection.archive.Parts;
 import daris.client.model.object.DObjectRef;
+import daris.client.model.object.Parts;
 import daris.client.model.transcode.Transcode;
 
 public class CollectionArchiveCreate extends ObjectMessage<Null> {

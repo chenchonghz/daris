@@ -10,8 +10,7 @@ import arc.mf.client.xml.XmlWriter;
 import arc.mf.object.ObjectMessage;
 import daris.client.model.IDUtil;
 
-public class CollectionTranscodeList
-        extends ObjectMessage<Map<String, List<String>>> {
+public class CollectionTranscodeList extends ObjectMessage<Map<String, List<String>>> {
 
     public static final String SERVICE_NAME = "daris.collection.transcode.list";
 
@@ -37,9 +36,8 @@ public class CollectionTranscodeList
     }
 
     @Override
-    protected Map<String, List<String>> instantiate(XmlElement xe)
-            throws Throwable {
-        return instantiateAvailableTranscodes(xe);
+    protected Map<String, List<String>> instantiate(XmlElement xe) throws Throwable {
+        return instantiateAvailableTranscodes(xe.elements("transcode"));
     }
 
     @Override
@@ -52,9 +50,7 @@ public class CollectionTranscodeList
         return _cid;
     }
 
-    public static Map<String, List<String>> instantiateAvailableTranscodes(
-            XmlElement xe) throws Throwable {
-        List<XmlElement> tes = xe.elements("transcode");
+    public static Map<String, List<String>> instantiateAvailableTranscodes(List<XmlElement> tes) throws Throwable {
         if (tes != null && !tes.isEmpty()) {
             Map<String, List<String>> transcodes = new TreeMap<String, List<String>>();
             for (XmlElement te : tes) {
