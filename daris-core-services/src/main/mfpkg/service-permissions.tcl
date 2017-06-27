@@ -332,5 +332,5 @@ actor.grant :role -type role service-user :type plugin:service :name daris.proje
 actor.grant :role -type role service-user :type plugin:service :name daris.project.dictionary.destroy
 
 
-
+actor.grant :perm < :access ADMINISTER :resource -type service server.java.environment > :type plugin:service :name daris.downloader.get
 

@@ -129,8 +129,10 @@ public class DownloaderSettingsForm extends ValidatedInterfaceComponent {
         /*
          * unarchive
          */
-        Field<Boolean> unarchiveField = new Field<Boolean>(new FieldDefinition("Unarchive", "unarchive",
-                BooleanType.DEFAULT_TRUE_FALSE, "Unarchive the content archive while downloading.", null, 0, 1));
+        Field<Boolean> unarchiveField = new Field<Boolean>(
+                new FieldDefinition("Unpack", "unarchive", BooleanType.DEFAULT_TRUE_FALSE,
+                        "Unpack data contents if they are archive containers, e.g. zip, aar(Arcitecta archive format).",
+                        null, 0, 1));
         unarchiveField.setInitialValue(_settings.unarchive());
         unarchiveField.addListener(new FormItemListener<Boolean>() {
 

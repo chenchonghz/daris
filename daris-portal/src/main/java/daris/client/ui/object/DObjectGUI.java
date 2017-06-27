@@ -344,7 +344,7 @@ public class DObjectGUI implements ObjectGUI {
                 }
             }));
 
-            menu.add(new ActionEntry(ICON_DOWNLOAD3, "Download downloader app...", new Action() {
+            menu.add(new ActionEntry(ICON_DOWNLOAD3, "Get downloader app...", new Action() {
                 @Override
                 public void execute() {
                     new DownloaderGetDialog(ro).show(w);

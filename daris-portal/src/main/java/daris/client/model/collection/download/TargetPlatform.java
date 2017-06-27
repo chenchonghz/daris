@@ -8,7 +8,7 @@ import arc.mf.dtype.EnumerationType;
 public enum TargetPlatform {
     JAVA("Java", "Cross-platform Java executable JAR file", "daris-downloader.jar"), WINDOWS("Windows",
             "Windows executable EXE file",
-            "daris-downloader-win.zip"), MAC("Mac", "Mac application", "daris-downloader-mac.zip");
+            "daris-downloader-win.zip"), MAC("Mac", "Mac application bundle", "daris-downloader-mac.zip");
 
     private String _name;
     private String _description;
