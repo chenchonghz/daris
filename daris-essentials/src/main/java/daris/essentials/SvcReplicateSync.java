@@ -2,8 +2,11 @@ package daris.essentials;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import nig.mf.pssd.plugin.util.DistributedAssetUtil;
@@ -19,6 +22,7 @@ public class SvcReplicateSync extends PluginService {
 
 
 	private Interface _defn;
+	private HashMap<String,Integer> paths = new HashMap<String, Integer>();
 
 	public SvcReplicateSync() {
 		_defn = new Interface();
@@ -30,6 +34,7 @@ public class SvcReplicateSync extends PluginService {
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
 		_defn.add(new Interface.Element("count-only", BooleanType.DEFAULT, "Just counts (rather than listing each asset) assets for synchronizing. Default to false.", 0, 1));
+		_defn.add(new Interface.Element("list-paths", BooleanType.DEFAULT, "Lists (default false) unique set of paths and assets found", 0, 1));
 	}
 
 	public String name() {
@@ -65,6 +70,7 @@ public class SvcReplicateSync extends PluginService {
 		String peer = args.value("peer");
 		Boolean destroy = args.booleanValue("destroy", false);
 		Boolean count = args.booleanValue("count-only", false);
+		Boolean listPaths = args.booleanValue("list-paths", false);
 		String size = args.stringValue("size", "5000");
 		Integer t = args.intValue("idx", 1);
 		int[] idx = new int[]{t};
@@ -111,10 +117,10 @@ public class SvcReplicateSync extends PluginService {
 
 		// Destroy assets on remote peer bottom up in DICOM data model
 		// FOr PSSD, 'members=false' so it does not destroy children
-		int n = destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMSeries, "DICOM Series", destroy, count, w);
-		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMStudy, "DICOM Study", destroy, count, w);
-		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMPatient, "DICOM Patient", destroy, count, w);
-		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyOther, "Other", destroy, count, w);
+		int n = destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMSeries, "DICOM Series", destroy, count, listPaths,  w);
+		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMStudy, "DICOM Study", destroy, count, listPaths, w);
+		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyDICOMPatient, "DICOM Patient", destroy, count, listPaths, w);
+		n += destroyOrListAssets(executor(), dateTime, srPeer, destroyOther, "Other", destroy, count, listPaths, w);
 
 		if (dbg) {
 			System.out.println("");
@@ -129,7 +135,7 @@ public class SvcReplicateSync extends PluginService {
 
 
 	private int destroyOrListAssets (ServiceExecutor executor, String dateTime, ServerRoute sr, XmlDocMaker list, String type, 
-			Boolean destroy, Boolean count, XmlWriter w) throws Throwable {
+			Boolean destroy, Boolean count, Boolean listPaths, XmlWriter w) throws Throwable {
 		Collection<XmlDoc.Element> elements = list.root().elements("id");
 		if (elements==null) return 0;
 		//
@@ -168,6 +174,18 @@ public class SvcReplicateSync extends PluginService {
 					String id = el.value();
 					String rid = el.value("@rid");
 					String name = el.value("@name");
+					String path = el.value("@path");
+					int idx  = path.lastIndexOf("/");
+					if (listPaths) {
+						String parent = path.substring(0, idx-1);
+						if (paths.containsKey(parent)) {
+							int v = paths.get(parent);
+							v += 1;
+							paths.put(parent, v);
+						} else {
+							paths.put(parent, 1);
+						}
+					}
 					if (!count) w.add("id", new String[]{"name", name, "rid", rid, "destroyed", "false"}, id);
 				}
 			}
@@ -178,6 +196,16 @@ public class SvcReplicateSync extends PluginService {
 			} else {
 				w.add("number-of-assets-to-destroy", elements.size());
 			}
+		}
+		if (listPaths) {
+			w.push("paths");
+			Set<String> keys = paths.keySet();
+			Iterator<String> it = keys.iterator();
+			for (String key : keys) {
+				Integer value = paths.get(key);
+				w.add("path", new String[]{"number", ""+value}, key);
+			}
+			w.pop();
 		}
 		return elements.size();
 	}
@@ -250,6 +278,12 @@ public class SvcReplicateSync extends PluginService {
 		dm.add("xpath", "rid");
 		dm.add("xpath", "type");
 		dm.add("xpath", "name");
+		// Only way to do this at the moment! thanks Alex Maddern
+		//		dm.add("xpath", "path");
+		dm.add("xpath", new String[]{"ename", "value"}, 
+				"string.format('%s/%s', xvalue('namespace'), "
+						+ "choose(equals(xvalue('name'),null()), "
+						+ "string.format('__asset_id__%s',xvalue('@id')),xvalue('name')))");
 		XmlDoc.Element r = executor.execute(srPeer, "asset.query", dm.root());
 		if (dbg) {
 			//			log (dateTime, "   nig.replicate.sycnhronize: asset.query on peer took " + duration(time));
@@ -302,6 +336,7 @@ public class SvcReplicateSync extends PluginService {
 				String rid = t.get(1).value();
 				String type = t.get(2).value();
 				String name = t.get(3).value();
+				String path = t.get(4).value();
 				nExtra++;
 
 
@@ -310,15 +345,15 @@ public class SvcReplicateSync extends PluginService {
 					destroyOther.add("id",  new String[]{"rid", rid}, idOnPeer);
 				} else {
 					if (type.equals("dicom/patient")) {
-						destroyDICOMPatient.add("id", new String[]{"name", name, "rid", rid}, idOnPeer);
+						destroyDICOMPatient.add("id", new String[]{"name", name, "rid", rid, "path", path}, idOnPeer);
 					} else if (type.equals("dicom/study") ||
 							type.equals("siemens-raw-petct/study")) {         // Type, not as document type (so no daris:)
-						destroyDICOMStudy.add("id", new String[]{"name", name, "rid", rid}, idOnPeer);
+						destroyDICOMStudy.add("id", new String[]{"name", name, "rid", rid, "path", path}, idOnPeer);
 					} else if (type.equals("dicom/series") ||
 							type.equals("siemens-raw-petct/series")) {
-						destroyDICOMSeries.add("id", new String[]{"name", name, "rid", rid}, idOnPeer);
+						destroyDICOMSeries.add("id", new String[]{"name", name, "rid", rid, "path", path}, idOnPeer);
 					} else {
-						destroyOther.add("id", new String[]{"name", name, "rid", rid}, idOnPeer);
+						destroyOther.add("id", new String[]{"name", name, "rid", rid, "path", path}, idOnPeer);
 					}
 				}
 				if (dbg) {
