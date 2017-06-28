@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -34,7 +33,7 @@ public class SvcReplicateSync extends PluginService {
 		_defn.add(new Interface.Element("use-indexes", BooleanType.DEFAULT, "Turn on or off the use of indexes in the query. Defaults to true.", 0, 1));
 		_defn.add(new Interface.Element("debug", BooleanType.DEFAULT, "Write some stuff in the log. Default to false.", 0, 1));
 		_defn.add(new Interface.Element("count-only", BooleanType.DEFAULT, "Just counts (rather than listing each asset) assets for synchronizing. Default to false.", 0, 1));
-		_defn.add(new Interface.Element("list-paths", BooleanType.DEFAULT, "Lists (default false) unique set of paths and assets found", 0, 1));
+		_defn.add(new Interface.Element("list-paths", BooleanType.DEFAULT, "Lists (default false) unique set of namespace paths and number of assets found in that namespace.", 0, 1));
 	}
 
 	public String name() {
@@ -176,8 +175,8 @@ public class SvcReplicateSync extends PluginService {
 					String name = el.value("@name");
 					String path = el.value("@path");
 					int idx  = path.lastIndexOf("/");
-					if (listPaths) {
-						String parent = path.substring(0, idx-1);
+					if (listPaths && idx>=0) {
+						String parent = path.substring(0, idx);
 						if (paths.containsKey(parent)) {
 							int v = paths.get(parent);
 							v += 1;
