@@ -129,6 +129,10 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 				// Move
 				String replicaID = asset.value("replica/id");
 				String newRemoteNameSpace = asset.value("replica/expected-namespace");
+				if (replicaID==null || newRemoteNameSpace==null) {
+					// I have seen this happen but I don't know why.
+					throw new Exception ("Either the replica ID or namespace is null.  Something is wrong... Abandoning.");
+				}
 
 				try {
 					// Time consuming to create destination namespace...
@@ -262,9 +266,16 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 				dm = new XmlDocMaker("args");
 				dm.add("id","rid="+rid);
 				XmlDoc.Element remoteAsset = executor.execute(sr, "asset.get", dm.root());	
+				if (remoteAsset==null) {
+					// I've seens some funny things. This should not happen.
+					throw new Exception ("Replica asset meta-data is null for rid="+rid + ". Abandoning.");
+				}
 				
 				// FInd the namespace
 				String remoteAssetNameSpace = remoteAsset.value("asset/namespace");
+				if (remoteAssetNameSpace==null) {
+					throw new Exception ("Replica namespace is null for rid="+rid + ". Abandoning.");
+				}
 				if (dbg) {
 //					log(dateTime, "      nig.replicate.namespace.check :namespaces=" + assetNameSpace + ", " +remoteAssetNameSpace);
 				}
