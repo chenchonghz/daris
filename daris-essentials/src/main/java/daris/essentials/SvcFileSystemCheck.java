@@ -23,11 +23,11 @@ public class SvcFileSystemCheck extends PluginService {
 	public SvcFileSystemCheck() {
 		_defn = new Interface();
 		_defn.add(new Interface.Element("email",StringType.DEFAULT, "Send report to this email address (defaults to none)", 0, Integer.MAX_VALUE));
-		_defn.add(new Interface.Element("mflux",StringType.DEFAULT, "Root fo Mediaflux. Defaults to /opt/mediaflux", 0, 1));
+		_defn.add(new Interface.Element("mflux",StringType.DEFAULT, "Root for Mediaflux system. Defaults to /opt/mediaflux", 0, 1));
 		_defn.add(new Interface.Element("store-threshold",IntegerType.DEFAULT, "Threshold percentage for stores.  Defaults to 90.", 0, 1));
 		_defn.add(new Interface.Element("volatile-threshold",IntegerType.DEFAULT, "Threshold percentage for volatile file systems.  Defaults to 90.", 0, 1));
 		_defn.add(new Interface.Element("list",BooleanType.DEFAULT, "List all stores and file systems (default false) whether they cross the threshold boundary or not.", 0, 1));
-		_defn.add(new Interface.Element("include-null-store",BooleanType.DEFAULT, "If it's not possible to work out the store statistics, include anyway with 'null' presentation.", 0, 1));
+		_defn.add(new Interface.Element("include-null-store",BooleanType.DEFAULT, "If it's not possible to work out the store statistics, include anyway with 'null' presentation (default false).", 0, 1));
 	}
 	public String name() {
 		return "nig.file.system.check";
