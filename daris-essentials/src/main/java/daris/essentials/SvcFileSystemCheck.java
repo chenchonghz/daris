@@ -77,7 +77,7 @@ public class SvcFileSystemCheck extends PluginService {
 		}
 		dm2.pop();
 		XmlDoc.Element rr = dm2.root().element("stores");
-		if (rr.hasSubElements()) {
+		if (listAll || rr.hasSubElements()) {
 			some = true;
 			dm.add(dm2.root().element("stores"));
 		}
@@ -90,14 +90,12 @@ public class SvcFileSystemCheck extends PluginService {
 		checkFileSystem (rPath + "/volatile/logs", volatileThresh, listAll, dm2);
 		checkFileSystem (rPath + "/volatile/shopping", volatileThresh, listAll, dm2);
 		checkFileSystem (rPath + "/volatile/staging", volatileThresh, listAll, dm2);
-
-		// /tmp
 		checkFileSystem ("/tmp", volatileThresh, listAll, dm2);
 		dm2.pop();
 		rr = dm2.root().element("file-systems");
-		if (rr.hasSubElements()) {
+		if (listAll || rr.hasSubElements()) {
 			some = true;
-			dm.add(dm2.root().element("stores"));
+			dm.add(dm2.root().element("file-systems"));
 		}
 
 		// Report to caller
