@@ -13,6 +13,7 @@ public class DicomElements {
 	public static final DataElementTag REFERRING_PHYSICIANS_NAME = new DataElementTag(0x0008,0x0090);
 	public static final DataElementTag REFERRING_PHYSICIANS_PHONE = new DataElementTag(0x0008,0x0094);
 	public static final DataElementTag PERFORMING_PHYSICIANS_NAME = new DataElementTag(0x0008,0x1050);
+	public static final DataElementTag REQUESTING_PHYSICIAN = new DataElementTag(0x0032, 0x1032);
 	public static final DataElementTag MODALITY = new DataElementTag(0x0008,0x0060);
 	public static final DataElementTag STATION_NAME = new DataElementTag(0x0008,0x1010);
 

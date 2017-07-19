@@ -73,6 +73,7 @@ public class NIGDicomAssetEngine implements DicomAssetEngine {
         res.add(DicomElements.REFERRING_PHYSICIANS_NAME);
         res.add(DicomElements.REFERRING_PHYSICIANS_PHONE);
         res.add(DicomElements.PERFORMING_PHYSICIANS_NAME);
+        res.add(DicomElements.REQUESTING_PHYSICIAN);
         res.add(DicomElements.MAGNETIC_FIELD_STRENGTH);
 
         res.add(DicomElements.SERIES_UID);
