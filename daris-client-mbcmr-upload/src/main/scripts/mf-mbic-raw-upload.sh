@@ -8,14 +8,17 @@ JAVA=$(which java)
 JAR=$(dirname $0)/mrupload.jar
 [[ ! -f $JAR ]] && echo "Error: ${JAR} does not exist." >&2 && exit 2
 
-# this script is for MBC 7T MR to send data to daris-1.cloud.unimelb.edu.au only.
-MF_HOST=103.6.255.171
-MF_PORT=9443
-MF_TRANSPORT=HTTP
-MF_TOKEN="TBA123"
+MF_HOST=localhost
+MF_PORT=8443
+MF_TRANSPORT=HTTPS
+#MF_TOKEN="TBA123"
+MF_DOMAIN=system
+MF_USER=manager
+MF_PASSWORD=
+
 
 #
 echo "Uploading data to ${MF_TRANSPORT}://${MF_HOST}:${MF_PORT}..."
-$JAVA -Dmf.host=$MF_HOST -Dmf.port=$MF_PORT -Dmf.transport=$MF_TRANSPORT -Dmf.token=$MF_TOKEN -cp $JAR nig.mf.mr.client.upload.MBCMRUpload "$@"
+$JAVA -Dmf.host=$MF_HOST -Dmf.port=$MF_PORT -Dmf.transport=$MF_TRANSPORT -Dmf.domain=$MF_DOMAIN -Dmf.user=$MF_USER -Dmf.password=$MF_PASSWORD -Dmf.token=$MF_TOKEN  -cp $JAR nig.mf.mr.client.upload.MBCMRUpload "$@"
 RETVAL=$?
 exit $RETVAL

@@ -37,7 +37,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 	}
 
 	public String description() {
-		return "Lists assets (both primaries, and replicas from other hosts) that have been replicated but for which the namespaces don't agree. Can optionally move them into the correct namespace (replica namespaces by our convention is prefixed by the primary server UUID).";
+		return "Lists assets (both primaries, and replicas from other hosts) that have been replicated but for which the namespaces don't agree. Can optionally move them into the correct namespace (replica namespaces by our convention is prefixed by the primary server UUID). If  errors are reported see the mediaflux-server log file.";
 	}
 
 	public Interface definition() {
@@ -109,6 +109,7 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 		w.add("total-to-move", assets.size());
 		log(dateTime, "   nig.replicate.namespace.check : total checked = " + count[0]);
 		log(dateTime, "   nig.replicate.namespace.check : total to move = " + assets.size());
+		int nErr = 0;
 		if (move) {
 			log(dateTime,"Starting move of " + assets.size() + " assets");
 			int c = 1;
@@ -128,6 +129,10 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 				// Move
 				String replicaID = asset.value("replica/id");
 				String newRemoteNameSpace = asset.value("replica/expected-namespace");
+				if (replicaID==null || newRemoteNameSpace==null) {
+					// I have seen this happen but I don't know why.
+					throw new Exception ("Either the replica ID or namespace is null.  Something is wrong... Abandoning.");
+				}
 
 				try {
 					// Time consuming to create destination namespace...
@@ -138,10 +143,12 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 					nRep++;
 				} catch (Throwable t) {
 					log(dateTime, "Failed to move remote asset " + replicaID + " with error " + t.getMessage());
+					nErr++;
 				}
 				c++;
 			}
 			w.add("total-moved", nRep);
+			w.add("total-errors", nErr);
 			log(dateTime, "   nig.replicate.namespace.check : total moved = " + nRep);
 		}
 	}
@@ -259,9 +266,16 @@ public class SvcReplicateNameSpaceCheck extends PluginService {
 				dm = new XmlDocMaker("args");
 				dm.add("id","rid="+rid);
 				XmlDoc.Element remoteAsset = executor.execute(sr, "asset.get", dm.root());	
+				if (remoteAsset==null) {
+					// I've seens some funny things. This should not happen.
+					throw new Exception ("Replica asset meta-data is null for rid="+rid + ". Abandoning.");
+				}
 				
 				// FInd the namespace
 				String remoteAssetNameSpace = remoteAsset.value("asset/namespace");
+				if (remoteAssetNameSpace==null) {
+					throw new Exception ("Replica namespace is null for rid="+rid + ". Abandoning.");
+				}
 				if (dbg) {
 //					log(dateTime, "      nig.replicate.namespace.check :namespaces=" + assetNameSpace + ", " +remoteAssetNameSpace);
 				}
